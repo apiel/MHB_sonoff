@@ -37,7 +37,7 @@ void wifi_toggle(void)
 
 void wifi_new_connection(char * ssid, char * password)
 {
-    printf("Connect to new wifi: %s %s", ssid, password);
+    printf("Connect to new wifi ssid: %s pwd: %s\n", ssid, password);
     
     struct sdk_station_config config;    
     if(ssid != NULL) {
@@ -55,8 +55,9 @@ void wifi_new_connection(char * ssid, char * password)
         config.password[0] = '\0';
     }    
 
+    sdk_wifi_set_opmode(STATION_MODE);
     sdk_wifi_station_set_config(&config);
-    // sdk_wifi_station_disconnect();
+    EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE); // we might have to find a central place for this with wifi toggle
     sdk_wifi_station_connect();
 }
 
