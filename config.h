@@ -10,6 +10,10 @@
 
 #define AP_PSK "myhomebridge" // between 8 and 63 ASCII-encoded characters
 
+#define EEPROM_START 0x200000
+#define EEPROM_SIZE 512
+#define EEPROM_WIFI_MODE 0 // byte containing the mode of the WIFI store in EEPROM: STATION_MODE or SOFTAP_MODE
+
 #define HTTPD_PORT 80 // cannot use the same port as wget
 
 #define MQTT_USER NULL

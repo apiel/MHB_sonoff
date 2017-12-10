@@ -8,6 +8,7 @@
 #include "wifi.h"
 #include "button.h"
 #include "httpd.h"
+#include "EEPROM.h"
 
 class task_rf_t: public esp_open_rtos::thread::task_t
 {
@@ -29,6 +30,8 @@ extern "C" void user_init(void)
     uart_set_baud(0, 115200);
     printf("SDK version: %s\n", sdk_system_get_sdk_version());
     printf("MyHomeBridge sonoff version: %s\n", VERSION);
+
+    EEPROM.begin(EEPROM_SIZE);
 
     wifi_init();
 

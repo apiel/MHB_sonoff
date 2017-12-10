@@ -8,22 +8,31 @@
 #include "config.h"
 #include "wifi.h"
 #include "led.h"
-
-// We should deactivate sofap after connection to wifi
-// Use MAC address to generate SoftAP SSID
-
-void wifi_off(void)
-{
-    sdk_wifi_station_disconnect();
-    // sdk_wifi_station_stop();
-    wifi_access_point_off();
-    // sdk_wifi_softap_stop();
-}
+#include "EEPROM.h"
 
 void wifi_init(void)
 {
-  wifi_connect();
-//   wifi_access_point();
+    int mode = EEPROM.read(EEPROM_WIFI_MODE);
+    printf("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
+    
+    if (mode == STATION_MODE) {
+        wifi_connect();
+    } else {
+        wifi_access_point();
+    }  
+}
+
+void wifi_toggle(void)
+{
+    printf("Wifi toggle\n");
+    led_blink(10, 100);
+    if (sdk_wifi_get_opmode() == SOFTAP_MODE) {
+        EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE);
+    } else {
+        EEPROM.write(EEPROM_WIFI_MODE, SOFTAP_MODE);
+    }
+    EEPROM.commit();
+    sdk_system_restart();
 }
 
 void wifi_new_connection(char * ssid, char * password)
@@ -64,18 +73,6 @@ void wifi_connect(void)
     sdk_wifi_station_connect();  
 }
 
-void wifi_toggle(void)
-{
-    printf("Wifi toggle\n");
-    led_blink(10, 100);
-    wifi_off();
-    if (sdk_wifi_get_opmode() == SOFTAP_MODE) {
-        wifi_connect();
-    } else {
-        wifi_access_point();
-    }
-}
-
 void wifi_access_point(void)
 {
     printf("Activate access point\n");
@@ -99,16 +96,7 @@ void wifi_access_point(void)
     dhcpserver_start(&first_client_ip, 4);     
 }
 
-void wifi_access_point_off(void)
-{
-    struct sdk_softap_config ap_config;
-    *ap_config.ssid = 0;
-    *ap_config.password = 0;
-
-    sdk_wifi_softap_set_config(&ap_config);  
-    dhcpserver_stop();  
-}
-
+// this could go in utils
 const char * get_uid(void)
 {
     // Use MAC address for Station as unique ID
