@@ -78,9 +78,9 @@ void wifi_access_point(void)
     printf("Activate access point\n");
     sdk_wifi_set_opmode(SOFTAP_MODE);
     struct ip_info ap_ip;
-    IP4_ADDR(&ap_ip.ip, 172, 16, 0, 1);
+    IP4_ADDR(&ap_ip.ip, 192, 168, 0, 1);
     IP4_ADDR(&ap_ip.gw, 0, 0, 0, 0);
-    IP4_ADDR(&ap_ip.netmask, 255, 255, 0, 0);
+    IP4_ADDR(&ap_ip.netmask, 255, 255, 255, 0);
     sdk_wifi_set_ip_info(1, &ap_ip);
 
     struct sdk_softap_config ap_config;
@@ -92,7 +92,7 @@ void wifi_access_point(void)
     sdk_wifi_softap_set_config(&ap_config);
 
     ip_addr_t first_client_ip;
-    IP4_ADDR(&first_client_ip, 172, 16, 0, 2);
+    IP4_ADDR(&first_client_ip, 192, 168, 0, 2);
     dhcpserver_start(&first_client_ip, 4);     
 }
 
