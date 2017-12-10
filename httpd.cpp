@@ -37,12 +37,12 @@ int decode(const char *s, char *dec)
 	return o - dec;
 }
 
-char * parse_request(void *data)
+char * parse_request(char *data)
 {
     char * response = NULL;
 
     // printf("Received data:\n%s\n", (char*) data);
-    if (!strncmp(data, "GET ", 4) || !strncmp(data, "PUT ", 4)) {
+    if (!strncmp(data, "GET ", 4) || !strncmp(data, "PUT ", 4)) { // is this really necessary?
         char uri[128];
         str_extract(data, '/', ' ', uri);
         printf("uri: %s\n", uri);
@@ -115,7 +115,7 @@ void httpd_task(void *pvParameters)
                 u16_t len;
                 if (netbuf_data(nb, &data, &len) == ERR_OK) {
                     // printf("Received data:\n%.*s\n", len, (char*) data);
-                    response = parse_request(data);                         
+                    response = parse_request((char *)data);                         
                 }          
                 if (!response) {
                     response = httpd_get_default_response();                         
