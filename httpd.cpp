@@ -5,6 +5,13 @@
 #include "wifi.h"
 #include "utils.h"
 #include "config.h"
+#include "sha1.h"
+#include "sha1.bis.h"
+#include "base64.h"
+#include "base64.bis.h"
+
+#define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
+#define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 #ifdef UPNP
     #include "upnp.h"
@@ -47,11 +54,62 @@ char * parse_request(char *data)
         str_extract(data, '/', ' ', uri);
         printf("uri: %s\n", uri);
 
-        if (strchr(uri, '/')) {
-            #ifdef UPNP
+        // printf("try try: %d\n", strncmp(data, "GET /ws", 7)); // we could use this instead
+        if (strchr(uri, '/')) { // need / at the end no -> ws://192.168.1.107/ws  yes ws://192.168.1.107/ws/
             char action[32];
             char * next = str_extract(uri, 0, '/', action) + 1;
-            if (strcmp(action, "api") == 0) {
+            if (strcmp(action, "ws") == 0) {
+                char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
+                key[25] = '\0';
+                strcat(key, WS_GUID); // fixed key for websocket haching
+                printf("search key: %s\n", key);
+                sha1nfo s;
+                sha1_init(&s);
+				sha1_write(&s, key, strlen(key));
+
+                char b64Result[30];
+                base64_encode(b64Result, (char *)sha1_result(&s), 20);
+                printf("hashed key1: %s\n", b64Result); 
+
+                char b64Result_bis[30];
+                base64_encode_bis(20, sha1_result(&s), sizeof(b64Result_bis), b64Result_bis); 
+                printf("hashed key2: %s\n", b64Result_bis); 
+
+
+                // -----
+
+                uint8_t *hash;
+                char result[21];
+                char b64Result3[30];
+
+                SHA1Context sha;
+                int err;
+                uint8_t Message_Digest[20];
+                err = SHA1Reset(&sha);
+                err = SHA1Input(&sha, reinterpret_cast<const uint8_t *>(key), strlen(key));
+                err = SHA1Result(&sha, Message_Digest);
+                hash = Message_Digest;
+
+                for (int i=0; i<20; ++i) {
+                    result[i] = (char)hash[i];
+                }
+                result[20] = '\0';
+
+                base64_encode(b64Result3, result, 20);
+                printf("hashed key3: %s\n", b64Result3); 
+                // --                               
+          
+                printf("let's try websocket\n");
+                static char buf[512];
+                snprintf(buf, sizeof(buf), "HTTP/1.1 101 Switching Protocols\r\n"
+                           "Upgrade: websocket\r\n"
+                           "Connection: Upgrade\r\n"
+                           "Sec-WebSocket-Accept: %s\r\n"
+                           "Sec-WebSocket-Protocol: chat\r\n\r\n", b64Result);
+                response = buf;
+            }
+            #ifdef UPNP
+            else if (strcmp(action, "api") == 0) {
                 response = upnp_action(next, data);
             }
             #endif
@@ -118,6 +176,7 @@ void httpd_task(void *pvParameters)
                     response = parse_request((char *)data);                         
                 }          
                 if (!response) {
+                    printf("httpd: send default response\n");
                     response = httpd_get_default_response();                         
                 }
                 netconn_write(client, response, strlen(response), NETCONN_COPY);
