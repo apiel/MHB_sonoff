@@ -2,13 +2,12 @@
 #include <string.h>
 #include <espressif/esp_common.h>
 
+#include <mbedtls/sha1.h>
+#include <mbedtls/base64.h>
+
 #include "wifi.h"
 #include "utils.h"
 #include "config.h"
-#include "sha1.h"
-#include "sha1.bis.h"
-#include "base64.h"
-#include "base64.bis.h"
 
 #define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -59,53 +58,38 @@ char * parse_request(char *data)
             char action[32];
             char * next = str_extract(uri, 0, '/', action) + 1;
             if (strcmp(action, "ws") == 0) {
-                char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
-                key[25] = '\0';
-                strcat(key, WS_GUID); // fixed key for websocket haching
-                printf("search key: %s\n", key);
-                sha1nfo s;
-                sha1_init(&s);
-				sha1_write(&s, key, strlen(key));
+                printf("data %s\n\n", data);
 
-                char b64Result[30];
-                base64_encode(b64Result, (char *)sha1_result(&s), 20);
-                printf("hashed key1: %s\n", b64Result); 
+                // char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
+                char key[64];
+                /* Concatenate key */
+                memcpy(key, strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER), 24);
+                key[24] = '\0';
+                // strcpy(key, "x3JJHMbDL1EzLkh9GBhXDw==");
+                strcat(key, WS_GUID);  // WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+                printf("Resulting key: %s\n", key);
 
-                char b64Result_bis[30];
-                base64_encode_bis(20, sha1_result(&s), sizeof(b64Result_bis), b64Result_bis); 
-                printf("hashed key2: %s\n", b64Result_bis); 
+                /* Get SHA1 */
+                unsigned char sha1sum[20];
+                mbedtls_sha1((unsigned char *) key, strlen(key), sha1sum);
 
+                /* Base64 encode */
+                unsigned char retval[100];
+                unsigned char *retval_ptr;
+                retval_ptr = retval;                
+                unsigned int olen;
+                mbedtls_base64_encode(NULL, 0, &olen, sha1sum, 20); //get length
+                int ok = mbedtls_base64_encode(retval_ptr, 30, &olen, sha1sum, 20);
 
-                // -----
-
-                uint8_t *hash;
-                char result[21];
-                char b64Result3[30];
-
-                SHA1Context sha;
-                int err;
-                uint8_t Message_Digest[20];
-                err = SHA1Reset(&sha);
-                err = SHA1Input(&sha, reinterpret_cast<const uint8_t *>(key), strlen(key));
-                err = SHA1Result(&sha, Message_Digest);
-                hash = Message_Digest;
-
-                for (int i=0; i<20; ++i) {
-                    result[i] = (char)hash[i];
-                }
-                result[20] = '\0';
-
-                base64_encode(b64Result3, result, 20);
-                printf("hashed key3: %s\n", b64Result3); 
-                // --                               
-          
+                printf("uiuiiuii: %s\n", retval_ptr);
+  
                 printf("let's try websocket\n");
                 static char buf[512];
                 snprintf(buf, sizeof(buf), "HTTP/1.1 101 Switching Protocols\r\n"
                            "Upgrade: websocket\r\n"
                            "Connection: Upgrade\r\n"
                            "Sec-WebSocket-Accept: %s\r\n"
-                           "Sec-WebSocket-Protocol: chat\r\n\r\n", b64Result);
+                           "Sec-WebSocket-Protocol: protocolOne\r\n\r\n", retval_ptr);
                 response = buf;
             }
             #ifdef UPNP

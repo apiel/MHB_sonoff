@@ -1,133 +1,111 @@
+/* base64.c : base-64 / MIME encode/decode */
+/* PUBLIC DOMAIN - Jon Mayo - November 13, 2003 */
+
+#include <ctype.h>
+#include <esp8266.h>
 #include "base64.h"
 
-const char b64_alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-		"abcdefghijklmnopqrstuvwxyz"
-		"0123456789+/";
+IROM static const int base64dec_tab[256] ={
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255, 62,255,255,255, 63,
+	 52, 53, 54, 55, 56, 57, 58, 59, 60, 61,255,255,255,  0,255,255,
+	255,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+	 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,255,255,255,255,255,
+	255, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+	 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+	255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+};
 
-/* 'Private' declarations */
-inline void a3_to_a4(unsigned char * a4, unsigned char * a3);
-inline void a4_to_a3(unsigned char * a3, unsigned char * a4);
-inline unsigned char b64_lookup(char c);
+#if 0
+static int base64decode(const char in[4], char out[3]) {
+	uint8_t v[4];
 
-int base64_encode(char *output, char *input, int inputLen) {
-	int i = 0, j = 0;
-	int encLen = 0;
-	unsigned char a3[3];
-	unsigned char a4[4];
+	v[0]=base64dec_tab[(unsigned)in[0]];
+	v[1]=base64dec_tab[(unsigned)in[1]];
+	v[2]=base64dec_tab[(unsigned)in[2]];
+	v[3]=base64dec_tab[(unsigned)in[3]];
 
-	while(inputLen--) {
-		a3[i++] = *(input++);
-		if(i == 3) {
-			a3_to_a4(a4, a3);
+	out[0]=(v[0]<<2)|(v[1]>>4); 
+	out[1]=(v[1]<<4)|(v[2]>>2); 
+	out[2]=(v[2]<<6)|(v[3]); 
+	return (v[0]|v[1]|v[2]|v[3])!=255 ? in[3]=='=' ? in[2]=='=' ? 1 : 2 : 3 : 0;
+}
+#endif
 
-			for(i = 0; i < 4; i++) {
-				output[encLen++] = b64_alphabet[a4[i]];
-			}
+/* decode a base64 string in one shot */
+int  __attribute__((weak)) base64_decode(unsigned int in_len, const char *in, unsigned int out_len, unsigned char *out) {
+	unsigned int ii, io;
+	uint32_t v;
+	unsigned int rem;
 
-			i = 0;
+	for(io=0,ii=0,v=0,rem=0;ii<in_len;ii++) {
+		unsigned char ch;
+		if(isspace((int)in[ii])) continue;
+		if(in[ii]=='=') break; /* stop at = */
+		ch=base64dec_tab[(unsigned int)in[ii]];
+		if(ch==255) break; /* stop at a parse error */
+		v=(v<<6)|ch;
+		rem+=6;
+		if(rem>=8) {
+			rem-=8;
+			if(io>=out_len) return -1; /* truncation is failure */
+			out[io++]=(v>>rem)&255;
 		}
 	}
+	if(rem>=8) {
+		rem-=8;
+		if(io>=out_len) return -1; /* truncation is failure */
+		out[io++]=(v>>rem)&255;
+	}
+	return io;
+}
 
-	if(i) {
-		for(j = i; j < 3; j++) {
-			a3[j] = '\0';
-		}
+static const uint8_t base64enc_tab[64]= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+";
 
-		a3_to_a4(a4, a3);
+#if 0
+void base64encode(const unsigned char in[3], unsigned char out[4], int count) {
+	out[0]=base64enc_tab[(in[0]>>2)];
+	out[1]=base64enc_tab[((in[0]&3)<<4)|(in[1]>>4)];
+	out[2]=count<2 ? '=' : base64enc_tab[((in[1]&15)<<2)|(in[2]>>6)];
+	out[3]=count<3 ? '=' : base64enc_tab[(in[2]&63)];
+}
+#endif
 
-		for(j = 0; j < i + 1; j++) {
-			output[encLen++] = b64_alphabet[a4[j]];
-		}
+int __attribute__((weak)) base64_encode(unsigned int in_len, const unsigned char *in, unsigned int out_len, char *out) {
+	unsigned ii, io;
+	uint32_t v;
+	unsigned rem;
 
-		while((i++ < 3)) {
-			output[encLen++] = '=';
+	for(io=0,ii=0,v=0,rem=0;ii<in_len;ii++) {
+		unsigned char ch;
+		ch=in[ii];
+		v=(v<<8)|ch;
+		rem+=8;
+		while(rem>=6) {
+			rem-=6;
+			if(io>=out_len) return -1; /* truncation is failure */
+			out[io++]=base64enc_tab[(v>>rem)&63];
 		}
 	}
-	output[encLen] = '\0';
-	return encLen;
-}
-
-int base64_decode(char * output, char * input, int inputLen) {
-	int i = 0, j = 0;
-	int decLen = 0;
-	unsigned char a3[3];
-	unsigned char a4[4];
-
-
-	while (inputLen--) {
-		if(*input == '=') {
-			break;
-		}
-
-		a4[i++] = *(input++);
-		if (i == 4) {
-			for (i = 0; i <4; i++) {
-				a4[i] = b64_lookup(a4[i]);
-			}
-
-			a4_to_a3(a3,a4);
-
-			for (i = 0; i < 3; i++) {
-				output[decLen++] = a3[i];
-			}
-			i = 0;
-		}
+	if(rem) {
+		v<<=(6-rem);
+		if(io>=out_len) return -1; /* truncation is failure */
+		out[io++]=base64enc_tab[v&63];
 	}
-
-	if (i) {
-		for (j = i; j < 4; j++) {
-			a4[j] = '\0';
-		}
-
-		for (j = 0; j <4; j++) {
-			a4[j] = b64_lookup(a4[j]);
-		}
-
-		a4_to_a3(a3,a4);
-
-		for (j = 0; j < i - 1; j++) {
-			output[decLen++] = a3[j];
-		}
+	while(io&3) {
+		if(io>=out_len) return -1; /* truncation is failure */
+		out[io++]='=';
 	}
-	output[decLen] = '\0';
-	return decLen;
+	if(io>=out_len) return -1; /* no room for null terminator */
+	out[io]=0;
+	return io;
 }
 
-int base64_enc_len(int plainLen) {
-	int n = plainLen;
-	return (n + 2 - ((n + 2) % 3)) / 3 * 4;
-}
-
-int base64_dec_len(char * input, int inputLen) {
-	int i = 0;
-	int numEq = 0;
-	for(i = inputLen - 1; input[i] == '='; i--) {
-		numEq++;
-	}
-
-	return ((6 * inputLen) / 8) - numEq;
-}
-
-inline void a3_to_a4(unsigned char * a4, unsigned char * a3) {
-	a4[0] = (a3[0] & 0xfc) >> 2;
-	a4[1] = ((a3[0] & 0x03) << 4) + ((a3[1] & 0xf0) >> 4);
-	a4[2] = ((a3[1] & 0x0f) << 2) + ((a3[2] & 0xc0) >> 6);
-	a4[3] = (a3[2] & 0x3f);
-}
-
-inline void a4_to_a3(unsigned char * a3, unsigned char * a4) {
-	a3[0] = (a4[0] << 2) + ((a4[1] & 0x30) >> 4);
-	a3[1] = ((a4[1] & 0xf) << 4) + ((a4[2] & 0x3c) >> 2);
-	a3[2] = ((a4[2] & 0x3) << 6) + a4[3];
-}
-
-inline unsigned char b64_lookup(char c) {
-	int i;
-	for(i = 0; i < 64; i++) {
-		if(b64_alphabet[i] == c) {
-			return i;
-		}
-	}
-
-	return -1;
-}
