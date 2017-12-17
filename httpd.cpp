@@ -43,6 +43,36 @@ int decode(const char *s, char *dec)
 	return o - dec;
 }
 
+char * ws_action(char * data)
+{
+    char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
+    key[24] = '\0';
+    strcat(key, WS_GUID);
+    printf("Resulting key: %s\n", key);
+
+    /* Get SHA1 */
+    unsigned char sha1sum[20];
+    mbedtls_sha1((unsigned char *) key, strlen(key), sha1sum);
+
+    /* Base64 encode */
+    unsigned char retval[100];
+    unsigned char *retval_ptr;
+    retval_ptr = retval;                
+    unsigned int olen;
+    mbedtls_base64_encode(NULL, 0, &olen, sha1sum, 20); //get length
+    int ok = mbedtls_base64_encode(retval_ptr, 30, &olen, sha1sum, 20);
+
+    printf("Key 64: %s\n", retval_ptr);
+
+    static char response[512];
+    snprintf(response, sizeof(response), "HTTP/1.1 101 Switching Protocols\r\n"
+                "Upgrade: websocket\r\n"
+                "Connection: Upgrade\r\n"
+                "Sec-WebSocket-Accept: %s\r\n\r\n"
+                , retval_ptr);
+    return response;
+}
+
 char * parse_request(char *data)
 {
     char * response = NULL;
@@ -58,39 +88,7 @@ char * parse_request(char *data)
             char action[32];
             char * next = str_extract(uri, 0, '/', action) + 1;
             if (strcmp(action, "ws") == 0) {
-                printf("data %s\n\n", data);
-
-                // char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
-                char key[64];
-                /* Concatenate key */
-                memcpy(key, strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER), 24);
-                key[24] = '\0';
-                // strcpy(key, "x3JJHMbDL1EzLkh9GBhXDw==");
-                strcat(key, WS_GUID);  // WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-                printf("Resulting key: %s\n", key);
-
-                /* Get SHA1 */
-                unsigned char sha1sum[20];
-                mbedtls_sha1((unsigned char *) key, strlen(key), sha1sum);
-
-                /* Base64 encode */
-                unsigned char retval[100];
-                unsigned char *retval_ptr;
-                retval_ptr = retval;                
-                unsigned int olen;
-                mbedtls_base64_encode(NULL, 0, &olen, sha1sum, 20); //get length
-                int ok = mbedtls_base64_encode(retval_ptr, 30, &olen, sha1sum, 20);
-
-                printf("uiuiiuii: %s\n", retval_ptr);
-  
-                printf("let's try websocket\n");
-                static char buf[512];
-                snprintf(buf, sizeof(buf), "HTTP/1.1 101 Switching Protocols\r\n"
-                           "Upgrade: websocket\r\n"
-                           "Connection: Upgrade\r\n"
-                           "Sec-WebSocket-Accept: %s\r\n"
-                           "Sec-WebSocket-Protocol: protocolOne\r\n\r\n", retval_ptr);
-                response = buf;
+                response = ws_action(data);
             }
             #ifdef UPNP
             else if (strcmp(action, "api") == 0) {
