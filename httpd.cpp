@@ -16,6 +16,8 @@
     #include "upnp.h"
 #endif
 
+bool wsOpen = false;
+
 inline int ishex(int x)
 {
 	return	(x >= '0' && x <= '9')	||
@@ -45,6 +47,8 @@ int decode(const char *s, char *dec)
 
 char * ws_action(char * data)
 {
+    wsOpen = true;
+
     char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
     key[24] = '\0';
     strcat(key, WS_GUID);
@@ -77,7 +81,7 @@ char * parse_request(char *data)
 {
     char * response = NULL;
 
-    // printf("Received data:\n%s\n", (char*) data);
+    printf("Received data:\n%s\n", (char*) data);
     if (!strncmp(data, "GET ", 4) || !strncmp(data, "PUT ", 4)) { // is this really necessary?
         char uri[128];
         str_extract(data, '/', ' ', uri);
@@ -135,6 +139,52 @@ char * httpd_get_default_response()
     return buf;
 }
 
+char * ws_get_response(char * data)
+{
+  static char buf[512];
+  int len = strlen(data);
+
+  int offset = 2;
+  buf[0] = 0x81;
+  if (len > 125) {
+    offset = 4;
+    buf[1] = 126;
+    buf[2] = len >> 8;
+    buf[3] = len;
+  } else {
+    buf[1] = len;
+  }
+
+  memcpy(&buf[offset], data, len);
+
+  return buf;
+}
+
+void ws_read(u8_t * data)
+{
+    int data_offset = 6;
+    u8_t *dptr = &data[6];
+    u8_t *kptr = &data[2];
+    u16_t len = data[1] & 0x7F;
+
+    if (len == 127) {
+        return; // ERR_OK
+    } else if (len == 126) {
+        /* extended length */
+        dptr += 2;
+        kptr += 2;
+        data_offset += 2;
+        len = (data[2] << 8) | data[3];
+    }
+
+    /* unmask */
+    for (int i = 0; i < len; i++) {
+        *(dptr++) ^= kptr[i % 4];
+    }
+
+    printf("ws read: %s\n", data);
+}
+
 void httpd_task(void *pvParameters)
 {
     struct netconn *client = NULL;
@@ -150,18 +200,30 @@ void httpd_task(void *pvParameters)
         err_t err = netconn_accept(nc, &client);
         if (err == ERR_OK) {
             struct netbuf *nb;
-            if ((err = netconn_recv(client, &nb)) == ERR_OK) {
+            wsOpen = false;
+            while ((err = netconn_recv(client, &nb)) == ERR_OK) {
                 void *data = NULL;
                 u16_t len;
                 if (netbuf_data(nb, &data, &len) == ERR_OK) {
                     // printf("Received data:\n%.*s\n", len, (char*) data);
-                    response = parse_request((char *)data);                         
+                    response = parse_request((char *)data);
+                    if (!response) {
+                        ws_read((u8_t *)data);
+                    }                         
                 }          
                 if (!response) {
-                    printf("httpd: send default response\n");
-                    response = httpd_get_default_response();                         
+                    if (wsOpen) {
+                        printf("ws: send default response\n");
+                        response = ws_get_response("hello\n");                         
+                    } else {
+                        printf("httpd: send default response\n");
+                        response = httpd_get_default_response();                         
+                    }
                 }
                 netconn_write(client, response, strlen(response), NETCONN_COPY);
+                if (!wsOpen) {
+                    break;
+                }
             }
             netbuf_delete(nb);
         }

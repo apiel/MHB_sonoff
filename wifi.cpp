@@ -15,10 +15,10 @@ void wifi_init(void)
     int mode = EEPROM.read(EEPROM_WIFI_MODE);
     printf("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
     
-    if (mode == STATION_MODE) {
-        wifi_connect();
+    if (mode == SOFTAP_MODE) {
+        wifi_access_point();        
     } else {
-        wifi_access_point();
+        wifi_connect();
     }  
 }
 
