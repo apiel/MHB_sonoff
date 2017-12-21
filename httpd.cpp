@@ -1,4 +1,5 @@
-#include <lwip/api.h> // maybe dont need anymore when switch to tcp
+#include <lwip/api.h> // vtask
+#include <lwip/debug.h>
 #include <lwip/tcp.h>
 #include <string.h>
 #include <espressif/esp_common.h>
@@ -17,7 +18,9 @@
     #include "upnp.h"
 #endif
 
-bool wsOpen = false;
+struct http_state {
+  u8_t is_websocket;
+};
 
 inline int ishex(int x)
 {
@@ -48,8 +51,6 @@ int decode(const char *s, char *dec)
 
 char * ws_action(char * data)
 {
-    wsOpen = true;
-
     char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
     key[24] = '\0';
     strcat(key, WS_GUID);
@@ -75,15 +76,16 @@ char * ws_action(char * data)
                 "Connection: Upgrade\r\n"
                 "Sec-WebSocket-Accept: %s\r\n\r\n"
                 , retval_ptr);
+
     return response;
 }
 
-char * parse_request(char *data)
+char * parse_request(char *data, struct http_state *hs)
 {
     char * response = NULL;
 
     if (!strncmp(data, "GET ", 4) || !strncmp(data, "PUT ", 4)) { // is this really necessary?
-        printf("Received data:\n%s\n", (char*) data);
+        printf("Received data (ws %d):\n%s\n", hs->is_websocket, (char*) data);
         char uri[128];
         str_extract(data, '/', ' ', uri);
         printf("uri: %s\n", uri);
@@ -92,8 +94,9 @@ char * parse_request(char *data)
         if (strchr(uri, '/')) { // need / at the end no -> ws://192.168.1.107/ws  yes ws://192.168.1.107/ws/
             char action[32];
             char * next = str_extract(uri, 0, '/', action) + 1;
-            if (strcmp(action, "ws") == 0) {
+            if (strcmp(action, "ws") == 0) { // instead we should look that it start by WS protocol
                 response = ws_action(data);
+                hs->is_websocket = 1;
             }
             #ifdef UPNP
             else if (strcmp(action, "api") == 0) {
@@ -161,33 +164,6 @@ char * ws_get_response(char * data)
   return buf;
 }
 
-// static void ICACHE_FLASH_ATTR parseWsFrame(char *data, WSFrame *frame) {
-// 	frame->flags = (*data) & FLAGS_MASK;
-// 	frame->opcode = (*data) & OPCODE_MASK;
-// 	//next byte
-// 	data += 1;
-// 	frame->isMasked = (*data) & IS_MASKED;
-// 	frame->payloadLength = (*data) & PAYLOAD_MASK;
-
-// 	//next byte
-// 	data += 1;
-
-// 	if (frame->payloadLength == 126) {
-// 		os_memcpy(&frame->payloadLength, data, sizeof(uint16_t));
-// 		data += sizeof(uint16_t);
-// 	} else if (frame->payloadLength == 127) {
-// 		os_memcpy(&frame->payloadLength, data, sizeof(uint64_t));
-// 		data += sizeof(uint64_t);
-// 	}
-
-// 	if (frame->isMasked) {
-// 		os_memcpy(&frame->maskingKey, data, sizeof(uint32_t));
-// 		data += sizeof(uint32_t);
-// 	}
-
-// 	frame->payloadData = data;
-// }
-
 void ws_read(u8_t * data)
 {
     uint8_t opcode = (*data) & 0x0F;
@@ -221,54 +197,45 @@ void ws_read(u8_t * data)
 
 static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
-//   err_t parsed = ERR_ABRT;
-//   struct http_state *hs = (struct http_state *)arg;
+    struct http_state *hs = (struct http_state *)arg;
 
-  u8_t *data = (u8_t *) p->payload;
-  u16_t data_len = p->len;
+    u8_t *data = (u8_t *) p->payload;
+    u16_t data_len = p->len;
 
-  printf("rcv data: %s\n", data);
+//   printf("rcv data (ws %d): %s\n", hs->is_websocket, data);
 
     char * response = NULL;
-    if (wsOpen) {
+    if (hs->is_websocket) {
         ws_read((u8_t *)data);
+        // response = ws_get_response("hello\n");  
     } else {
-        printf("read request\n");
-        response = parse_request((char *)data);
-    }
-
-    if (!response) {
-        if (wsOpen) {
-            printf("ws: send default response\n");
-            response = ws_get_response("hello\n");                         
-        } else {
-            printf("httpd: send default response\n");
-            response = httpd_get_default_response();                         
+        response = parse_request((char *)data, hs);
+        if (!response) {
+            printf("Httpd: send default response\n");
+            response = httpd_get_default_response();            
         }
     }
     if (response) {
-        printf("write response\n");
-        // netconn_write(client, response, strlen(response), NETCONN_COPY);
         err_t err = tcp_write(pcb, response, strlen(response), 0);
-        if (err != ERR_OK) {
-            printf("Something went wrong while tcp write\n");
-        }
-        printf("write done\n");
+        LWIP_ASSERT("Something went wrong while tcp write", err == ERR_OK);
     }
-    if (!wsOpen) {
-        printf("break\n");
-        // break;
-    }
-    printf("wait for message\n");
+    pbuf_free(p);
+    return ERR_OK;
+}
 
-  pbuf_free(p);
-  return ERR_OK;
+static err_t http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
+{
+    struct http_state *hs = (struct http_state *)arg;
+    if (!hs->is_websocket) {
+        printf("Response sent, close connection.\n");
+        tcp_recv(pcb, NULL);
+        tcp_close(pcb);
+    }
 }
 
 static err_t http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
     struct tcp_pcb_listen *lpcb = (struct tcp_pcb_listen*)arg;
-
     printf("http_accept %p / %p\n", (void*)pcb, arg);  
 
     /* Decrease the listen backlog counter */
@@ -278,99 +245,30 @@ static err_t http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
  
     /* Set up the various callback functions */
     tcp_recv(pcb, http_recv);
-    // tcp_err(pcb, http_err);
-    // tcp_poll(pcb, http_poll, HTTPD_POLL_INTERVAL);
-    // tcp_sent(pcb, http_sent);
+    tcp_sent(pcb, http_sent);
 
     return ERR_OK;
 }
 
+// maybe we dont need to create a task
 void httpd_task(void *pvParameters)
 {
     struct tcp_pcb *pcb;
     err_t err;
 
     pcb = tcp_new();
-    if (pcb == NULL) {
-        printf("httpd_init: tcp_new failed\n");
-        vTaskDelete(NULL);
-    }
+    LWIP_ASSERT("httpd_init: tcp_new failed", pcb != NULL);
     tcp_setprio(pcb, TCP_PRIO_MIN);
     // /* set SOF_REUSEADDR here to explicitly bind httpd to multiple interfaces */
     err = tcp_bind(pcb, IP_ADDR_ANY, HTTPD_PORT);
-    if (err != ERR_OK) {
-        printf("httpd_init: tcp_bind failed\n");
-        vTaskDelete(NULL);
-    }   
+    LWIP_ASSERT("httpd_init: tcp_bind failed", err == ERR_OK);
     pcb = tcp_listen(pcb);
-    if (pcb == NULL) {
-        printf("httpd_init: tcp_listen failed\n");
-        vTaskDelete(NULL);
-    }    
+    LWIP_ASSERT("httpd_init: tcp_listen failed", pcb != NULL);
     // /* initialize callback arg and accept callback */
     tcp_arg(pcb, pcb);
     tcp_accept(pcb, http_accept);
 
-    // ----- end
-
     while(1) {
         vTaskDelay(1000);
     }
-
-    // struct netconn *client = NULL;
-    // struct netconn *nc = netconn_new(NETCONN_TCP);
-    // if (nc == NULL) {
-    //     printf("Failed to allocate socket\n");
-    //     vTaskDelete(NULL);
-    // }
-    // netconn_bind(nc, IP_ADDR_ANY, HTTPD_PORT);
-    // netconn_listen(nc);
-    // while (1) {
-    //     err_t err = netconn_accept(nc, &client);
-    //     if (err == ERR_OK) {
-    //         struct netbuf *nb;
-    //         wsOpen = false;
-    //         while ((err = netconn_recv(client, &nb)) == ERR_OK) {
-    //             printf("recv\n");
-    //             do {
-    //                 void *data = NULL;
-    //                 char * response = NULL;
-    //                 u16_t len;
-    //                 if (netbuf_data(nb, &data, &len) == ERR_OK) {
-    //                     // printf("Received data:\n%.*s\n", len, (char*) data);
-    //                     if (wsOpen) {
-    //                         ws_read((u8_t *)data);
-    //                     } else {
-    //                         printf("read request\n");
-    //                         response = parse_request((char *)data);
-    //                     }
-    //                 }          
-    //                 if (!response) {
-    //                     if (wsOpen) {
-    //                         printf("ws: send default response\n");
-    //                         response = ws_get_response("hello\n");                         
-    //                     } else {
-    //                         printf("httpd: send default response\n");
-    //                         response = httpd_get_default_response();                         
-    //                     }
-    //                 }
-    //                 if (response) {
-    //                     printf("write response\n");
-    //                     netconn_write(client, response, strlen(response), NETCONN_COPY);
-    //                     printf("write done\n");
-    //                 }
-    //             } while (netbuf_next(nb) >= 0);
-    //             netbuf_delete(nb);
-    //             if (!wsOpen) {
-    //                 break;
-    //             }    
-    //             printf("wait for message\n");
-    //         }
-    //         printf("nb del\n");
-    //         netbuf_delete(nb);
-    //     }
-    //     // printf("Closing connection\n");
-    //     netconn_close(client);
-    //     netconn_delete(client);
-    // }
 }
