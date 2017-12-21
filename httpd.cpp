@@ -84,42 +84,29 @@ char * parse_request(char *data, struct http_state *hs)
 {
     char * response = NULL;
 
-    if (!strncmp(data, "GET ", 4) || !strncmp(data, "PUT ", 4)) { // is this really necessary?
-        printf("Received data (ws %d):\n%s\n", hs->is_websocket, (char*) data);
-        char uri[128];
-        str_extract(data, '/', ' ', uri);
-        printf("uri: %s\n", uri);
-
-        // printf("try try: %d\n", strncmp(data, "GET /ws", 7)); // we could use this instead
-        if (strchr(uri, '/')) { // need / at the end no -> ws://192.168.1.107/ws  yes ws://192.168.1.107/ws/
-            char action[32];
-            char * next = str_extract(uri, 0, '/', action) + 1;
-            if (strcmp(action, "ws") == 0) { // instead we should look that it start by WS protocol
-                response = ws_action(data);
-                hs->is_websocket = 1;
-            }
-            #ifdef UPNP
-            else if (strcmp(action, "api") == 0) {
-                response = upnp_action(next, data);
-            }
-            #endif
-        }
-        else if (strchr(uri, '?')) {
-            char ssid[32], password[64];
-            char * next = str_extract(uri, '=', '&', ssid);
-            // printf(":ssid: %s :next: %s\n", ssid, next);
-            str_extract(next, '=', '\0', password);
-            // printf(":ssid: %s :pwd: %s\n\n", ssid, password);
-
-            char ssid2[32], password2[64];
-            decode(ssid, ssid2);
-            decode(password, password2);
-
-            printf(":ssid: %s :pwd: %s\n\n", ssid2, password2);
-
-            wifi_new_connection(ssid2, password2);
-        }
+    // printf("Received data (ws %d):\n%s\n", hs->is_websocket, (char*) data);
+    if (strncmp(data, "GET /ws", 7) == 0) {
+        response = ws_action(data);
+        hs->is_websocket = 1;
     }
+
+    // need to set wifi with websocket or with post
+    // Post: else if (strncmp(data, "POST /wifi", 10) == 0)
+    // else if (strchr(uri, '?')) {
+    //     char ssid[32], password[64];
+    //     char * next = str_extract(uri, '=', '&', ssid);
+    //     // printf(":ssid: %s :next: %s\n", ssid, next);
+    //     str_extract(next, '=', '\0', password);
+    //     // printf(":ssid: %s :pwd: %s\n\n", ssid, password);
+
+    //     char ssid2[32], password2[64];
+    //     decode(ssid, ssid2);
+    //     decode(password, password2);
+
+    //     printf(":ssid: %s :pwd: %s\n\n", ssid2, password2);
+
+    //     wifi_new_connection(ssid2, password2);
+    // }    
 
     return response;
 }
@@ -202,7 +189,7 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
     u8_t *data = (u8_t *) p->payload;
     u16_t data_len = p->len;
 
-//   printf("rcv data (ws %d): %s\n", hs->is_websocket, data);
+    // printf("rcv data (ws %d): %s\n", hs->is_websocket, data);
 
     char * response = NULL;
     if (hs->is_websocket) {
@@ -231,6 +218,7 @@ static err_t http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
         tcp_recv(pcb, NULL);
         tcp_close(pcb);
     }
+    return ERR_OK;
 }
 
 static err_t http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
