@@ -14,6 +14,8 @@
 #define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
+#define OPCODE_CLOSE 0x8
+
 #ifdef UPNP
     #include "upnp.h"
 #endif
@@ -21,33 +23,6 @@
 struct http_state {
   u8_t is_websocket;
 };
-
-inline int ishex(int x)
-{
-	return	(x >= '0' && x <= '9')	||
-		(x >= 'a' && x <= 'f')	||
-		(x >= 'A' && x <= 'F');
-}
- 
-int decode(const char *s, char *dec)
-{
-	char *o;
-	const char *end = s + strlen(s);
-	int c;
- 
-	for (o = dec; s <= end; o++) {
-		c = *s++;
-		if (c == '+') c = ' ';
-		else if (c == '%' && (	!ishex(*s++)	||
-					!ishex(*s++)	||
-					!sscanf(s - 2, "%2x", &c)))
-			return -1;
- 
-		if (dec) *o = c;
-	}
- 
-	return o - dec;
-}
 
 char * ws_action(char * data)
 {
@@ -66,7 +41,7 @@ char * ws_action(char * data)
     retval_ptr = retval;                
     unsigned int olen;
     mbedtls_base64_encode(NULL, 0, &olen, sha1sum, 20); //get length
-    int ok = mbedtls_base64_encode(retval_ptr, 30, &olen, sha1sum, 20);
+    mbedtls_base64_encode(retval_ptr, 30, &olen, sha1sum, 20);
 
     printf("Key 64: %s\n", retval_ptr);
 
@@ -80,6 +55,31 @@ char * ws_action(char * data)
     return response;
 }
 
+char * httpd_get_default_response()
+{
+    static char buf[1024];
+    struct sdk_station_config config;
+    sdk_wifi_station_get_config(&config);
+    snprintf(buf, sizeof(buf),
+            "HTTP/1.1 200 OK\r\n"
+            "Content-type: text/html\r\n\r\n"
+            "\
+    <script>\r\n\
+    function wifi() {\r\n\
+        const ssid = document.getElementById('ssid').value;\r\n\
+        const password = document.getElementById('password').value;\r\n\
+        const s = new WebSocket(`ws://${window.location.hostname}/ws/`);\r\n\
+        s.onopen = () => { s.send(`wifi set ${ssid} ${password}`); s.close(); };\r\n\
+    }\r\n\
+    </script>\r\n\
+    <label>Wifi SSID</label><br>\r\n\
+    <input id='ssid' placeholder='SSID' value='%s'><br><br>\r\n\
+    <label>Wifi password</label><br>\r\n\
+    <input id='password' placeholder='password' value='%s'><br><br>\r\n\
+    <button onclick='wifi()'>Save</button><br>\r\n", config.ssid, config.password);
+    return buf;
+}
+
 char * parse_request(char *data, struct http_state *hs)
 {
     char * response = NULL;
@@ -88,6 +88,9 @@ char * parse_request(char *data, struct http_state *hs)
     if (strncmp(data, "GET /ws", 7) == 0) {
         response = ws_action(data);
         hs->is_websocket = 1;
+    } else {
+        printf("Httpd: send default response\n");
+        response = httpd_get_default_response();            
     }
 
     // need to set wifi with websocket or with post
@@ -111,25 +114,6 @@ char * parse_request(char *data, struct http_state *hs)
     return response;
 }
 
-char * httpd_get_default_response()
-{
-    static char buf[512];
-    struct sdk_station_config config;
-    sdk_wifi_station_get_config(&config);
-    snprintf(buf, sizeof(buf),
-            "HTTP/1.1 200 OK\r\n"
-            "Content-type: text/html\r\n\r\n"
-            "\
-            <form>\r\n\
-                <label>Wifi SSID</label><br />\r\n\
-                <input name='ssid' placeholder='SSID' value='%s' /><br /><br />\r\n\
-                <label>Wifi password</label><br />\r\n\
-                <input name='password' placeholder='password' value='%s' /><br /><br />\r\n\
-                <button type='submit'>Save</button><br />\r\n\
-            <form>\r\n", config.ssid, config.password);
-    return buf;
-}
-
 char * ws_get_response(char * data)
 {
   static char buf[512];
@@ -151,34 +135,46 @@ char * ws_get_response(char * data)
   return buf;
 }
 
-void ws_read(u8_t * data)
+void http_close(struct tcp_pcb *pcb)
+{
+    printf("Close connection.\n");
+    tcp_recv(pcb, NULL);
+    tcp_close(pcb);
+}
+
+void ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
 {
     uint8_t opcode = (*data) & 0x0F;
-    data += 1;
-    uint8_t isMasked = (*data) & (1<<7);
-    uint32_t len = (*data) & 0x7F;
-    data += 1;
-    printf("opcode %d len %d ismasked %d\n", opcode, len, isMasked);
+    if (opcode == OPCODE_CLOSE) {
+        hs->is_websocket = 0;
+        http_close(pcb);
+    } else {
+        data += 1;
+        uint8_t isMasked = (*data) & (1<<7);
+        uint32_t len = (*data) & 0x7F;
+        data += 1;
+        printf("opcode %d len %d ismasked %d\n", opcode, len, isMasked);
 
-	if (len == 126) {
-		memcpy(&len, data, sizeof(uint16_t));
-		data += sizeof(uint16_t);
-	} else if (len == 127) {
-		memcpy(&len, data, sizeof(uint64_t));
-		data += sizeof(uint64_t);
-	}
-
-	if (isMasked) {
-        uint32_t maskingKey;
-		memcpy(&maskingKey, data, sizeof(uint32_t));
-		data += sizeof(uint32_t);
-        for (uint32_t i = 0; i < len; i++) {
-            int j = i % 4;
-            data[i] = data[i] ^ ((uint8_t *)&maskingKey)[j];
+        if (len == 126) {
+            memcpy(&len, data, sizeof(uint16_t));
+            data += sizeof(uint16_t);
+        } else if (len == 127) {
+            memcpy(&len, data, sizeof(uint64_t));
+            data += sizeof(uint64_t);
         }
-        printf("ws data: %s\n", data);
-	} else {
-        printf("ws we should close connexion... masked...\n");
+
+        if (isMasked) {
+            uint32_t maskingKey;
+            memcpy(&maskingKey, data, sizeof(uint32_t));
+            data += sizeof(uint32_t);
+            for (uint32_t i = 0; i < len; i++) {
+                int j = i % 4;
+                data[i] = data[i] ^ ((uint8_t *)&maskingKey)[j];
+            }
+            printf("ws data: %s\n", data);
+        } else {
+            printf("ws we should close connexion... masked...\n");
+        }
     }
 }
 
@@ -187,20 +183,15 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
     struct http_state *hs = (struct http_state *)arg;
 
     u8_t *data = (u8_t *) p->payload;
-    u16_t data_len = p->len;
 
     // printf("rcv data (ws %d): %s\n", hs->is_websocket, data);
 
     char * response = NULL;
     if (hs->is_websocket) {
-        ws_read((u8_t *)data);
+        ws_read((u8_t *)data, pcb, hs);
         // response = ws_get_response("hello\n");  
     } else {
         response = parse_request((char *)data, hs);
-        if (!response) {
-            printf("Httpd: send default response\n");
-            response = httpd_get_default_response();            
-        }
     }
     if (response) {
         err_t err = tcp_write(pcb, response, strlen(response), 0);
@@ -214,9 +205,7 @@ static err_t http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
     struct http_state *hs = (struct http_state *)arg;
     if (!hs->is_websocket) {
-        printf("Response sent, close connection.\n");
-        tcp_recv(pcb, NULL);
-        tcp_close(pcb);
+        http_close(pcb);   
     }
     return ERR_OK;
 }
@@ -224,7 +213,7 @@ static err_t http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 static err_t http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
     struct tcp_pcb_listen *lpcb = (struct tcp_pcb_listen*)arg;
-    printf("http_accept %p / %p\n", (void*)pcb, arg);  
+    printf("http_accept %p / %p\n", (void*)pcb, arg); 
 
     /* Decrease the listen backlog counter */
     tcp_accepted(lpcb);
