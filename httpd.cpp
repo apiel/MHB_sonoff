@@ -171,6 +171,7 @@ void ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
                 int j = i % 4;
                 data[i] = data[i] ^ ((uint8_t *)&maskingKey)[j];
             }
+            data[len] = '\0';
             printf("ws data: %s\n", data);
         } else {
             printf("ws we should close connexion... masked...\n");
