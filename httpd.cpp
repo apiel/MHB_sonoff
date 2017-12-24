@@ -114,7 +114,7 @@ char * parse_request(char *data, struct http_state *hs)
     return response;
 }
 
-char * ws_get_response(char * data)
+char * ws_encode_response(char * data)
 {
   static char buf[512];
   int len = strlen(data);
@@ -142,8 +142,44 @@ void http_close(struct tcp_pcb *pcb)
     tcp_close(pcb);
 }
 
-void ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
+char * ws_set_wifi(char * data)
 {
+    static char response[4];
+
+    data += 9;
+
+    char ssid[32], password[64];
+    char * next = str_extract(data, 0, ' ', ssid);
+    // printf(":ssid: %s :next: %s\n", ssid, next);
+    str_extract(next, ' ', '\0', password);
+    // printf(":ssid: %s :pwd: %s\n\n", ssid, password);
+    printf(":ssid: %s :pwd: %s\n\n", ssid, password);
+
+    wifi_new_connection(ssid, password);
+
+    snprintf(response, sizeof(response), "OK\r\n");
+    return response;
+}
+
+char * ws_parse(char *data)
+{
+    char * response = NULL;
+
+    if (strncmp(data, "wifi set ", 9) == 0) {
+        printf("Let's set the wifi credential.");
+        response = ws_set_wifi(data);
+    }
+
+    if (response) {
+        response = ws_encode_response(response);
+    }
+
+    return response;
+}
+
+char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
+{
+    char * response = NULL;
     uint8_t opcode = (*data) & 0x0F;
     if (opcode == OPCODE_CLOSE) {
         hs->is_websocket = 0;
@@ -177,6 +213,7 @@ void ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
             printf("ws we should close connexion... masked...\n");
         }
     }
+    return response;
 }
 
 static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
