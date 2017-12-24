@@ -209,6 +209,7 @@ char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
             }
             data[len] = '\0';
             printf("ws data: %s\n", data);
+            response = ws_parse((char *)data);
         } else {
             printf("ws we should close connexion... masked...\n");
         }
