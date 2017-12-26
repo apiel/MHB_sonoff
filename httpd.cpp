@@ -10,21 +10,26 @@
 #include "wifi.h"
 #include "utils.h"
 #include "config.h"
+#include "httpd.h"
+#include "log.h"
 
 #define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 #define OPCODE_CLOSE 0x8
 
-#ifdef UPNP
-    #include "upnp.h"
-#endif
+QueueHandle_t publish_queue;
 
 struct http_state {
   u8_t is_websocket;
 };
 
-char * ws_action(char * data)
+void ws_send_queue(char *msg)
+{
+    xQueueSend(publish_queue, ( void * ) &msg, ( TickType_t ) 0);
+}
+
+char * httpd_ws_action(char * data)
 {
     char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
     key[24] = '\0';
@@ -65,11 +70,12 @@ char * httpd_get_default_response()
             "Content-type: text/html\r\n\r\n"
             "\
     <script>\r\n\
+    const s = new WebSocket(`ws://${window.location.hostname}/ws/`);\r\n\
+    s.onmessage = (event) => { console.log('recv:', event.data); };\r\n\
     function wifi() {\r\n\
         const ssid = document.getElementById('ssid').value;\r\n\
         const password = document.getElementById('password').value;\r\n\
-        const s = new WebSocket(`ws://${window.location.hostname}/ws/`);\r\n\
-        s.onopen = () => { s.send(`wifi set ${ssid} ${password}`); s.close(); };\r\n\
+        s.send(`wifi set ${ssid} ${password}`);\r\n\
     }\r\n\
     </script>\r\n\
     <label>Wifi SSID</label><br>\r\n\
@@ -86,30 +92,12 @@ char * parse_request(char *data, struct http_state *hs)
 
     // printf("Received data (ws %d):\n%s\n", hs->is_websocket, (char*) data);
     if (strncmp(data, "GET /ws", 7) == 0) {
-        response = ws_action(data);
+        response = httpd_ws_action(data);
         hs->is_websocket = 1;
     } else {
         printf("Httpd: send default response\n");
         response = httpd_get_default_response();            
     }
-
-    // need to set wifi with websocket or with post
-    // Post: else if (strncmp(data, "POST /wifi", 10) == 0)
-    // else if (strchr(uri, '?')) {
-    //     char ssid[32], password[64];
-    //     char * next = str_extract(uri, '=', '&', ssid);
-    //     // printf(":ssid: %s :next: %s\n", ssid, next);
-    //     str_extract(next, '=', '\0', password);
-    //     // printf(":ssid: %s :pwd: %s\n\n", ssid, password);
-
-    //     char ssid2[32], password2[64];
-    //     decode(ssid, ssid2);
-    //     decode(password, password2);
-
-    //     printf(":ssid: %s :pwd: %s\n\n", ssid2, password2);
-
-    //     wifi_new_connection(ssid2, password2);
-    // }    
 
     return response;
 }
@@ -225,6 +213,8 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
 
     // printf("rcv data (ws %d): %s\n", hs->is_websocket, data);
 
+    log("this is a test\n");
+
     char * response = NULL;
     if (hs->is_websocket) {
         ws_read((u8_t *)data, pcb, hs);
@@ -284,6 +274,17 @@ void httpd_task(void *pvParameters)
     tcp_arg(pcb, pcb);
     tcp_accept(pcb, http_accept);
 
+    publish_queue = xQueueCreate(5, sizeof(char *));
+    char * msg;
+    while(1) {
+        // if (hs->is_websocket) {
+            while(xQueueReceive(publish_queue, &(msg), ( TickType_t ) 0) == pdTRUE){
+                msg = ws_encode_response(msg);
+                err_t err = tcp_write(pcb, msg, strlen(msg), 0);
+                LWIP_ASSERT("Something went wrong while tcp write from queue", err == ERR_OK);
+            }
+        // }
+    }
     while(1) {
         vTaskDelay(1000);
     }
