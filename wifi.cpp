@@ -8,12 +8,13 @@
 #include "config.h"
 #include "wifi.h"
 #include "led.h"
+#include "log.h"
 #include "EEPROM.h"
 
 void wifi_init(void)
 {
     int mode = EEPROM.read(EEPROM_WIFI_MODE);
-    printf("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
+    logInfo("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
     
     if (mode == SOFTAP_MODE) {
         wifi_access_point();        
@@ -24,7 +25,7 @@ void wifi_init(void)
 
 void wifi_toggle(void)
 {
-    printf("Wifi toggle\n");
+    logInfo("Wifi toggle\n");
     led_blink(10, 100);
     if (sdk_wifi_get_opmode() == SOFTAP_MODE) {
         EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE);
@@ -67,8 +68,8 @@ void wifi_connect(void)
 
     struct sdk_station_config config;
     bool ret = sdk_wifi_station_get_config(&config);
-    if(ret) printf("existing wifi settings: ssid = %s, password = %s\n", config.ssid, config.password);
-    else printf("no wifi settings founds: ssid = %s, password = %s\n", config.ssid, config.password);
+    if(ret) logInfo("existing wifi settings: ssid = %s, password = %s\n", config.ssid, config.password);
+    else logInfo("no wifi settings founds: ssid = %s, password = %s\n", config.ssid, config.password);
 
     // sdk_wifi_station_disconnect();
     sdk_wifi_station_connect();  
@@ -76,7 +77,7 @@ void wifi_connect(void)
 
 void wifi_access_point(void)
 {
-    printf("Activate access point\n");
+    logInfo("Activate access point\n");
     sdk_wifi_set_opmode(SOFTAP_MODE);
     struct ip_info ap_ip;
     IP4_ADDR(&ap_ip.ip, 192, 168, 0, 1);
@@ -127,7 +128,7 @@ const char * get_uid(void)
             strcat(uid, mac); 
         }
         uid_done = true;
-        printf("Device unique id: %s\n", uid);
+        logInfo("Device unique id: %s\n", uid);
     }
 
     return uid;

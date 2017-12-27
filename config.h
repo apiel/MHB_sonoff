@@ -16,6 +16,10 @@
 
 #define HTTPD_PORT 80 // cannot use the same port as wget
 
+#define LOG_ERROR
+#define LOG_INFO
+// #define LOG_DEBUG
+
 #define MQTT_USER NULL
 #define MQTT_PASS NULL
 #define MQTT_HOST ("vps.alexparadise.com")
