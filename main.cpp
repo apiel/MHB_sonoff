@@ -9,6 +9,7 @@
 #include "button.h"
 #include "httpd.h"
 #include "EEPROM.h"
+#include "mqtt.h"
 
 class task_rf_t: public esp_open_rtos::thread::task_t
 {
@@ -41,6 +42,11 @@ extern "C" void user_init(void)
     task_rf.task_create("task_rf");
 
     // need to convert to cpp
+
+    #ifdef MQTT_PORT
+    xTaskCreate(&mqtt_task, "mqtt_task", 1024, NULL, 4, NULL);  
+    #endif
+
     #ifdef HTTPD_PORT
     xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
     #endif    

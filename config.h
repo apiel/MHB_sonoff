@@ -22,7 +22,8 @@
 
 #define MQTT_USER NULL
 #define MQTT_PASS NULL
-#define MQTT_HOST ("vps.alexparadise.com")
+// #define MQTT_HOST ("vps.alexparadise.com")
+#define MQTT_HOST ("192.168.1.106")
 #define MQTT_PORT 1883
 
 #define PIN_BUTTON 14 // D5

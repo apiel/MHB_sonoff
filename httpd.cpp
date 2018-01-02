@@ -248,6 +248,7 @@ static err_t http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 // maybe we dont need to create a task
 void httpd_task(void *pvParameters)
 {
+#ifdef HTTPD_PORT
     struct tcp_pcb *pcb;
     err_t err;
 
@@ -262,6 +263,7 @@ void httpd_task(void *pvParameters)
     // /* initialize callback arg and accept callback */
     tcp_arg(pcb, pcb);
     tcp_accept(pcb, http_accept);
+#endif
 
     while(1) {
         vTaskDelay(1000);
