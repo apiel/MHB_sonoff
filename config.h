@@ -15,6 +15,7 @@
 #define EEPROM_WIFI_MODE 0 // byte containing the mode of the WIFI store in EEPROM: STATION_MODE or SOFTAP_MODE
 
 #define HTTPD_PORT 80 // cannot use the same port as wget
+#define WS_PORT 8080
 
 #define LOG_ERROR
 #define LOG_INFO
@@ -24,7 +25,7 @@
 #define MQTT_PASS NULL
 // #define MQTT_HOST ("vps.alexparadise.com")
 #define MQTT_HOST ("192.168.1.106")
-#define MQTT_PORT 1883
+// #define MQTT_PORT 1883
 
 #define PIN_BUTTON 14 // D5
 #define PIN_LED 2

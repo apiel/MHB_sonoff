@@ -43,11 +43,15 @@ extern "C" void user_init(void)
 
     // need to convert to cpp
 
+    #ifdef WS_PORT
+    xTaskCreate(&ws_task, "ws_server", 1024, NULL, 3, NULL);
+    #endif      
+
     #ifdef MQTT_PORT
     xTaskCreate(&mqtt_task, "mqtt_task", 1024, NULL, 4, NULL);  
     #endif
 
     #ifdef HTTPD_PORT
     xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
-    #endif    
+    #endif      
 }

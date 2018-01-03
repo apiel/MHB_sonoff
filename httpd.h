@@ -4,5 +4,6 @@
 
 void ws_send(char *msg);
 void httpd_task(void *pvParameters);
+void ws_task(void *pvParameters);
 
 #endif

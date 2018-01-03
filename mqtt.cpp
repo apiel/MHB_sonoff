@@ -105,6 +105,7 @@ static void  topic_received(mqtt_message_data_t *md)
 
 void  mqtt_task(void *pvParameters)
 {
+    #ifdef MQTT_PORT
     int ret = 0;
     struct mqtt_network network;
     uint8_t mqtt_buf[100];
@@ -193,4 +194,5 @@ void  mqtt_task(void *pvParameters)
         mqtt_network_disconnect(&network);
         taskYIELD();
     }
+    #endif
 }
