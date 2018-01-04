@@ -270,40 +270,37 @@ void httpd_task(void *pvParameters)
     }
 }
 
+struct tcp_pcb * ws_pcb_c = NULL;
+bool ws_is_connected = false;
+
+static err_t ws_close() 
+{
+    err_t err = ERR_OK;
+    if (ws_pcb_c) {
+        logInfo("WS close\n"); 
+        tcp_recv(ws_pcb_c, NULL);
+        err = tcp_close(ws_pcb_c);
+        ws_pcb_c = NULL; 
+    }
+    ws_is_connected = false;
+    return err;
+}
+
 static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
+    // err_t err;
     if (p == NULL) {
-        printf("ws received p is null\n");
+        ws_close();
     }
     return ERR_OK;
 }
 
 /** TCP connected callback (active connection), send data now */
-static err_t
-ws_tcp_client_connected(void *arg, struct tcp_pcb *tpcb, err_t err)
+static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
-    printf("yoyoyoy\n");
-    logDebug("WS connected\n");    
-    return ERR_OK;
-}
-
-void ws_task(void *pvParameters)
-{
-#ifdef WS_PORT
-    struct tcp_pcb *pcb;
-    err_t err;
-
-    vTaskDelay(1000);
-    printf("try to connect\n");
-    pcb = tcp_new();
-    LWIP_ASSERT("httpd_init: tcp_new failed", pcb != NULL);
-    
-    ip_addr_t remote_addr;
-    IP4_ADDR(&remote_addr, 192, 168, 1, 106);
-    err = tcp_connect(pcb, &remote_addr, WS_PORT, ws_tcp_client_connected);
-    LWIP_ASSERT("ws_init: tcp_connect failed", err == ERR_OK);
-    printf("some info: %i\n", err);
-
+    logDebug("WS connected\n");  
+    ws_is_connected = true;
+    tcp_recv(ws_pcb_c, ws_recv);
 
     static char response[512];
     snprintf(response, sizeof(response), 
@@ -314,14 +311,35 @@ void ws_task(void *pvParameters)
                 "Sec-WebSocket-Version: 13\r\n"
                 "Sec-WebSocket-Key: a0YBiKi7u7cdhbz8xu5FWQ==\r\n\r\n");
 
-    err = tcp_write(pcb, response, strlen(response), 0);
+    err = tcp_write(ws_pcb_c, response, strlen(response), 0);
     printf("some info after write: %i\n", err);
 
-    tcp_recv(pcb, ws_recv);
-#endif
+    return ERR_OK;
+}
+
+void ws_task(void *pvParameters)
+{
+    err_t err;
+
+    ip_addr_t remote_addr;
+    IP4_ADDR(&remote_addr, 192, 168, 1, 106);
 
     while(1) {
-        vTaskDelay(1000);
-        printf("loop try to connect\n");
+        printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
+        if (!ws_is_connected) {
+            ws_close();
+        }
+        if (!ws_pcb_c) {
+            printf("try to conect ws\n");
+            logDebug("WS try to connect\n");
+            ws_pcb_c = tcp_new();
+            LWIP_ASSERT("httpd_init: tcp_new failed", ws_pcb_c != NULL);
+
+            #ifdef WS_PORT
+            err = tcp_connect(ws_pcb_c, &remote_addr, WS_PORT, ws_tcp_client_connected);
+            #endif
+            LWIP_ASSERT("ws_init: tcp_connect failed", err == ERR_OK);
+        }
+        vTaskDelay(300);
     }
 }
