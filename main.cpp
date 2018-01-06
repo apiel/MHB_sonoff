@@ -4,6 +4,8 @@
 
 #include <string.h>
 
+#include <ssid_config.h>
+
 #include "config.h"
 #include "wifi.h"
 #include "button.h"
@@ -34,7 +36,8 @@ extern "C" void user_init(void)
 
     EEPROM.begin(EEPROM_SIZE);
 
-    wifi_init();
+    // wifi_init(); // default
+    wifi_new_connection(WIFI_SSID, WIFI_PASS); // dev mode
 
     Button button = Button(wifi_toggle);
     button.init();

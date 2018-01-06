@@ -291,7 +291,11 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     // err_t err;
     if (p == NULL) {
         ws_close();
+    } else {
+        char *data = (char *) p->payload;
+        printf("ws_c data: %s\n", data);        
     }
+    pbuf_free(p);
     return ERR_OK;
 }
 
@@ -321,8 +325,11 @@ void ws_task(void *pvParameters)
 {
     err_t err;
 
+vTaskDelay(1000);
+
     ip_addr_t remote_addr;
-    IP4_ADDR(&remote_addr, 192, 168, 1, 106);
+    // IP4_ADDR(&remote_addr, 192, 168, 1, 106);
+    IP4_ADDR(&remote_addr, 192, 168, 1, 32);
 
     while(1) {
         printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
