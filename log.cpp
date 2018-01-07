@@ -1,7 +1,7 @@
 #include <espressif/esp_common.h>
 #include <stdarg.h>
 
-#include "httpd.h"
+#include "web_server.h"
 #include "config.h"
 
 void log(const char * msg, ...)
@@ -11,7 +11,7 @@ void log(const char * msg, ...)
     va_start(args, msg);
     sprintf(logMsg, msg, args);
     printf(logMsg);
-    ws_send(logMsg);
+    web_server_ws_send(logMsg);
 }
 
 void iflog(bool condition, const char * msg, ...)

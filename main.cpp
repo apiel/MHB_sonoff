@@ -9,9 +9,9 @@
 #include "config.h"
 #include "wifi.h"
 #include "button.h"
-#include "httpd.h"
+#include "web_server.h"
+#include "web_client.h"
 #include "EEPROM.h"
-#include "mqtt.h"
 
 class task_rf_t: public esp_open_rtos::thread::task_t
 {
@@ -46,15 +46,12 @@ extern "C" void user_init(void)
 
     // need to convert to cpp
 
-    #ifdef WS_PORT
-    xTaskCreate(&ws_task, "ws_server", 1024, NULL, 3, NULL);
+    // we should create a onwificonnectevent
+    #ifdef WS_CLIENT_PORT
+    xTaskCreate(&web_client_task, "web_client_task", 1024, NULL, 3, NULL);
     #endif      
 
-    #ifdef MQTT_PORT
-    xTaskCreate(&mqtt_task, "mqtt_task", 1024, NULL, 4, NULL);  
-    #endif
-
     #ifdef HTTPD_PORT
-    xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
+    xTaskCreate(&web_server_task, "web_server_task", 1024, NULL, 2, NULL);
     #endif      
 }

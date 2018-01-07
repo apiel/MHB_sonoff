@@ -15,7 +15,7 @@
 #define EEPROM_WIFI_MODE 0 // byte containing the mode of the WIFI store in EEPROM: STATION_MODE or SOFTAP_MODE
 
 #define HTTPD_PORT 80 // cannot use the same port as wget
-#define WS_PORT 8080
+#define WS_CLIENT_PORT 8080
 
 #define LOG_ERROR
 #define LOG_INFO

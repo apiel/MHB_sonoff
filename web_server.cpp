@@ -10,13 +10,11 @@
 #include "wifi.h"
 #include "utils.h"
 #include "config.h"
-#include "httpd.h"
+#include "web.h"
 #include "log.h"
 
 #define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-
-#define OPCODE_CLOSE 0x8
 
 struct tcp_pcb * ws_pcb = NULL;
 
@@ -45,7 +43,7 @@ char * ws_encode_response(char * data)
   return buf;
 }
 
-void ws_send(char *msg)
+void web_server_ws_send(char *msg)
 {
     if (ws_pcb) {
         msg = ws_encode_response(msg);
@@ -246,7 +244,7 @@ static err_t http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 }
 
 // maybe we dont need to create a task
-void httpd_task(void *pvParameters)
+void web_server_task(void *pvParameters)
 {
 #ifdef HTTPD_PORT
     struct tcp_pcb *pcb;
@@ -267,86 +265,5 @@ void httpd_task(void *pvParameters)
 
     while(1) {
         vTaskDelay(1000);
-    }
-}
-
-struct tcp_pcb * ws_pcb_c = NULL;
-bool ws_is_connected = false;
-
-static err_t ws_close() 
-{
-    err_t err = ERR_OK;
-    if (ws_pcb_c) {
-        logInfo("WS close\n"); 
-        tcp_recv(ws_pcb_c, NULL);
-        err = tcp_close(ws_pcb_c);
-        ws_pcb_c = NULL; 
-    }
-    ws_is_connected = false;
-    return err;
-}
-
-static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
-{
-    // err_t err;
-    if (p == NULL) {
-        ws_close();
-    } else {
-        char *data = (char *) p->payload;
-        printf("ws_c data: %s\n", data);        
-    }
-    pbuf_free(p);
-    return ERR_OK;
-}
-
-/** TCP connected callback (active connection), send data now */
-static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
-{
-    logDebug("WS connected\n");  
-    ws_is_connected = true;
-    tcp_recv(ws_pcb_c, ws_recv);
-
-    static char response[512];
-    snprintf(response, sizeof(response), 
-                "GET / HTTP/1.1\r\n"
-                "Host: 127.0.0.1:8080\r\n"
-                "Connection: Upgrade\r\n"
-                "Upgrade: websocket\r\n"
-                "Sec-WebSocket-Version: 13\r\n"
-                "Sec-WebSocket-Key: a0YBiKi7u7cdhbz8xu5FWQ==\r\n\r\n");
-
-    err = tcp_write(ws_pcb_c, response, strlen(response), 0);
-    printf("some info after write: %i\n", err);
-
-    return ERR_OK;
-}
-
-void ws_task(void *pvParameters)
-{
-    err_t err;
-
-vTaskDelay(1000);
-
-    ip_addr_t remote_addr;
-    // IP4_ADDR(&remote_addr, 192, 168, 1, 106);
-    IP4_ADDR(&remote_addr, 192, 168, 1, 32);
-
-    while(1) {
-        printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
-        if (!ws_is_connected) {
-            ws_close();
-        }
-        if (!ws_pcb_c) {
-            printf("try to conect ws\n");
-            logDebug("WS try to connect\n");
-            ws_pcb_c = tcp_new();
-            LWIP_ASSERT("httpd_init: tcp_new failed", ws_pcb_c != NULL);
-
-            #ifdef WS_PORT
-            err = tcp_connect(ws_pcb_c, &remote_addr, WS_PORT, ws_tcp_client_connected);
-            #endif
-            LWIP_ASSERT("ws_init: tcp_connect failed", err == ERR_OK);
-        }
-        vTaskDelay(300);
     }
 }
