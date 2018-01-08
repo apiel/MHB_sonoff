@@ -21,7 +21,7 @@ static err_t ws_close()
     return err;
 }
 
-char * ws_read2(u8_t * data, struct tcp_pcb *pcb)
+char * ws_read2(u8_t * data)
 {
     struct wsMessage msg;
     msg.data = data;
@@ -41,7 +41,7 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     } else {
         u8_t *data = (u8_t *) p->payload;
         printf("ws_c data: %s\n", data);    
-        ws_read2(data, pcb);   
+        ws_read2(data);   
     }
     pbuf_free(p);
     return ERR_OK;

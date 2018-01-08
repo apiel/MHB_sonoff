@@ -19,7 +19,7 @@
 
 #define LOG_ERROR
 #define LOG_INFO
-// #define LOG_DEBUG
+#define LOG_DEBUG
 
 #define MQTT_USER NULL
 #define MQTT_PASS NULL

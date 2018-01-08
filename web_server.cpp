@@ -160,36 +160,25 @@ char * ws_parse(char *data)
 char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
 {
     char * response = NULL;
-    uint8_t opcode = (*data) & 0x0F;
-    if (opcode == OPCODE_CLOSE) {
+    struct wsMessage msg;
+    msg.data = data;
+    web_ws_read(&msg);
+
+    if (msg.opcode == OPCODE_CLOSE) {
         hs->is_websocket = 0;
         ws_pcb = NULL;
         http_close(pcb);
     } else {
-        data += 1;
-        uint8_t isMasked = (*data) & (1<<7);
-        uint32_t len = (*data) & 0x7F;
-        data += 1;
-        logDebug("opcode %d len %d ismasked %d\n", opcode, len, isMasked);
-
-        if (len == 126) {
-            memcpy(&len, data, sizeof(uint16_t));
-            data += sizeof(uint16_t);
-        } else if (len == 127) {
-            memcpy(&len, data, sizeof(uint64_t));
-            data += sizeof(uint64_t);
-        }
-
-        if (isMasked) {
+        if (msg.isMasked) {
             uint32_t maskingKey;
-            memcpy(&maskingKey, data, sizeof(uint32_t));
-            data += sizeof(uint32_t);
-            for (uint32_t i = 0; i < len; i++) {
+            memcpy(&maskingKey, msg.data, sizeof(uint32_t));
+            msg.data += sizeof(uint32_t);
+            for (uint32_t i = 0; i < msg.len; i++) {
                 int j = i % 4;
-                data[i] = data[i] ^ ((uint8_t *)&maskingKey)[j];
+                msg.data[i] = msg.data[i] ^ ((uint8_t *)&maskingKey)[j];
             }
-            data[len] = '\0';
-            response = ws_parse((char *)data);
+            msg.data[msg.len] = '\0';
+            response = ws_parse((char *)msg.data);
         } else {
             logInfo("ws we should close connexion... masked...\n");
         }
@@ -202,7 +191,10 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
     struct http_state *hs = (struct http_state *)arg;
     u8_t *data = (u8_t *) p->payload;
     char * response = NULL;
-    if (hs->is_websocket) {
+    if (p == NULL) {
+        http_close(pcb);
+    }
+    else if (hs->is_websocket) {
         ws_read((u8_t *)data, pcb, hs);
     } else {
         response = parse_request((char *)data, pcb, hs);
