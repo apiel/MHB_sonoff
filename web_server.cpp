@@ -123,11 +123,9 @@ char * parse_request(char *data, struct tcp_pcb *pcb, struct http_state *hs)
     return response;
 }
 
-void http_close(struct tcp_pcb *pcb)
+static err_t http_close(struct tcp_pcb *pcb) 
 {
-    logInfo("Close connection.\n");
-    tcp_recv(pcb, NULL);
-    tcp_close(pcb);
+    return web_close(pcb);
 }
 
 char * ws_set_wifi(char * data)

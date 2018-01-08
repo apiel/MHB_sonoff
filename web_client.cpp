@@ -15,56 +15,22 @@ bool ws_is_connected = false;
 
 static err_t ws_close() 
 {
-    err_t err = ERR_OK;
-    if (ws_pcb_c) {
-        logInfo("WS close\n"); 
-        tcp_recv(ws_pcb_c, NULL);
-        err = tcp_close(ws_pcb_c);
-        ws_pcb_c = NULL; 
-    }
+    err_t err = web_close(ws_pcb_c);
+    ws_pcb_c = NULL;
     ws_is_connected = false;
     return err;
 }
 
 char * ws_read2(u8_t * data, struct tcp_pcb *pcb)
 {
-    printf("ws_read2\n");
-    char * response = NULL;
-    uint8_t opcode = (*data) & 0x0F;
-    if (opcode == OPCODE_CLOSE) { // WSop_text = 0x01,         ///< %x1 denotes a text frame
-        printf("ws close opcode\n");
-    } else {
-        data += 1;
-        uint8_t isMasked = (*data) & (1<<7);
-        uint32_t len = (*data) & 0x7F;
-        data += 1;
-        logDebug("opcode %d len %d ismasked %d\n", opcode, len, isMasked);
+    struct wsMessage msg;
+    msg.data = data;
+    web_ws_read(&msg);
 
-        if (len == 126) {
-            memcpy(&len, data, sizeof(uint16_t));
-            data += sizeof(uint16_t);
-        } else if (len == 127) {
-            memcpy(&len, data, sizeof(uint64_t));
-            data += sizeof(uint64_t);
-        }
-
-        printf("ws_read2 a: %s\n", data);
-        if (isMasked) {
-            uint32_t maskingKey;
-            memcpy(&maskingKey, data, sizeof(uint32_t));
-            data += sizeof(uint32_t);
-            for (uint32_t i = 0; i < len; i++) {
-                int j = i % 4;
-                data[i] = data[i] ^ ((uint8_t *)&maskingKey)[j];
-            }
-            data[len] = '\0';
-            printf("ws_read2 b: %s\n", data);
-            // response = ws_parse((char *)data);
-        } else {
-            logInfo("ws we should close connexion... masked...\n");
-        }
-    }
-    return response;
+    printf("ws_read2 a: %s\n", msg.data);
+    printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
+    
+    return NULL;
 }
 
 static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
@@ -108,7 +74,7 @@ void web_client_task(void *pvParameters)
     err_t err;
 
     ip_addr_t remote_addr;
-    IP4_ADDR(&remote_addr, 192, 168, 1, 106);
+    IP4_ADDR(&remote_addr, 192, 168, 1, 109);
 
     while(1) {
         printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
