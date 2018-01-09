@@ -123,8 +123,12 @@ char * parse_request(char *data, struct tcp_pcb *pcb, struct http_state *hs)
     return response;
 }
 
-static err_t http_close(struct tcp_pcb *pcb) 
+static err_t http_close(struct tcp_pcb *pcb, struct http_state *hs) 
 {
+    if (hs->is_websocket) {
+        hs->is_websocket = 0;
+        ws_pcb = NULL;
+    }
     return web_close(pcb);
 }
 
@@ -165,9 +169,7 @@ char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
     web_ws_read(&msg);
 
     if (msg.opcode == OPCODE_CLOSE) {
-        hs->is_websocket = 0;
-        ws_pcb = NULL;
-        http_close(pcb);
+        http_close(pcb, hs);
     } else {
         if (msg.isMasked) {
             uint32_t maskingKey;
@@ -192,7 +194,7 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
     u8_t *data = (u8_t *) p->payload;
     char * response = NULL;
     if (p == NULL) {
-        http_close(pcb);
+        http_close(pcb, hs);
     }
     else if (hs->is_websocket) {
         ws_read((u8_t *)data, pcb, hs);
@@ -211,7 +213,7 @@ static err_t http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 {
     struct http_state *hs = (struct http_state *)arg;
     if (!hs->is_websocket) {
-        http_close(pcb);   
+        http_close(pcb, hs);   
     }
     return ERR_OK;
 }
