@@ -12,6 +12,7 @@
 #include "web_server.h"
 #include "web_client.h"
 #include "EEPROM.h"
+#include "version.h"
 
 class task_rf_t: public esp_open_rtos::thread::task_t
 {
@@ -32,7 +33,7 @@ extern "C" void user_init(void)
 {
     uart_set_baud(0, 115200);
     printf("SDK version: %s\n", sdk_system_get_sdk_version());
-    printf("MyHomeBridge sonoff version: %s\n", VERSION);
+    printf("MyHomeBridge sonoff compile version: %s\n", VERSION);
 
     EEPROM.begin(EEPROM_SIZE);
 

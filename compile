@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+console.log('Start building');
+
+const fs = require('fs');
+const version = parseInt(fs.readFileSync('./version').toString()) + 1;
+console.log('Version: ', version);
+
+fs.writeFileSync('./version', version);
+fs.writeFileSync('./version.h', 
+`\n\
+#ifndef __VERSION_H__\n\
+#define __VERSION_H__\n\
+\n\
+#define VERSION "0.${version}"\n\
+\n\
+#endif\n\
+\n`);
+
+const process = require('process');
+const args = process.argv.slice(2).join(' ');
+
+const exec = require('child_process').exec;
+function puts(error, stdout, stderr) { console.log('#', stdout, stderr); }
+exec(`make ${args}`, puts);

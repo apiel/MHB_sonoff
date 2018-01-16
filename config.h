@@ -3,7 +3,6 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
-#define VERSION "0.0.0" 
 
 #define MHB_USER "alex"
 #define MHB_ZONE "garage"

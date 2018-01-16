@@ -21,15 +21,15 @@ static err_t ws_close()
     return err;
 }
 
-char * ws_read2(u8_t * data)
+char * ws_read(u8_t * data)
 {
     struct wsMessage msg;
     msg.data = data;
     web_ws_read(&msg);
 
-    printf("ws_read2 a: %s\n", msg.data);
+    printf("ws_read a: %s\n", msg.data);
     printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
-    
+
     return NULL;
 }
 
@@ -41,7 +41,7 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     } else {
         u8_t *data = (u8_t *) p->payload;
         printf("ws_c data: %s\n", data);    
-        ws_read2(data);   
+        ws_read(data);   
     }
     pbuf_free(p);
     return ERR_OK;

@@ -12,6 +12,7 @@
 #include "config.h"
 #include "web.h"
 #include "log.h"
+#include "version.h"
 
 #define WS_KEY_IDENTIFIER "Sec-WebSocket-Key: "
 #define WS_GUID "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
@@ -101,11 +102,12 @@ char * httpd_get_default_response()
         s.send(`wifi set ${ssid} ${password}`);\r\n\
     }\r\n\
     </script>\r\n\
+    <p>Compile version: %s</p>\r\n\
     <label>Wifi SSID</label><br>\r\n\
     <input id='ssid' placeholder='SSID' value='%s'><br><br>\r\n\
     <label>Wifi password</label><br>\r\n\
     <input id='password' placeholder='password' value='%s'><br><br>\r\n\
-    <button onclick='wifi()'>Save</button><br>\r\n", config.ssid, config.password);
+    <button onclick='wifi()'>Save</button><br>\r\n", VERSION, config.ssid, config.password);
     return buf;
 }
 
