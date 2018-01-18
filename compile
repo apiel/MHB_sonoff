@@ -4,7 +4,7 @@ console.log('Start building');
 
 const fs = require('fs');
 const version = parseInt(fs.readFileSync('./version').toString()) + 1;
-console.log('Version: ', version);
+console.log('Version:', version);
 
 fs.writeFileSync('./version', version);
 fs.writeFileSync('./version.h', 
@@ -21,5 +21,22 @@ const process = require('process');
 const args = process.argv.slice(2).join(' ');
 
 const exec = require('child_process').exec;
-function puts(error, stdout, stderr) { console.log('#', stdout, stderr); }
-exec(`make ${args}`, puts);
+
+const FgRed = '\x1b[31m';
+const FgGreen = '\x1b[32m';
+const FgWhite = '\x1b[37m';
+const BgRed = '\x1b[41m';
+const Reset = '\x1b[0m';
+const FgYellow = '\x1b[33m';
+
+const pipe = exec(`make ${args}`);
+pipe.stdout.on('data', data => {
+    const isUploading = data.trim().match(/[0-9]+ \([0-9]+ \%\)/i);
+    if (isUploading) {
+        console.log('\033[F\033[K', FgYellow, data.trim());
+    } else {
+        console.log(FgGreen, data.trim());
+    }
+});
+pipe.stderr.on('data', data => console.log(FgRed, data.trim()));
+pipe.on('close', () => console.log(Reset));

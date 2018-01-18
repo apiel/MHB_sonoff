@@ -1,6 +1,7 @@
 #include "task.hpp"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
+#include "ota-tftp.h"
 
 #include <string.h>
 
@@ -45,12 +46,16 @@ extern "C" void user_init(void)
 
     task_rf.task_create("task_rf");
 
+    #ifdef TFTP_PORT
+    ota_tftp_init_server(TFTP_PORT);
+    #endif
+
     // need to convert to cpp
 
     // we should create a onwificonnectevent
     #ifdef WS_CLIENT_PORT
     xTaskCreate(&web_client_task, "web_client_task", 1024, NULL, 3, NULL);
-    #endif      
+    #endif 
 
     #ifdef HTTPD_PORT
     xTaskCreate(&web_server_task, "web_server_task", 1024, NULL, 2, NULL);
