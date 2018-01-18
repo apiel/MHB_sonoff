@@ -18,7 +18,7 @@ fs.writeFileSync('./version.h',
 \n`);
 
 const process = require('process');
-const args = process.argv.slice(2).join(' ');
+let args = process.argv.slice(2).join(' ');
 
 const exec = require('child_process').exec;
 
@@ -28,6 +28,13 @@ const FgWhite = '\x1b[37m';
 const BgRed = '\x1b[41m';
 const Reset = '\x1b[0m';
 const FgYellow = '\x1b[33m';
+
+let needOtaUpload = false;
+if (args.indexOf('upload') === 0) {
+    needOtaUpload = args.split(' ')[1];
+    !needOtaUpload && console.log(BgRed, 'For upload, provide IP of device', Reset);
+    args = '';
+}
 
 const pipe = exec(`make ${args}`);
 pipe.stdout.on('data', data => {
@@ -39,4 +46,8 @@ pipe.stdout.on('data', data => {
     }
 });
 pipe.stderr.on('data', data => console.log(FgRed, data.trim()));
-pipe.on('close', () => console.log(Reset));
+pipe.on('close', () => {
+    console.log(Reset);
+    const uploadCmd = `node node-tftp/bin/ntftp.js put firmware/rf.bin tftp://${needOtaUpload}/firmware.bin`;
+    needOtaUpload && console.log('lets upload', uploadCmd);
+});
