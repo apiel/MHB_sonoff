@@ -22,28 +22,23 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-#define PIN_BUTTON 14 // D5
-#define PIN_LED 2
+#define PIN_BUTTON 0 // D3
+#define PIN_LED 13
+#define PIN_RF433_RECEIVER 14 // D5
+#define PIN_RELAY 12
+#define RELAY_ON 1
+#define RELAY_OFF 0
 
 // https://community.blynk.cc/uploads/default/original/2X/4/4f9e2245bf4f6698e10530b9060595c893bf49a2.png
 // D0 > GPIO 16
 // D1 > GPIO 5
-// D2 > GPIO 4 
+// D2 > GPIO 4 // WEMOS MINI LED
 // D3 > GPIO 0 // when emitter connected bug on boot
 // D4 > GPIO 2 // when emitter connected bug on boot
 // D5 > GPIO 14
 // D6 > GPIO 12
 // D7 > GPIO 13
 // D8 > GPIO 15
-
-// #define PIN_RF433_EMITTER 4
-#define PIN_RF433_RECEIVER 12
-// #define PIN_DHT 5
-// #define PIN_PIR 4
-// #define PHOTORESISTOR
-
-// #define DHT_TYPE DHT_TYPE_DHT22
-// #define DHT_TYPE DHT_TYPE_DHT11
 
 // #define UPNP
 
