@@ -26,7 +26,7 @@ var renderStatusBar = function (stats){
 			this.format.time (stats.remainingTime) + " [" +
 			this.format.progressBar (stats.percentage) + "] " +
 			this.format.percentage (stats.percentage));
-	process.stdout.cursorTo (0);
+	// process.stdout.cursorTo (0);
 };
 
 var formatFilename = function (filename){

@@ -58,7 +58,7 @@ pipe.stderr.on('data', data => {
 });
 pipe.on('close', () => {
     if (!asError && needOtaUpload) {
-        const pipe2 = exec(`node node-tftp/bin/ntftp.js put firmware/rf.bin tftp://${needOtaUpload}/firmware.bin`);
+        const pipe2 = exec(`bash -c "node node-tftp/bin/ntftp.js put firmware/rf.bin tftp://${needOtaUpload}/firmware.bin"`);
         pipe2.stdout.on('data', data => console.log('\033[F\033[K', FgCyan, data.trim()));
         pipe2.stderr.on('data', data => console.log(FgRed, data.trim()));
         pipe2.on('close', () => exit());
