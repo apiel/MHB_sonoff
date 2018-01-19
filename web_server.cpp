@@ -109,35 +109,6 @@ static err_t http_close(struct tcp_pcb *pcb, struct http_state *hs)
     return web_close(pcb);
 }
 
-char * ws_set_wifi(char * data)
-{
-    static char response[4];
-
-    data += 9;
-
-    char ssid[32], password[64];
-    char * next = str_extract(data, 0, ' ', ssid);
-    str_extract(next, ' ', '\0', password);
-    logInfo("# Set wifi ssid: %s password: %s\n\n", ssid, password);
-
-    wifi_new_connection(ssid, password);
-
-    snprintf(response, sizeof(response), "OK\r\n");
-    return response;
-}
-
-char * ws_parse(char *data)
-{
-    char * response = NULL;
-    if (strncmp(data, "wifi set ", 9) == 0) {
-        response = ws_set_wifi(data);
-    }
-    if (response) {
-        response = web_ws_encode_msg(response);
-    }
-    return response;
-}
-
 char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
 {
     char * response = NULL;
@@ -157,7 +128,7 @@ char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
                 msg.data[i] = msg.data[i] ^ ((uint8_t *)&maskingKey)[j];
             }
             msg.data[msg.len] = '\0';
-            response = ws_parse((char *)msg.data);
+            response = web_ws_parse((char *)msg.data);
         } else {
             logInfo("# ws we should close connexion... masked...\n");
         }
@@ -174,7 +145,7 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
         http_close(pcb, hs);
     }
     else if (hs->is_websocket) {
-        ws_read((u8_t *)data, pcb, hs);
+        response = ws_read((u8_t *)data, pcb, hs);
     } else {
         response = parse_request((char *)data, pcb, hs);
     }

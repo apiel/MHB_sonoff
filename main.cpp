@@ -15,6 +15,7 @@
 #include "EEPROM.h"
 #include "version.h"
 #include "rf.h"
+#include "relay.h"
 
 task_rf_t task_rf;
 
@@ -25,6 +26,8 @@ extern "C" void user_init(void)
     printf("MyHomeBridge sonoff compile version: %s\n", VERSION);
 
     EEPROM.begin(EEPROM_SIZE);
+
+    relay_init();
 
     // wifi_init(); // default
     wifi_new_connection(WIFI_SSID, WIFI_PASS); // dev mode
