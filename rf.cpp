@@ -3,6 +3,7 @@
 #include "RCSwitch.h"
 #include "config.h"
 #include "log.h"
+#include "cmd.h"
 
 void task_rf_t::task()
 {
@@ -13,11 +14,14 @@ void task_rf_t::task()
 
     while(true) {
         if (mySwitch.available()) {
-            printf("Rf received %lu %s %d %d\n", 
+            char cmd[1024];
+            sprintf(cmd, ". rf-recv %lu %s %d %d\n", 
                 mySwitch.getReceivedValue(),
                 mySwitch.getReceivedCodeWord(),
                 mySwitch.getReceivedBitlength(),
                 mySwitch.getReceivedProtocol());
+
+            cmd_send(cmd);
 
             mySwitch.resetAvailable();
         }  

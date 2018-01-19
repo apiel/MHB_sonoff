@@ -23,34 +23,9 @@ struct http_state {
   u8_t is_websocket;
 };
 
-char * ws_encode_response(char * data)
-{
-  static char buf[512];
-  int len = strlen(data);
-
-  int offset = 2;
-  buf[0] = 0x81;
-  if (len > 125) {
-    offset = 4;
-    buf[1] = 126;
-    buf[2] = len >> 8;
-    buf[3] = len;
-  } else {
-    buf[1] = len;
-  }
-
-  memcpy(&buf[offset], data, len);
-
-  return buf;
-}
-
 void web_server_ws_send(char *msg)
 {
-    if (ws_pcb) {
-        msg = ws_encode_response(msg);
-        err_t err = tcp_write(ws_pcb, msg, strlen(msg), 0);
-        LWIP_ASSERT("Something went wrong while tcp write from queue", err == ERR_OK);
-    }    
+    web_ws_send(ws_pcb, msg);   
 }
 
 char * httpd_ws_action(char * data)
@@ -158,7 +133,7 @@ char * ws_parse(char *data)
         response = ws_set_wifi(data);
     }
     if (response) {
-        response = ws_encode_response(response);
+        response = web_ws_encode_msg(response);
     }
     return response;
 }

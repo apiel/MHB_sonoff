@@ -47,6 +47,10 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     return ERR_OK;
 }
 
+void web_client_ws_send(char *msg) {
+    web_ws_send(ws_pcb_c, msg); 
+}
+
 /** TCP connected callback (active connection), send data now */
 static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
@@ -64,9 +68,8 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
                 "Sec-WebSocket-Key: a0YBiKi7u7cdhbz8xu5FWQ==\r\n\r\n");
 
     err = tcp_write(ws_pcb_c, response, strlen(response), 0);
-    printf("some info after write: %i\n", err);
 
-    return ERR_OK;
+    return err;
 }
 
 void web_client_task(void *pvParameters)
