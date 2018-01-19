@@ -11,7 +11,7 @@ int web_close(struct tcp_pcb *pcb)
 {
     int err = ERR_OK;
     if (pcb) {
-        logInfo("Web close\n"); 
+        logInfo("# Web close\n"); 
         tcp_recv(pcb, NULL);
         err = tcp_close(pcb);
     }
@@ -25,7 +25,7 @@ void web_ws_read(struct wsMessage * msg)
     msg->isMasked = (*msg->data) & (1<<7);
     msg->len = (*msg->data) & 0x7F;
     msg->data += 1;
-    logDebug("opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
+    logDebug("* opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
 
     if (msg->len == 126) {
         memcpy(&msg->len, msg->data, sizeof(uint16_t));

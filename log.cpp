@@ -10,8 +10,9 @@ void log(const char * msg, ...)
     va_list args;
     va_start(args, msg);
     sprintf(logMsg, msg, args);
+    // sprintf(logMsg, "# %s", logMsg);
     printf(logMsg);
-    web_server_ws_send(logMsg);
+    // web_server_ws_send(logMsg);
 }
 
 void iflog(bool condition, const char * msg, ...)

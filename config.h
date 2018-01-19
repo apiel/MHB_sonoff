@@ -22,12 +22,6 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-#define MQTT_USER NULL
-#define MQTT_PASS NULL
-// #define MQTT_HOST ("vps.alexparadise.com")
-#define MQTT_HOST ("192.168.1.106")
-// #define MQTT_PORT 1883
-
 #define PIN_BUTTON 14 // D5
 #define PIN_LED 2
 
@@ -43,7 +37,7 @@
 // D8 > GPIO 15
 
 // #define PIN_RF433_EMITTER 4
-// #define PIN_RF433_RECEIVER 12
+#define PIN_RF433_RECEIVER 12
 // #define PIN_DHT 5
 // #define PIN_PIR 4
 // #define PHOTORESISTOR

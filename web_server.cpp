@@ -58,7 +58,7 @@ char * httpd_ws_action(char * data)
     char * key = strstr(data, WS_KEY_IDENTIFIER) + strlen(WS_KEY_IDENTIFIER);
     key[24] = '\0';
     strcat(key, WS_GUID);
-    logDebug("Resulting key: %s\n", key);
+    logDebug("* Resulting key: %s\n", key);
 
     /* Get SHA1 */
     unsigned char sha1sum[20];
@@ -72,7 +72,7 @@ char * httpd_ws_action(char * data)
     mbedtls_base64_encode(NULL, 0, &olen, sha1sum, 20); //get length
     mbedtls_base64_encode(retval_ptr, 30, &olen, sha1sum, 20);
 
-    logInfo("Send websocket response with key: %s\n", retval_ptr);
+    logInfo("# Send websocket response with key: %s\n", retval_ptr);
 
     static char response[512];
     snprintf(response, sizeof(response), "HTTP/1.1 101 Switching Protocols\r\n"
@@ -119,7 +119,7 @@ char * parse_request(char *data, struct tcp_pcb *pcb, struct http_state *hs)
         hs->is_websocket = 1;
         ws_pcb = pcb; 
     } else {
-        logInfo("Httpd: send default response\n");
+        logInfo("# Httpd: send default response\n");
         response = httpd_get_default_response();            
     }
     return response;
@@ -143,7 +143,7 @@ char * ws_set_wifi(char * data)
     char ssid[32], password[64];
     char * next = str_extract(data, 0, ' ', ssid);
     str_extract(next, ' ', '\0', password);
-    logInfo("Set wifi ssid: %s password: %s\n\n", ssid, password);
+    logInfo("# Set wifi ssid: %s password: %s\n\n", ssid, password);
 
     wifi_new_connection(ssid, password);
 
@@ -184,7 +184,7 @@ char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
             msg.data[msg.len] = '\0';
             response = ws_parse((char *)msg.data);
         } else {
-            logInfo("ws we should close connexion... masked...\n");
+            logInfo("# ws we should close connexion... masked...\n");
         }
     }
     return response;
@@ -223,7 +223,7 @@ static err_t http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 static err_t http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 {
     struct tcp_pcb_listen *lpcb = (struct tcp_pcb_listen*)arg;
-    logDebug("http_accept %p / %p\n", (void*)pcb, arg); 
+    logDebug("* http_accept %p / %p\n", (void*)pcb, arg); 
 
     /* Decrease the listen backlog counter */
     tcp_accepted(lpcb);

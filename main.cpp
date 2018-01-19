@@ -14,19 +14,7 @@
 #include "web_client.h"
 #include "EEPROM.h"
 #include "version.h"
-
-class task_rf_t: public esp_open_rtos::thread::task_t
-{
-private:
-    void task()
-    {
-        printf("start rf task\n");
-
-        while(true) {  
-            vTaskDelay(10000);
-        }      
-    }    
-};
+#include "rf.h"
 
 task_rf_t task_rf;
 

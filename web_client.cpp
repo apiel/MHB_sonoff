@@ -27,8 +27,8 @@ char * ws_read(u8_t * data)
     msg.data = data;
     web_ws_read(&msg);
 
-    printf("ws_read a: %s\n", msg.data);
-    printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
+    // printf("ws_read a: %s\n", msg.data);
+    // printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
 
     return NULL;
 }
@@ -50,7 +50,7 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 /** TCP connected callback (active connection), send data now */
 static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
-    logDebug("WS connected\n");  
+    logDebug("* WS connected\n");  
     ws_is_connected = true;
     tcp_recv(ws_pcb_c, ws_recv);
 
@@ -77,13 +77,12 @@ void web_client_task(void *pvParameters)
     IP4_ADDR(&remote_addr, 192, 168, 1, 109);
 
     while(1) {
-        printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
+        // printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
         if (!ws_is_connected) {
             ws_close();
         }
         if (!ws_pcb_c) {
-            printf("try to conect ws\n");
-            logDebug("WS try to connect\n");
+            logDebug("* WS try to connect\n");
             ws_pcb_c = tcp_new();
             LWIP_ASSERT("httpd_init: tcp_new failed", ws_pcb_c != NULL);
 
