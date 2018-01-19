@@ -27,7 +27,9 @@ extern "C" void user_init(void)
 
     EEPROM.begin(EEPROM_SIZE);
 
+    #ifdef PIN_RELAY
     relay_init();
+    #endif
 
     // wifi_init(); // default
     wifi_new_connection(WIFI_SSID, WIFI_PASS); // dev mode
