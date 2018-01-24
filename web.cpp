@@ -9,6 +9,8 @@
 #include "wifi.h"
 #include "utils.h"
 #include "relay.h"
+#include "web_server.h"
+#include "web_client.h"
 
 int web_close(struct tcp_pcb *pcb)
 {
@@ -69,10 +71,8 @@ void web_ws_send(struct tcp_pcb *pcb, char *msg)
     }    
 }
 
-char * web_ws_set_wifi(char * data)
+void web_ws_set_wifi(char * data)
 {
-    static char response[4];
-
     data += 9;
 
     char ssid[32], password[64];
@@ -81,40 +81,41 @@ char * web_ws_set_wifi(char * data)
     logInfo("# Set wifi ssid: %s password: %s\n\n", ssid, password);
 
     wifi_new_connection(ssid, password);
-
-    snprintf(response, sizeof(response), "OK\r\n");
-    return response;
+    web_send_all((char *)". wifi configured");
 }
 
-char * web_ws_relay_get_status()
+void web_ws_relay_send_status()
 {
     static char response[11];
     int status = relay_status();
     snprintf(response, sizeof(response), ". relay %d\n", status);
-    return response;
+    web_send_all(response);
 }
 
-char * web_ws_relay_action(char * data)
+void web_ws_relay_action(char * data)
 {
     data += 5;
     if (strncmp(data, " on", 3) == 0) {
         relay_on();
     } else if (strncmp(data, " off", 4) == 0) {
         relay_off();
+    } else {
+        web_ws_relay_send_status();
     }
-    return web_ws_relay_get_status();
 }
 
-char * web_ws_parse(char *data)
+void web_ws_parse(char *data)
 {
-    char * response = NULL;
     if (strncmp(data, "wifi set ", 9) == 0) {
-        response = web_ws_set_wifi(data);
+        web_ws_set_wifi(data);
     } else if (strncmp(data, "relay", 5) == 0) {
-        response = web_ws_relay_action(data);
+        web_ws_relay_action(data);
     }
-    if (response) {
-        response = web_ws_encode_msg(response);
-    }
-    return response;
+}
+
+void web_send_all(char * msg)
+{
+    printf(msg);
+    web_client_ws_send(msg);
+    web_server_ws_send(msg);
 }

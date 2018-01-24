@@ -109,9 +109,8 @@ static err_t http_close(struct tcp_pcb *pcb, struct http_state *hs)
     return web_close(pcb);
 }
 
-char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
+void ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
 {
-    char * response = NULL;
     struct wsMessage msg;
     msg.data = data;
     web_ws_read(&msg);
@@ -128,12 +127,11 @@ char * ws_read(u8_t * data, struct tcp_pcb *pcb, struct http_state *hs)
                 msg.data[i] = msg.data[i] ^ ((uint8_t *)&maskingKey)[j];
             }
             msg.data[msg.len] = '\0';
-            response = web_ws_parse((char *)msg.data);
+            web_ws_parse((char *)msg.data);
         } else {
             logInfo("# ws we should close connexion... masked...\n");
         }
     }
-    return response;
 }
 
 static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
@@ -145,7 +143,7 @@ static err_t http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err
         http_close(pcb, hs);
     }
     else if (hs->is_websocket) {
-        response = ws_read((u8_t *)data, pcb, hs);
+        ws_read((u8_t *)data, pcb, hs);
     } else {
         response = parse_request((char *)data, pcb, hs);
     }

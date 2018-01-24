@@ -3,7 +3,7 @@
 #include "RCSwitch.h"
 #include "config.h"
 #include "log.h"
-#include "cmd.h"
+#include "web.h"
 
 void task_rf_t::task()
 {
@@ -21,7 +21,7 @@ void task_rf_t::task()
                 mySwitch.getReceivedBitlength(),
                 mySwitch.getReceivedProtocol());
 
-            cmd_send(cmd);
+            web_send_all(cmd);
 
             mySwitch.resetAvailable();
         }  

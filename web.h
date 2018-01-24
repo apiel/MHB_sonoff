@@ -16,6 +16,8 @@ int web_close(struct tcp_pcb *pcb);
 void web_ws_read(struct wsMessage * msg);
 char * web_ws_encode_msg(char * data);
 void web_ws_send(struct tcp_pcb *pcb, char *msg);
-char * web_ws_parse(char *data);
+void web_ws_parse(char *data);
+void web_send_all(char * msg);
+void web_ws_relay_send_status();
 
 #endif
