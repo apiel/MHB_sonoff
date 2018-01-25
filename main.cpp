@@ -16,6 +16,7 @@
 #include "version.h"
 #include "rf.h"
 #include "relay.h"
+#include "store.h"
 
 task_rf_t task_rf;
 
@@ -31,8 +32,10 @@ extern "C" void user_init(void)
     relay_init();
     #endif
 
+    store_init();
+
     // wifi_init(); // default
-    wifi_new_connection(WIFI_SSID, WIFI_PASS); // dev mode
+    wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
 
     Button button = Button(wifi_toggle);
     button.init();

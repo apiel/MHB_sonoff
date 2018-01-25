@@ -11,7 +11,7 @@
 
 #define TFTP_PORT 69
 
-#define EEPROM_START 0x200000
+#define EEPROM_START 0x200000 // it was working with 0x200000
 #define EEPROM_SIZE 512
 #define EEPROM_WIFI_MODE 0 // byte containing the mode of the WIFI store in EEPROM: STATION_MODE or SOFTAP_MODE
 
