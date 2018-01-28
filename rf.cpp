@@ -46,13 +46,14 @@ void rf_save_store(char * data)
 }
 
 // 12345678 protocol id
+// 
 // binary code:
-// 0 -> 20
-// 1 -> 21
+// '0' -> 20
+// '1' -> 21
 // action:
-// 30 -> on
-// 31 -> off
-// 32 toggle
+// 'a' -> on
+// 'b' -> off
+// 'c' toggle
 // 3? could be on for 5 min
 void task_rf_t::init_store()
 {
@@ -70,12 +71,12 @@ void task_rf_t::init_store()
             printf("new protocol: %d\n", bit);
             codePos = 0;
         } else if (storeItem > -1) {
-            if (bit == 20 || bit == 21)  { // 0 || 1
+            if (bit == '0' || bit == '1')  { // 0 || 1
                 if (codePos < RCSWITCH_MAX_CHANGES) {
-                    store[storeItem].code[codePos] = bit == 20 ? '0' : '1';
+                    store[storeItem].code[codePos] = bit;
                     codePos++;
                 }
-            } else if (bit > 29 && bit < 33) {
+            } else if (bit == 'a' || bit == 'b') {
                 store[storeItem].action = bit;
             } else {
                 break;
@@ -88,11 +89,11 @@ void task_rf_t::init_store()
 
 void task_rf_t::trigger_action(int action)
 {
-    if (action == 30) {
+    if (action == 'a') {
         relay_on();
-    } else if (action == 31) {
+    } else if (action == 'b') {
         relay_off();
-    } else if (action == 32) {
+    } else if (action == 'c') {
         // toggle not yet supported
         // with rf433 the code is send several time
         // therefor we have to toggle only every 2 or 3 second
