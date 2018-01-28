@@ -18,9 +18,12 @@ class task_rf_t: public esp_open_rtos::thread::task_t
         };
         Store store[RF_STORE_SIZE];
         void task();    
+        void trigger_action(int action);
+        void trigger(char * code, int protocol);        
 
     public:
         void init_store();
+        void test();
 };
 
 void rf_save_store(char * data);

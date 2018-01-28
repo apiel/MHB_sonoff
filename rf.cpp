@@ -6,6 +6,7 @@
 #include "web.h"
 #include "EEPROM.h"
 #include "store.h"
+#include "relay.h"
 
 void task_rf_t::task()
 {
@@ -17,6 +18,8 @@ void task_rf_t::task()
     // char cmd[1024];
     while(true) {
         if (mySwitch.available()) {
+            trigger(mySwitch.getReceivedCodeWord(), mySwitch.getReceivedProtocol());
+
             printf("...ToFix rf-recv %lu %s %d %d\n", 
                 mySwitch.getReceivedValue(),
                 mySwitch.getReceivedCodeWord(),
@@ -42,17 +45,17 @@ void rf_save_store(char * data)
     save_store(EEPROM_RF_STORE_START, data);
 }
 
+// 12345678 protocol id
+// binary code:
+// 0 -> 20
+// 1 -> 21
+// action:
+// 30 -> on
+// 31 -> off
+// 32 toggle
+// 3? could be on for 5 min
 void task_rf_t::init_store()
 {
-    // 12345678 protocol id
-    // binary code:
-    // 0 -> 20
-    // 1 -> 21
-    // action:
-    // 30 -> on
-    // 31 -> off
-    // 32 toggle
-    // 3? could be on for 5 min
     int storeItem = -1;
     int codePos = 0;
 
@@ -81,14 +84,38 @@ void task_rf_t::init_store()
             break;
         }
     }
+}
 
-    printf("Store items: %d\n", storeItem);
-    if (storeItem > -1) {
-        for(int yo=0;yo<RF_STORE_SIZE; yo++) {
-            printf("uiiii: %d %d %s\n",
-                store[yo].protocol,
-                store[yo].action,
-                store[yo].code);
+void task_rf_t::trigger_action(int action)
+{
+    if (action == 30) {
+        relay_on();
+    } else if (action == 31) {
+        relay_off();
+    } else if (action == 32) {
+        // toggle not yet supported
+        // with rf433 the code is send several time
+        // therefor we have to toggle only every 2 or 3 second
+    }
+}
+
+void task_rf_t::trigger(char * code, int protocol)
+{
+    for(int item = 0; item < RF_STORE_SIZE; item++) {
+        if (store[item].protocol == protocol
+          && strcmp(store[item].code, code) == 0) {
+            trigger_action(store[item].action);
+            break;
         }
+    }
+}
+
+void task_rf_t::test()
+{
+    for(int yo=0;yo<RF_STORE_SIZE; yo++) {
+        printf("uiiii: %d %d %s\n",
+            store[yo].protocol,
+            store[yo].action,
+            store[yo].code);
     }
 }
