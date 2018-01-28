@@ -1,20 +1,15 @@
-#include "espressif/esp_common.h"
-#include "FreeRTOS.h"
 
-extern "C" {
-    #include "esp_spiffs.h"
-}
+#include "EEPROM.h"
+#include "config.h"
 
-void store_init()
+void save_store(int address, char * data) 
 {
-#if SPIFFS_SINGLETON == 1
-    esp_spiffs_init();
-#else
-    // for run-time configuration when SPIFFS_SINGLETON = 0
-    esp_spiffs_init(0x210000, 0x10000);
-#endif
-
-    if (esp_spiffs_mount() != SPIFFS_OK) {
-        printf("Error mount SPIFFS\n");
+    int len = strlen(data);
+    for(int pos = 0; pos < len; pos++, address++) {
+        if (address > EEPROM_SIZE) {
+            break;
+        }
+        EEPROM.write(address, data[pos]);
     }
+    EEPROM.commit();
 }

@@ -9,6 +9,7 @@
 #include "wifi.h"
 #include "utils.h"
 #include "relay.h"
+#include "rf.h"
 #include "web_server.h"
 #include "web_client.h"
 
@@ -104,12 +105,21 @@ void web_ws_relay_action(char * data)
     }
 }
 
+void web_ws_rf_save_action(char * data)
+{
+    data += 7;
+    rf_save_store(data);
+    web_send_all((char *)". rf saved");
+}
+
 void web_ws_parse(char *data)
 {
     if (strncmp(data, "wifi set ", 9) == 0) {
         web_ws_set_wifi(data);
     } else if (strncmp(data, "relay", 5) == 0) {
         web_ws_relay_action(data);
+    } else if (strncmp(data, "rf save", 7) == 0) {
+        web_ws_rf_save_action(data);
     }
 }
 

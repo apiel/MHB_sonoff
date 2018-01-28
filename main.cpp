@@ -16,7 +16,6 @@
 #include "version.h"
 #include "rf.h"
 #include "relay.h"
-#include "store.h"
 
 task_rf_t task_rf;
 
@@ -32,14 +31,17 @@ extern "C" void user_init(void)
     relay_init();
     #endif
 
-    store_init();
-
     // wifi_init(); // default
     wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
 
     Button button = Button(wifi_toggle);
     button.init();
 
+    // String.fromCharCode(1, 30, 20, 21, 20, 20, 4, 31, 21, 20, 20, 21, 3, 30, 21, 21, 20, 20, 69)
+    // "E"
+    // rf_save_store("E");
+
+    task_rf.init_store();
     task_rf.task_create("task_rf");
 
     #ifdef TFTP_PORT
@@ -55,5 +57,5 @@ extern "C" void user_init(void)
 
     #ifdef HTTPD_PORT
     xTaskCreate(&web_server_task, "web_server_task", 1024, NULL, 2, NULL);
-    #endif      
+    #endif    
 }
