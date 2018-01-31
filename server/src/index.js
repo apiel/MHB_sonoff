@@ -1,43 +1,52 @@
-const WebSocket = require('ws');
- 
-const wss = new WebSocket.Server({ port: 8080 });
+import { Server } from 'ws';
+import mqtt from 'mqtt';
+
+// import yo from './lol';
+
+const client = mqtt.connect('mqtt://127.0.0.1')
+const server = new Server({ port: 8080 });
 console.log('websocket server is running port 8080'); 
 
-// on(event: 'error', cb: (error: Error) => void): this;
-// on(event: 'headers', cb: (headers: string[], request: http.IncomingMessage) => void): this;
-// on(event: 'listening', cb: () => void): this;
-
-wss.on('error', function (data) {
-  console.log('wss error', data);
+client.on('connect', () => {
+  client.subscribe('presence')
+  client.publish('presence', 'Hello mqtt');
+});
+ 
+client.on('message', (topic, message) => {
+  console.log(topic, message.toString());
 });
 
-wss.on('headers', function (data) {
-  console.log('wss headers', data);
+server.on('error', (data) => {
+  console.log('server error', data);
 });
 
-wss.on('listening', function () {
-  console.log('wss listening');
+server.on('headers', (data) => {
+  console.log('server headers', data);
 });
 
-wss.on('connection', function connection(ws) {
+server.on('listening', () => {
+  console.log('server listening');
+});
+
+server.on('connection', (ws) => {
   console.log('new connection');
-  ws.on('message', function incoming(message) {
+  ws.on('message', (message) => {
     console.log('received: %s', message);
   });
 
-  ws.on('close', function (data) {
+  ws.on('close', (data) => {
     console.log('close', data);
   });
 
-  ws.on('error', function (data) {
+  ws.on('error', (data) => {
     console.log('error', data);
   });
 
-  ws.on('headers', function (data) {
+  ws.on('headers', (data) => {
     console.log('headers', data);
   });
 
-  ws.on('open', function () {
+  ws.on('open', () => {
     console.log('open');
   });
   // on(event: 'close', listener: (code: number, reason: string) => void): this;
