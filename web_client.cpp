@@ -60,12 +60,13 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 
     static char response[512];
     snprintf(response, sizeof(response), 
-                "GET / HTTP/1.1\r\n"
+                "GET /hello HTTP/1.1\r\n"
                 "Host: 127.0.0.1:8080\r\n"
                 "Connection: Upgrade\r\n"
                 "Upgrade: websocket\r\n"
+                "Sec-WebSocket-Protocol: %s\r\n"
                 "Sec-WebSocket-Version: 13\r\n"
-                "Sec-WebSocket-Key: a0YBiKi7u7cdhbz8xu5FWQ==\r\n\r\n");
+                "Sec-WebSocket-Key: a0YBiKi7u7cdhbz8xu5FWQ==\r\n\r\n", get_uid());
 
     err = tcp_write(ws_pcb_c, response, strlen(response), 0);
 
@@ -77,7 +78,8 @@ void web_client_task(void *pvParameters)
     err_t err;
 
     ip_addr_t remote_addr;
-    IP4_ADDR(&remote_addr, 192, 168, 1, 109);
+    // IP4_ADDR(&remote_addr, 192, 168, 1, 109);
+    IP4_ADDR(&remote_addr, 192, 168, 1, 111);
 
     while(1) {
         // printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
