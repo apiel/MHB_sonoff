@@ -60,11 +60,11 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 
     static char response[512];
     snprintf(response, sizeof(response), 
-                "GET /hello HTTP/1.1\r\n"
+                "GET / HTTP/1.1\r\n"
                 "Host: 127.0.0.1:8080\r\n"
                 "Connection: Upgrade\r\n"
                 "Upgrade: websocket\r\n"
-                "Sec-WebSocket-Protocol: %s\r\n"
+                "Device: %s\r\n"
                 "Sec-WebSocket-Version: 13\r\n"
                 "Sec-WebSocket-Key: a0YBiKi7u7cdhbz8xu5FWQ==\r\n\r\n", get_uid());
 

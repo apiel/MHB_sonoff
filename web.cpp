@@ -114,11 +114,11 @@ void web_ws_rf_save_action(char * data)
 
 void web_ws_parse(char *data)
 {
-    if (strncmp(data, "wifi set ", 9) == 0) {
+    if (strncmp(data, "wifi/set ", 9) == 0) {
         web_ws_set_wifi(data);
     } else if (strncmp(data, "relay", 5) == 0) {
         web_ws_relay_action(data);
-    } else if (strncmp(data, "rf save", 7) == 0) {
+    } else if (strncmp(data, "rf/save", 7) == 0) {
         web_ws_rf_save_action(data);
     }
 }

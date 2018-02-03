@@ -74,7 +74,7 @@ char * httpd_get_default_response()
     function wifi() {\r\n\
         const ssid = document.getElementById('ssid').value;\r\n\
         const password = document.getElementById('password').value;\r\n\
-        s.send(`wifi set ${ssid} ${password}`);\r\n\
+        s.send(`wifi/set ${ssid} ${password}`);\r\n\
     }\r\n\
     </script>\r\n\
     <p>Compile version: %s</p>\r\n\

@@ -3,17 +3,24 @@ import mqtt from 'mqtt';
 
 // import yo from './lol';
 
+const devices = {};
+
 const client = mqtt.connect('mqtt://127.0.0.1')
 const server = new Server({ port: 8080 });
 console.log('websocket server is running port 8080'); 
 
 client.on('connect', () => {
-  client.subscribe('presence')
-  client.publish('presence', 'Hello mqtt');
+  // client.subscribe('presence')
+  // client.publish('presence', 'Hello mqtt');
 });
  
 client.on('message', (topic, message) => {
-  console.log(topic, message.toString());
+    console.log('received msg:', topic, message.toString());
+    const [device, key] = topic.split('/', 2);
+    console.log('uiui:', device, key);
+    if (devices[device]) {
+      devices[device].send(`${key} ${message.toString().trim()}`);
+    }
 });
 
 server.on('error', (data) => {
@@ -28,14 +35,17 @@ server.on('listening', () => {
   console.log('server listening');
 });
 
-server.on('connection', (ws) => {
-  console.log('new connection');
+server.on('connection', (ws, req) => {
+  console.log('new connection from', req.headers.device);
   ws.on('message', (message) => {
     console.log('received: %s', message);
   });
 
   ws.on('close', (data) => {
-    console.log('close', data);
+      // console.log('close', data);
+      if (devices[req.headers.device]) {
+          delete devices[req.headers.device];
+      }
   });
 
   ws.on('error', (data) => {
@@ -49,13 +59,8 @@ server.on('connection', (ws) => {
   ws.on('open', () => {
     console.log('open');
   });
-  // on(event: 'close', listener: (code: number, reason: string) => void): this;
-  // on(event: 'error', listener: (err: Error) => void): this;
-  // on(event: 'headers', listener: (headers: {}, request: http.IncomingMessage) => void): this;
-  // on(event: 'message', listener: (data: WebSocket.Data) => void): this;
-  // on(event: 'open' , listener: () => void): this;
-  // on(event: 'ping' | 'pong', listener: (data: Buffer) => void): this;
-  // on(event: 'unexpected-response', listener: (request: http.ClientRequest, response: http.IncomingMessage) => void): this;
- 
-  ws.send('something');
+
+  devices[req.headers.device] = ws;
+  client.subscribe(`${req.headers.device}/#`);
+  ws.send('get status');
 });
