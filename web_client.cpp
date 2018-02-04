@@ -21,7 +21,7 @@ static err_t ws_close()
     return err;
 }
 
-char * ws_read(u8_t * data)
+void ws_read(u8_t * data)
 {
     struct wsMessage msg;
     msg.data = data;
@@ -30,7 +30,7 @@ char * ws_read(u8_t * data)
     // printf("ws_read a: %s\n", msg.data);
     // printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
 
-    return NULL;
+    web_ws_parse((char *)msg.data);
 }
 
 static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
@@ -40,7 +40,6 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
         ws_close();
     } else {
         u8_t *data = (u8_t *) p->payload;
-        printf("ws_c data: %s\n", data);    
         ws_read(data);   
     }
     pbuf_free(p);
@@ -79,7 +78,7 @@ void web_client_task(void *pvParameters)
 
     ip_addr_t remote_addr;
     // IP4_ADDR(&remote_addr, 192, 168, 1, 109);
-    IP4_ADDR(&remote_addr, 192, 168, 1, 111);
+    IP4_ADDR(&remote_addr, 192, 168, 1, 10);
 
     while(1) {
         // printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);

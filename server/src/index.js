@@ -17,7 +17,7 @@ client.on('connect', () => {
 client.on('message', (topic, message) => {
     console.log('received msg:', topic, message.toString());
     const [device, key] = topic.split('/', 2);
-    console.log('uiui:', device, key);
+    // console.log('uiui:', device, key);
     if (devices[device]) {
       devices[device].send(`${key} ${message.toString().trim()}`);
     }
@@ -39,6 +39,12 @@ server.on('connection', (ws, req) => {
   console.log('new connection from', req.headers.device);
   ws.on('message', (message) => {
     console.log('received: %s', message);
+    const [type, ...payload] = message.split(' ');
+    if (type === '.') {
+      const [topic, value] = payload;
+      client.publish(`${req.headers.device}/${topic}`, value);
+      console.log('mqtt publish:', `${req.headers.device}/${topic}`, value);
+    }
   });
 
   ws.on('close', (data) => {

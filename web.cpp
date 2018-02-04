@@ -9,6 +9,7 @@
 #include "wifi.h"
 #include "utils.h"
 #include "relay.h"
+#include "config.h"
 #include "rf.h"
 #include "web_server.h"
 #include "web_client.h"
@@ -87,9 +88,9 @@ void web_ws_set_wifi(char * data)
 
 void web_ws_relay_send_status()
 {
-    static char response[11];
+    static char response[12];
     int status = relay_status();
-    snprintf(response, sizeof(response), ". relay %d\n", status);
+    snprintf(response, sizeof(response), ". relay %s", status == RELAY_ON ? "on" : "off");
     web_send_all(response);
 }
 
@@ -100,7 +101,7 @@ void web_ws_relay_action(char * data)
         relay_on();
     } else if (strncmp(data, " off", 4) == 0) {
         relay_off();
-    } else {
+    } else if (strncmp(data, " status", 6) == 0) {
         web_ws_relay_send_status();
     }
 }
