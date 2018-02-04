@@ -15,25 +15,17 @@ void task_rf_t::task()
     RCSwitch mySwitch = RCSwitch();
     mySwitch.enableReceive(PIN_RF433_RECEIVER);
 
-    // char cmd[1024];
     while(true) {
         if (mySwitch.available()) {
             trigger(mySwitch.getReceivedCodeWord(), mySwitch.getReceivedProtocol());
 
-            printf("...ToFix rf-recv %lu %s %d %d\n", 
+            sprintf(cmd, ". rf/recv %lu %s %d %d\n", 
                 mySwitch.getReceivedValue(),
                 mySwitch.getReceivedCodeWord(),
                 mySwitch.getReceivedBitlength(),
                 mySwitch.getReceivedProtocol());
 
-            // seem to be a problem...
-            // sprintf(cmd, ". rf-recv %lu %s %d %d\n", 
-            //     mySwitch.getReceivedValue(),
-            //     mySwitch.getReceivedCodeWord(),
-            //     mySwitch.getReceivedBitlength(),
-            //     mySwitch.getReceivedProtocol());
-
-            // web_send_all(cmd);
+            web_send_all(cmd);
 
             mySwitch.resetAvailable();
         }  

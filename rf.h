@@ -11,6 +11,7 @@
 class task_rf_t: public esp_open_rtos::thread::task_t
 {
     private:
+        char cmd[1024];
         struct Store {
             int protocol;
             int action;

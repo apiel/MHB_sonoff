@@ -1,8 +1,6 @@
 import { Server } from 'ws';
 import mqtt from 'mqtt';
 
-// import yo from './lol';
-
 const devices = {};
 
 const client = mqtt.connect('mqtt://127.0.0.1')
@@ -41,8 +39,8 @@ server.on('connection', (ws, req) => {
     console.log('received: %s', message);
     const [type, ...payload] = message.split(' ');
     if (type === '.') {
-      const [topic, value] = payload;
-      client.publish(`${req.headers.device}/${topic}`, value);
+      const [topic, ...value] = payload;
+      client.publish(`${req.headers.device}/${topic}`, value.join(" "));
       console.log('mqtt publish:', `${req.headers.device}/${topic}`, value);
     }
   });
