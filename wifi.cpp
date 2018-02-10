@@ -8,6 +8,7 @@
 
 #include "config.h"
 #include "wifi.h"
+#include "wifiSTA.h"
 #include "led.h"
 #include "log.h"
 #include "EEPROM.h"
@@ -15,72 +16,34 @@
 void wifi_init(void)
 {
     int mode = EEPROM.read(EEPROM_WIFI_MODE);
-    // logInfo("# eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
     printf("##### eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
     
     if (mode == SOFTAP_MODE) {
         wifi_access_point();        
     } else {
-        wifi_connect();
+        wifi_sta_connect();
     }  
 }
 
 void wifi_toggle(void)
 {
     logInfo("# Wifi toggle\n");
-    led_blink(10, 100);
     if (sdk_wifi_get_opmode() == SOFTAP_MODE) {
         EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE);
     } else {
         EEPROM.write(EEPROM_WIFI_MODE, SOFTAP_MODE);
     }
     EEPROM.commit();
+
+    led_blink(10, 100);
     sdk_system_restart();
 }
 
 void wifi_new_connection(char * ssid, char * password)
 {
-    printf("Connect to new wifi ssid: %s pwd: %s\n", ssid, password);
-
-    // netif_set_default(netif_find("en0"));
-
-    struct sdk_station_config config;    
-    if(ssid != NULL) {
-        strcpy((char*)(config.ssid), ssid);
-        
-        if(password != NULL) {
-            strcpy((char*)(config.password), password);
-        }
-        else {
-            config.password[0] = '\0';
-        }
-    }
-    else {
-        config.ssid[0]     = '\0';
-        config.password[0] = '\0';
-    }  
-    config.bssid_set = 0; 
-
-    sdk_wifi_station_disconnect();
-    // sdk_wifi_set_opmode(STATION_MODE);
-    sdk_wifi_set_opmode(STATIONAP_MODE);
-    sdk_wifi_station_set_config(&config);
     EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE); // we might have to find a central place for this with wifi toggle
-    sdk_wifi_station_connect();
-}
-
-void wifi_connect(void)
-{
-    sdk_wifi_set_opmode(STATION_MODE); 
-
-    struct sdk_station_config config;
-    bool ret = sdk_wifi_station_get_config(&config);
-    printf("##### wifi settings: ssid = %s, password = %s\n", config.ssid, config.password);
-    if(ret) logInfo("# existing wifi settings: ssid = %s, password = %s\n", config.ssid, config.password);
-    else logInfo("# no wifi settings founds: ssid = %s, password = %s\n", config.ssid, config.password);
-
-    // sdk_wifi_station_disconnect();
-    sdk_wifi_station_connect();  
+    EEPROM.commit();
+    wifi_sta_new_connection(ssid, password);
 }
 
 void wifi_access_point(void)

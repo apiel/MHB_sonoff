@@ -47,7 +47,6 @@ static void reassTimerCb(void *arg) {
 	int x;
 	printf("Try to connect to AP....\n");
 	sdk_wifi_station_disconnect();
-	sdk_wifi_station_set_config(&stconf);
 	sdk_wifi_station_connect();
 	x=sdk_wifi_get_opmode();
 	connTryStatus=CONNTRY_WORKING;
@@ -59,15 +58,10 @@ static void reassTimerCb(void *arg) {
 	}
 }
 
-void wifi_sta_new_connection(char * essid, char * passwd)
+void wifi_sta_connect()
 {
-    printf("Try try Connect to new wifi ssid: %s pwd: %s\n", essid, passwd);
 	static ETSTimer reassTimer;
-
     sdk_wifi_set_opmode(STATION_MODE);
-	strncpy((char*)stconf.ssid, essid, 32);
-	strncpy((char*)stconf.password, passwd, 64);
-	printf("Try to connect to AP %s pw %s\n", essid, passwd);
 
 	//Schedule disconnect/connect
 	sdk_os_timer_disarm(&reassTimer);
@@ -75,7 +69,13 @@ void wifi_sta_new_connection(char * essid, char * passwd)
 	sdk_os_timer_arm(&reassTimer, 500, 0);
 }
 
-void wifi_sta_connect()
+void wifi_sta_new_connection(char * essid, char * passwd)
 {
+	strncpy((char*)stconf.ssid, essid, 32);
+	strncpy((char*)stconf.password, passwd, 64);
+	printf("Try to connect to AP %s pw %s\n", essid, passwd);
+	
+	sdk_wifi_station_set_config(&stconf);
 
+	wifi_sta_connect();
 }

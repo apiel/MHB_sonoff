@@ -7,7 +7,7 @@
 
 void led_blink(unsigned int count, unsigned int delay)
 {
-    led_blink(count, delay);
+    led_blink(count, delay, delay);
 }
 
 void led_blink(unsigned int count, unsigned int delay1, unsigned int delay2)
