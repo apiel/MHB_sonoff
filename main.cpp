@@ -20,6 +20,8 @@ task_rf_t task_rf;
 
 // todo, remove httpd server, only ws client
 // improve wifi
+// AES
+// fix log
 
 extern "C" void user_init(void)
 {

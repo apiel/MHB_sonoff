@@ -99,8 +99,8 @@ const char * get_uid(void)
             strcat(uid, mac); 
         }
         uid_done = true;
-        // logInfo("# Device unique id: %s\n", uid);
-        printf("# Device unique id: %s\n", uid);
+        logInfo("Device unique id: %s\n", uid);
+        log("--", "Device unique id: %s\n", uid);
     }
 
     return uid;
