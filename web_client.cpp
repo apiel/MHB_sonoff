@@ -87,12 +87,12 @@ void web_client_task(void *pvParameters)
 
     while(1) {
         // we might to re-think this loop
-        printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
+        // printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
         if (!ws_is_connected) {
             ws_close();
         }
         if (ws_pcb_c && sdk_wifi_get_opmode() == STATION_MODE && sdk_wifi_station_get_connect_status() != STATION_GOT_IP) {
-            printf("ws we should close %d == %d && %d != %d\n", sdk_wifi_get_opmode(), STATION_MODE, sdk_wifi_station_get_connect_status(), STATION_GOT_IP);
+            // printf("ws we should close %d == %d && %d != %d\n", sdk_wifi_get_opmode(), STATION_MODE, sdk_wifi_station_get_connect_status(), STATION_GOT_IP);
             ws_close();
         }
         if (!ws_pcb_c && (sdk_wifi_get_opmode() == SOFTAP_MODE || sdk_wifi_station_get_connect_status() == STATION_GOT_IP)) {
