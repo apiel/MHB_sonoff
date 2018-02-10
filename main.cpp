@@ -10,7 +10,6 @@
 #include "config.h"
 #include "wifi.h"
 #include "button.h"
-#include "web_server.h"
 #include "web_client.h"
 #include "EEPROM.h"
 #include "version.h"
@@ -34,8 +33,8 @@ extern "C" void user_init(void)
     relay_init();
     #endif
 
-    wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
-    // wifi_init(); // default
+    // wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
+    wifi_init(); // default
 
     Button button = Button(wifi_toggle);
     button.init();
@@ -60,9 +59,5 @@ extern "C" void user_init(void)
     // we should create a onwificonnectevent
     #ifdef WS_CLIENT_PORT
     xTaskCreate(&web_client_task, "web_client_task", 1024, NULL, 3, NULL);
-    #endif 
-
-    #ifdef HTTPD_PORT
-    xTaskCreate(&web_server_task, "web_server_task", 1024, NULL, 2, NULL);
     #endif
 }

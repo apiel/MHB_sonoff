@@ -11,7 +11,6 @@
 #include "relay.h"
 #include "config.h"
 #include "rf.h"
-#include "web_server.h"
 #include "web_client.h"
 
 int web_close(struct tcp_pcb *pcb)
@@ -130,5 +129,4 @@ void web_send_all(char * msg)
 {
     printf(msg);
     web_client_ws_send(msg);
-    web_server_ws_send(msg);
 }

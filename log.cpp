@@ -1,7 +1,6 @@
 #include <espressif/esp_common.h>
 #include <stdarg.h>
 
-#include "web_server.h"
 #include "config.h"
 
 void log(const char * msg, ...)
@@ -12,7 +11,6 @@ void log(const char * msg, ...)
     sprintf(logMsg, msg, args);
     // sprintf(logMsg, "# %s", logMsg);
     printf(logMsg);
-    // web_server_ws_send(logMsg);
 }
 
 void iflog(bool condition, const char * msg, ...)

@@ -17,7 +17,6 @@
 #define EEPROM_RF_STORE_START 10 // byte where rf storage start
 #define EEPROM_RF_STORE_SIZE 512
 
-#define HTTPD_PORT 80 // cannot use the same port as wget
 #define WS_CLIENT_PORT 8080
 
 #define LOG_ERROR
