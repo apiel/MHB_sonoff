@@ -13,12 +13,15 @@ unsigned long startTime = 0;
 void handleButton(unsigned char pin) {
     int value = gpio_read(pin);
     if (value == 0) { // By default pin value is to 1
+        printf("start press %lu\n", sdk_system_get_time());
         startTime = sdk_system_get_time() / 1000000;
     } else if (startTime) { // when we push the button, it get connected to GND and became 0
         unsigned long duration = (sdk_system_get_time() / 1000000) - startTime;
         startTime = 0;
-        logInfo("# Button was press %lu second.\n", duration);
-        if (duration > 5) {
+        printf("##### Button was press %lu second.\n", duration);
+        // logInfo("# Button was press %lu second.\n", duration);
+        if (duration > 3) {
+            printf("##### Button callback");
             bt_callback();
         }
     }

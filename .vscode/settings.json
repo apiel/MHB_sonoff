@@ -3,6 +3,7 @@
         "array": "cpp",
         "initializer_list": "cpp",
         "string_view": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "*.tcc": "cpp"
     }
 }

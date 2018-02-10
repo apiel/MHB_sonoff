@@ -8,7 +8,8 @@
 #include <ssid_config.h>
 
 #include "config.h"
-#include "wifi.h"
+// #include "wifi.h"
+#include "wifiSTA.h"
 #include "button.h"
 #include "web_server.h"
 #include "web_client.h"
@@ -18,6 +19,9 @@
 #include "relay.h"
 
 task_rf_t task_rf;
+
+// todo, remove httpd server, only ws client
+// improve wifi
 
 extern "C" void user_init(void)
 {
@@ -31,17 +35,27 @@ extern "C" void user_init(void)
     relay_init();
     #endif
 
-    // wifi_init(); // default
-    wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
+    // WiFi.mode(WIFI_STA);
+    // WiFi.begin("alex2", "SuperStar86");
+    
+    // // ets_isr_mask((1<<5));
+    // sdk_wifi_station_connect();
+    // // ets_isr_unmask((1<<5));
 
-    Button button = Button(wifi_toggle);
-    button.init();
+    wifi_sta_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS);
+    // wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
+    // wifi_new_connection((char *)"alex", (char *)WIFI_PASS); // dev mode
+    // wifi_init(); // default
+
+    // Button button = Button(wifi_toggle);
+    // button.init();
 
 
     // on  000001000101010100111100
     // off 000001000101011100001100
     // rf_save_store("a000001000101010100111100b000001000101011100001100E");
 
+/*
     task_rf.init_store();
     task_rf.test();
     task_rf.task_create("task_rf");
@@ -59,5 +73,6 @@ extern "C" void user_init(void)
 
     #ifdef HTTPD_PORT
     xTaskCreate(&web_server_task, "web_server_task", 1024, NULL, 2, NULL);
-    #endif    
+    #endif
+*/    
 }
