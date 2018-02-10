@@ -34,8 +34,8 @@ extern "C" void user_init(void)
     relay_init();
     #endif
 
-    // wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
-    wifi_init(); // default
+    wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
+    // wifi_init(); // default
 
     Button button = Button(wifi_toggle);
     button.init();
@@ -45,13 +45,14 @@ extern "C" void user_init(void)
     // off 000001000101011100001100
     // rf_save_store("a000001000101010100111100b000001000101011100001100E");
 
-/*
+    #ifdef PIN_RF433_RECEIVER
     task_rf.init_store();
-    task_rf.test();
+    // task_rf.test();
     task_rf.task_create("task_rf");
+    #endif
 
     #ifdef TFTP_PORT
-    ota_tftp_init_server(TFTP_PORT);
+    ota_tftp_init_server(TFTP_PORT); // not very stable because of TFTP protocol, need to implement OTA with websocket
     #endif
 
     // need to convert to cpp
@@ -64,5 +65,4 @@ extern "C" void user_init(void)
     #ifdef HTTPD_PORT
     xTaskCreate(&web_server_task, "web_server_task", 1024, NULL, 2, NULL);
     #endif
-*/    
 }

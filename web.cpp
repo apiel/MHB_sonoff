@@ -32,7 +32,8 @@ void web_ws_read(struct wsMessage * msg)
     msg->isMasked = (*msg->data) & (1<<7);
     msg->len = (*msg->data) & 0x7F;
     msg->data += 1;
-    logDebug("* opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
+    // logDebug("* opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
+    printf("* opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
 
     if (msg->len == 126) {
         memcpy(&msg->len, msg->data, sizeof(uint16_t));
@@ -41,6 +42,7 @@ void web_ws_read(struct wsMessage * msg)
         memcpy(&msg->len, msg->data, sizeof(uint64_t));
         msg->data += sizeof(uint64_t);
     }
+    msg->data[msg->len] = '\0';
 }
 
 char * web_ws_encode_msg(char * data)
