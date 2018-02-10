@@ -69,6 +69,11 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 
     err = tcp_write(ws_pcb_c, response, strlen(response), 0);
 
+// we might put ping / pong system
+// we might have timeout
+// tcp_poll
+// tcp_err
+
     return err;
 }
 
@@ -81,11 +86,16 @@ void web_client_task(void *pvParameters)
     IP4_ADDR(&remote_addr, 192, 168, 1, 10);
 
     while(1) {
-        // printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
+        // we might to re-think this loop
+        printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
         if (!ws_is_connected) {
             ws_close();
         }
-        if (!ws_pcb_c) {
+        if (ws_pcb_c && sdk_wifi_get_opmode() == STATION_MODE && sdk_wifi_station_get_connect_status() != STATION_GOT_IP) {
+            printf("ws we should close %d == %d && %d != %d\n", sdk_wifi_get_opmode(), STATION_MODE, sdk_wifi_station_get_connect_status(), STATION_GOT_IP);
+            ws_close();
+        }
+        if (!ws_pcb_c && (sdk_wifi_get_opmode() == SOFTAP_MODE || sdk_wifi_station_get_connect_status() == STATION_GOT_IP)) {
             logDebug("* WS try to connect\n");
             ws_pcb_c = tcp_new();
             LWIP_ASSERT("httpd_init: tcp_new failed", ws_pcb_c != NULL);
