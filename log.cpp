@@ -1,6 +1,5 @@
 #include <espressif/esp_common.h>
 #include <stdarg.h>
-#include <string.h>
 
 #include "config.h"
 
