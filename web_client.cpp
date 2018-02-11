@@ -77,13 +77,20 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
     return err;
 }
 
+void web_client_set_ip(ip_addr_t * remote_addr)
+{
+    if (sdk_wifi_get_opmode() == STATION_MODE) {
+        IP4_ADDR(remote_addr, 192, 168, 1, 111);
+    } else {
+        IP4_ADDR(remote_addr, 192, 168, 0, 2);
+    }
+}
+
 void web_client_task(void *pvParameters)
 {
     err_t err;
 
     ip_addr_t remote_addr;
-    // IP4_ADDR(&remote_addr, 192, 168, 1, 109);
-    IP4_ADDR(&remote_addr, 192, 168, 1, 111);
 
     while(1) {
         // we might to re-think this loop
@@ -96,6 +103,7 @@ void web_client_task(void *pvParameters)
             ws_close();
         }
         if (!ws_pcb_c && (sdk_wifi_get_opmode() == SOFTAP_MODE || sdk_wifi_station_get_connect_status() == STATION_GOT_IP)) {
+            web_client_set_ip(&remote_addr);
             logDebug("WS try to connect\n");
             ws_pcb_c = tcp_new();
             LWIP_ASSERT("httpd_init: tcp_new failed", ws_pcb_c != NULL);

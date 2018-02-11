@@ -18,7 +18,7 @@
 
 task_rf_t task_rf;
 
-// todo, remove httpd server, only ws client
+// web client different ip for access point
 // improve wifi
 // AES
 // fix log

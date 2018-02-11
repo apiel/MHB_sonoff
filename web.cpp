@@ -126,6 +126,6 @@ void web_ws_parse(char *data)
 
 void web_send_all(char * msg)
 {
-    printf(msg);
+    logInfo("Send msg: %s\n", msg);
     web_client_ws_send(msg);
 }
