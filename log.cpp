@@ -1,5 +1,6 @@
 #include <espressif/esp_common.h>
 #include <stdarg.h>
+#include <string.h>
 
 #include "config.h"
 
@@ -10,8 +11,7 @@ void log(const char * prefix, const char * msg, ...)
     va_start(args, msg);
     vsprintf(logMsg, msg, args);
     va_end(args);
-    sprintf(logMsg, "%s %s", prefix, logMsg);
-    printf(logMsg);
+    printf("%s%s", prefix, logMsg);
 }
 
 void logInfo(const char * msg, ...)
@@ -19,7 +19,7 @@ void logInfo(const char * msg, ...)
 #ifdef LOG_INFO
     va_list args;
     va_start(args, msg);
-    log("#", msg, args);
+    log("# ", msg, args);
     va_end(args);
 #endif
 }
@@ -29,7 +29,7 @@ void logError(const char * msg, ...)
 #ifdef LOG_ERROR
     va_list args;
     va_start(args, msg);
-    log("/!\\", msg, args);
+    log("/!\\ ", msg, args);
     va_end(args);
 #endif
 }
@@ -39,7 +39,7 @@ void logDebug(const char * msg, ...)
 #ifdef LOG_DEBUG
     va_list args;
     va_start(args, msg);
-    log("*", msg, args);
+    log("* ", msg, args);
     va_end(args);
 #endif
 }
