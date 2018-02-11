@@ -10,7 +10,7 @@ int status = -1;
 void relay_on()
 {
     if (status != RELAY_ON) {
-        logInfo("# relay on\n");
+        logInfo("relay on\n");
         gpio_enable(PIN_RELAY, GPIO_OUTPUT);
         gpio_write(PIN_RELAY, RELAY_ON);
         status = RELAY_ON;
@@ -21,7 +21,7 @@ void relay_on()
 void relay_off()
 {
     if (status != RELAY_OFF) {
-        logInfo("# relay off\n");
+        logInfo("relay off\n");
         gpio_enable(PIN_RELAY, GPIO_OUTPUT);
         gpio_write(PIN_RELAY, RELAY_OFF);
         status = RELAY_OFF;
@@ -36,7 +36,7 @@ void relay_init()
 
 int relay_status()
 {
-    logInfo("# relay status %d\n", status);
+    logInfo("relay status %d\n", status);
     return status;
 }
 

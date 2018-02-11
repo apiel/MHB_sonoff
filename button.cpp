@@ -17,7 +17,7 @@ void handleButton(unsigned char pin) {
     } else if (startTime) { // when we push the button, it get connected to GND and became 0
         unsigned long duration = (sdk_system_get_time() / 1000000) - startTime;
         startTime = 0;
-        printf("##### Button was press %lu second.\n", duration);
+        logInfo("Button was press %lu second.\n", duration);
         if (duration > 3) {
             bt_callback();
         }
@@ -25,7 +25,7 @@ void handleButton(unsigned char pin) {
 }
 
 void Button::init() {
-    logInfo("# Init button on pin %d\n", PIN_BUTTON);
+    logInfo("Init button on pin %d\n", PIN_BUTTON);
 
     gpio_enable(PIN_BUTTON, GPIO_INPUT);
     gpio_set_interrupt(PIN_BUTTON, GPIO_INTTYPE_EDGE_ANY, handleButton);

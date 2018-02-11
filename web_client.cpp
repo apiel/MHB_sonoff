@@ -53,7 +53,7 @@ void web_client_ws_send(char *msg) {
 /** TCP connected callback (active connection), send data now */
 static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
-    logDebug("* WS connected\n");  
+    logDebug("WS connected\n");  
     ws_is_connected = true;
     tcp_recv(ws_pcb_c, ws_recv);
 
@@ -87,16 +87,16 @@ void web_client_task(void *pvParameters)
 
     while(1) {
         // we might to re-think this loop
-        // printf("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
+        // logDebug("loop %d %d\n", ws_pcb_c != NULL, ws_is_connected);
         if (!ws_is_connected) {
             ws_close();
         }
         if (ws_pcb_c && sdk_wifi_get_opmode() == STATION_MODE && sdk_wifi_station_get_connect_status() != STATION_GOT_IP) {
-            printf("ws we should close %d == %d && %d != %d\n", sdk_wifi_get_opmode(), STATION_MODE, sdk_wifi_station_get_connect_status(), STATION_GOT_IP);
+            logDebug("ws we should close %d == %d && %d != %d\n", sdk_wifi_get_opmode(), STATION_MODE, sdk_wifi_station_get_connect_status(), STATION_GOT_IP);
             ws_close();
         }
         if (!ws_pcb_c && (sdk_wifi_get_opmode() == SOFTAP_MODE || sdk_wifi_station_get_connect_status() == STATION_GOT_IP)) {
-            logDebug("* WS try to connect\n");
+            logDebug("WS try to connect\n");
             ws_pcb_c = tcp_new();
             LWIP_ASSERT("httpd_init: tcp_new failed", ws_pcb_c != NULL);
 

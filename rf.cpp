@@ -10,7 +10,7 @@
 
 void task_rf_t::task()
 {
-    logInfo("# Start rf task\n");
+    logInfo("Start rf task\n");
 
     RCSwitch mySwitch = RCSwitch();
     mySwitch.enableReceive(PIN_RF433_RECEIVER);

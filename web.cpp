@@ -17,7 +17,7 @@ int web_close(struct tcp_pcb *pcb)
 {
     int err = ERR_OK;
     if (pcb) {
-        logDebug("* Web close\n"); 
+        logDebug("Web close\n"); 
         tcp_recv(pcb, NULL);
         err = tcp_close(pcb);
     }
@@ -31,8 +31,7 @@ void web_ws_read(struct wsMessage * msg)
     msg->isMasked = (*msg->data) & (1<<7);
     msg->len = (*msg->data) & 0x7F;
     msg->data += 1;
-    // logDebug("* opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
-    printf("* opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
+    logDebug("opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
 
     if (msg->len == 126) {
         memcpy(&msg->len, msg->data, sizeof(uint16_t));
@@ -81,7 +80,7 @@ void web_ws_set_wifi(char * data)
     char ssid[32], password[64];
     char * next = str_extract(data, 0, ' ', ssid);
     str_extract(next, ' ', '\0', password);
-    logInfo("# Set wifi ssid: %s password: %s\n\n", ssid, password);
+    logInfo("Set wifi ssid: %s password: %s\n\n", ssid, password);
 
     wifi_new_connection(ssid, password);
     web_send_all((char *)". wifi configured");

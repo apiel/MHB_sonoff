@@ -16,7 +16,7 @@
 void wifi_init(void)
 {
     int mode = EEPROM.read(EEPROM_WIFI_MODE);
-    printf("##### eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
+    logDebug("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
     
     if (mode == SOFTAP_MODE) {
         wifi_access_point();        
@@ -27,7 +27,7 @@ void wifi_init(void)
 
 void wifi_toggle(void)
 {
-    logInfo("# Wifi toggle\n");
+    logInfo("Wifi toggle\n");
     if (sdk_wifi_get_opmode() == SOFTAP_MODE) {
         EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE);
     } else {
@@ -48,7 +48,7 @@ void wifi_new_connection(char * ssid, char * password)
 
 void wifi_access_point(void)
 {
-    logInfo("# Activate access point\n");
+    logInfo("Activate access point\n");
     sdk_wifi_set_opmode(SOFTAP_MODE);
     struct ip_info ap_ip;
     IP4_ADDR(&ap_ip.ip, 192, 168, 0, 1);
@@ -100,7 +100,6 @@ const char * get_uid(void)
         }
         uid_done = true;
         logInfo("Device unique id: %s\n", uid);
-        log("--", "Device unique id: %s\n", uid);
     }
 
     return uid;
