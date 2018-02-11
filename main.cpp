@@ -18,9 +18,8 @@
 
 task_rf_t task_rf;
 
-// web client different ip for access point
-// improve wifi
 // AES
+// improve wifi
 // fix log
 
 extern "C" void user_init(void)

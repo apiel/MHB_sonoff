@@ -60,6 +60,7 @@ char * web_ws_encode_msg(char * data)
   }
 
   memcpy(&buf[offset], data, len);
+  buf[len+offset] = '\0';
 
   return buf;
 }
@@ -88,10 +89,11 @@ void web_ws_set_wifi(char * data)
 
 void web_ws_relay_send_status()
 {
-    static char response[12];
-    int status = relay_status();
-    snprintf(response, sizeof(response), ". relay %s", status == RELAY_ON ? "on" : "off");
-    web_send_all(response);
+    if (relay_status() == RELAY_ON) {
+        web_send_all((char *)". relay on");
+    } else {
+        web_send_all((char *)". relay off");
+    }
 }
 
 void web_ws_relay_action(char * data)
