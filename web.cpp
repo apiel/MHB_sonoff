@@ -43,13 +43,13 @@ void web_ws_read(struct wsMessage * msg)
     msg->data[msg->len] = '\0';
 }
 
-char * web_ws_encode_msg(char * data)
+char * web_ws_encode_msg(char * data, unsigned int opcode)
 {
   static char buf[512];
   int len = strlen(data);
 
   int offset = 2;
-  buf[0] = 0x81;
+  buf[0] = 0x80 & opcode;
   if (len > 125) {
     offset = 4;
     buf[1] = 126;

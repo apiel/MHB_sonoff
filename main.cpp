@@ -18,6 +18,8 @@
 
 task_rf_t task_rf;
 
+// ping pong
+// wifi task to detect disconnect, with callback
 // AES
 // improve wifi
 // fix log

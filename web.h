@@ -2,7 +2,12 @@
 #ifndef __WEB_H__
 #define __WEB_H__
 
+#define OPCODE_CONTINUE 0x0
+#define OPCODE_TEXT 0x1
+#define OPCODE_BINARY 0x2
 #define OPCODE_CLOSE 0x8
+#define OPCODE_PING 0x9
+#define OPCODE_PONG 0xA
 
 struct wsMessage
 {
@@ -14,7 +19,8 @@ struct wsMessage
 
 int web_close(struct tcp_pcb *pcb);
 void web_ws_read(struct wsMessage * msg);
-char * web_ws_encode_msg(char * data);
+// char * web_ws_encode_msg(char * data);
+char * web_ws_encode_msg(char * data, unsigned int opcode = OPCODE_TEXT);
 void web_ws_send(struct tcp_pcb *pcb, char *msg);
 void web_ws_parse(char *data);
 void web_send_all(char * msg);
