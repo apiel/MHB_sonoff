@@ -70,6 +70,10 @@ server.on('connection', function (ws, req) {
     }
   });
 
+  ws.on('ping', function (data) {
+    ws.pong();
+  });
+
   ws.on('close', function (data) {
     // console.log('close', data);
     if (devices[req.headers.device]) {

@@ -45,6 +45,10 @@ server.on('connection', (ws, req) => {
     }
   });
 
+  ws.on('ping', (data) => {
+    ws.pong();
+  });
+
   ws.on('close', (data) => {
       // console.log('close', data);
       if (devices[req.headers.device]) {

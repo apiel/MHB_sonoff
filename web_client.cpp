@@ -10,6 +10,10 @@
 #include "config.h"
 #include "log.h"
 
+#define POLL_INTERVAL 4
+
+unsigned int retries = 0;
+
 struct tcp_pcb * ws_pcb_c = NULL;
 bool ws_is_connected = false;
 
@@ -24,6 +28,7 @@ static err_t ws_close()
 void ws_read(u8_t * data)
 {
     struct wsMessage msg;
+    retries = 0;
     msg.data = data;
     web_ws_read(&msg);
 
@@ -50,6 +55,23 @@ void web_client_ws_send(char *msg) {
     web_ws_send(ws_pcb_c, msg); 
 }
 
+void web_client_ping() {
+    web_ws_send(ws_pcb_c, (char *)"ping", OPCODE_PING); 
+}
+
+static err_t web_client_poll(void *arg, struct tcp_pcb *pcb)
+{
+    retries++;
+    if (retries > 5) {
+        logInfo("WS timeout\n");  
+        ws_close();
+    } else {
+        // logDebug("WS ping\n");  
+        web_client_ping();
+    }
+    return ERR_OK;
+}
+
 /** TCP connected callback (active connection), send data now */
 static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 {
@@ -73,6 +95,7 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 // we might have timeout
 // tcp_poll
 // tcp_err
+    tcp_poll(pcb, web_client_poll, POLL_INTERVAL);
 
     return err;
 }

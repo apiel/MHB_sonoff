@@ -19,6 +19,7 @@ int web_close(struct tcp_pcb *pcb)
     if (pcb) {
         logDebug("Web close\n"); 
         tcp_recv(pcb, NULL);
+        tcp_poll(pcb, NULL, 0);
         err = tcp_close(pcb);
     }
     return err;
@@ -31,7 +32,7 @@ void web_ws_read(struct wsMessage * msg)
     msg->isMasked = (*msg->data) & (1<<7);
     msg->len = (*msg->data) & 0x7F;
     msg->data += 1;
-    logDebug("opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
+    // logDebug("opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
 
     if (msg->len == 126) {
         memcpy(&msg->len, msg->data, sizeof(uint16_t));
@@ -49,7 +50,7 @@ char * web_ws_encode_msg(char * data, unsigned int opcode)
   int len = strlen(data);
 
   int offset = 2;
-  buf[0] = 0x80 & opcode;
+  buf[0] = 0x80 + opcode;
   if (len > 125) {
     offset = 4;
     buf[1] = 126;
@@ -65,10 +66,10 @@ char * web_ws_encode_msg(char * data, unsigned int opcode)
   return buf;
 }
 
-void web_ws_send(struct tcp_pcb *pcb, char *msg)
+void web_ws_send(struct tcp_pcb *pcb, char *msg, unsigned int opcode)
 {
     if (pcb) {
-        msg = web_ws_encode_msg(msg);
+        msg = web_ws_encode_msg(msg, opcode);
         err_t err = tcp_write(pcb, msg, strlen(msg), 0);
         LWIP_ASSERT("Something went wrong while tcp write to client", err == ERR_OK);
     }    
