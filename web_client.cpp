@@ -6,6 +6,7 @@
 
 #include "wifi.h"
 #include "web.h"
+#include "web_client.h"
 #include "utils.h"
 #include "config.h"
 #include "log.h"
@@ -25,6 +26,8 @@ static err_t ws_close()
     return err;
 }
 
+int offset = 0;
+
 void ws_read(u8_t * data)
 {
     struct wsMessage msg;
@@ -32,10 +35,18 @@ void ws_read(u8_t * data)
     msg.data = data;
     web_ws_read(&msg);
 
-    // printf("ws_read a: %s\n", msg.data);
+    // printf("ws_read []: %s\n", msg.opcode, msg.data);
     // printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
 
-    web_ws_parse((char *)msg.data);
+    if (msg.opcode == OPCODE_BINARY) {
+        printf(".%d %d\n", msg.len, offset);
+        offset += msg.len;
+        char response[20];
+        sprintf(response, ". ota %d", offset);
+        web_client_ws_send(response);
+    } else {
+        web_ws_parse((char *)msg.data);
+    }
 }
 
 static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
@@ -44,6 +55,7 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     if (p == NULL) {
         ws_close();
     } else {
+        tcp_recved(pcb, p->tot_len);
         u8_t *data = (u8_t *) p->payload;
         ws_read(data);   
     }
