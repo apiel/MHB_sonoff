@@ -25,7 +25,6 @@ server.on('connection', (ws, req) => {
 
   open(filePath, 'r', (err, fd) => {
     console.log('file was open to read', filePath);
-    // ws.send('file was open to read');
     if (err) throw err;
 
     function send(offset = null) {
@@ -38,10 +37,9 @@ server.on('connection', (ws, req) => {
       } else {
         closeSync(fd);
         // console.log('finish to read');
-        ws.send('finish to read');     
+        ws.send('ota end');     
       }
     }
-    send();
 
     ws.on('message', (message) => {
       // console.log('received: %s', message);
@@ -59,6 +57,8 @@ server.on('connection', (ws, req) => {
         }
       }
     });
+
+    ws.send('ota start');
   });
 });
  

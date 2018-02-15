@@ -116,6 +116,16 @@ void web_ws_rf_save_action(char * data)
     web_send_all((char *)". rf saved");
 }
 
+void web_ws_ota_action(char * data)
+{
+    data += 3;
+    if (strncmp(data, " start", 6) == 0) {
+        web_client_send_ota(0);
+    } else if (strncmp(data, " end", 4) == 0) {
+        printf("ota finish received.\n");
+    }
+}
+
 void web_ws_parse(char *data)
 {
     if (strncmp(data, "wifi/set ", 9) == 0) {
@@ -124,6 +134,8 @@ void web_ws_parse(char *data)
         web_ws_relay_action(data);
     } else if (strncmp(data, "rf/save", 7) == 0) {
         web_ws_rf_save_action(data);
+    } else if (strncmp(data, "ota", 3) == 0) {
+        web_ws_ota_action(data);
     }
 }
 

@@ -26,7 +26,14 @@ static err_t ws_close()
     return err;
 }
 
-int offset = 0;
+int current_offset = 0;
+void web_client_send_ota(int offset)
+{
+    char response[20];
+    sprintf(response, ". ota %d", offset);
+    current_offset = offset;
+    web_client_ws_send(response);
+}
 
 void ws_read(u8_t * data)
 {
@@ -39,11 +46,9 @@ void ws_read(u8_t * data)
     // printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
 
     if (msg.opcode == OPCODE_BINARY) {
-        printf(".%d %d\n", msg.len, offset);
-        offset += msg.len;
-        char response[20];
-        sprintf(response, ". ota %d", offset);
-        web_client_ws_send(response);
+        // printf(".%d %d\n", msg.len, offset);
+        current_offset += msg.len;
+        web_client_send_ota(current_offset);
     } else {
         web_ws_parse((char *)msg.data);
     }
