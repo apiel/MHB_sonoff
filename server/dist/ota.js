@@ -39,21 +39,21 @@ server.on('connection', function (ws, req) {
       var offset = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
       var lenRead = (0, _fs.readSync)(fd, buffer, 0, CHUNK_SIZE, offset);
-      console.log('lenRead', lenRead);
+      // console.log('lenRead', lenRead);
       var data = lenRead < CHUNK_SIZE ? buffer.slice(0, lenRead) : buffer;
       if (lenRead > 0) {
         ws.send(data);
+        // process.stdout.write('.');
       } else {
         (0, _fs.closeSync)(fd);
-        console.log('finish to read');
+        // console.log('finish to read');
         ws.send('finish to read');
       }
     }
     send();
 
     ws.on('message', function (message) {
-      console.log('received: %s', message);
-
+      // console.log('received: %s', message);
       var _message$split = message.split(' '),
           _message$split2 = _toArray(_message$split),
           type = _message$split2[0],
@@ -65,7 +65,13 @@ server.on('connection', function (ws, req) {
             offset = _payload[1];
 
         if (topic === 'ota') {
-          send(offset);
+          console.log('\x1B[F\x1B[K', 'Upload: ' + offset);
+          if (offset % CHUNK_SIZE > 0) {
+            console.log('finish to read');
+            process.exit();
+          } else {
+            send(offset);
+          }
         }
       }
     });

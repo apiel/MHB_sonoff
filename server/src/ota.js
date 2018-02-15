@@ -30,27 +30,35 @@ server.on('connection', (ws, req) => {
 
     function send(offset = null) {
       const lenRead = readSync(fd, buffer, 0, CHUNK_SIZE, offset);
-      console.log('lenRead', lenRead);
+      // console.log('lenRead', lenRead);
       const data = lenRead < CHUNK_SIZE ? buffer.slice(0, lenRead) : buffer;
       if (lenRead > 0) {
         ws.send(data);
+        // process.stdout.write('.');
       } else {
         closeSync(fd);
-        console.log('finish to read');
-        ws.send('finish to read');        
+        // console.log('finish to read');
+        ws.send('finish to read');     
       }
     }
     send();
 
     ws.on('message', (message) => {
-      console.log('received: %s', message);
+      // console.log('received: %s', message);
       const [type, ...payload] = message.split(' ');
       if (type === '.') {
         const [topic, offset] = payload;
         if (topic === 'ota') {
-          send(offset);
+          console.log('\x1B[F\x1B[K', `Upload: ${offset}`);
+          if (offset % CHUNK_SIZE > 0) {
+              console.log('finish to read');
+              process.exit();
+          } else {
+              send(offset);
+          }
         }
       }
     });
   });
 });
+ 
