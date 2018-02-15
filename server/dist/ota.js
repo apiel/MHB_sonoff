@@ -34,19 +34,25 @@ server.on('connection', function (ws, req) {
     console.log('file was open to read', filePath);
     if (err) throw err;
 
+    var lenRead = -1;
     function send() {
       var offset = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-      var lenRead = (0, _fs.readSync)(fd, buffer, 0, CHUNK_SIZE, offset);
+      lenRead = (0, _fs.readSync)(fd, buffer, 0, CHUNK_SIZE, offset);
       // console.log('lenRead', lenRead);
       var data = lenRead < CHUNK_SIZE ? buffer.slice(0, lenRead) : buffer;
       if (lenRead > 0) {
         ws.send(data);
         // process.stdout.write('.');
       } else {
+        // closeSync(fd);
+        // // console.log('finish to read');
+        // ws.send('ota end');     
+        console.log('finish to read');
         (0, _fs.closeSync)(fd);
-        // console.log('finish to read');
-        ws.send('ota end');
+        ws.send('ota end', {}, function () {
+          return process.exit();
+        });
       }
     }
 
@@ -64,12 +70,11 @@ server.on('connection', function (ws, req) {
 
         if (topic === 'ota') {
           console.log('\x1B[F\x1B[K', 'Upload: ' + offset);
-          if (offset % CHUNK_SIZE > 0) {
-            console.log('finish to read');
-            process.exit();
-          } else {
-            send(offset);
-          }
+          // if (offset % CHUNK_SIZE > 0) {
+          /*if (lenRead === 0) {
+           } else {*/
+          send(offset);
+          // }
         }
       }
     });

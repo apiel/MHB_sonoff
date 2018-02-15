@@ -27,17 +27,19 @@ server.on('connection', (ws, req) => {
     console.log('file was open to read', filePath);
     if (err) throw err;
 
+    let lenRead = -1;
     function send(offset = null) {
-      const lenRead = readSync(fd, buffer, 0, CHUNK_SIZE, offset);
+      lenRead = readSync(fd, buffer, 0, CHUNK_SIZE, offset);
       // console.log('lenRead', lenRead);
       const data = lenRead < CHUNK_SIZE ? buffer.slice(0, lenRead) : buffer;
       if (lenRead > 0) {
         ws.send(data);
         // process.stdout.write('.');
-      } else {
+      } 
+      else { 
+        console.log('finish to read');
         closeSync(fd);
-        // console.log('finish to read');
-        ws.send('ota end');     
+        ws.send('ota end', {}, () => process.exit());
       }
     }
 
@@ -48,12 +50,7 @@ server.on('connection', (ws, req) => {
         const [topic, offset] = payload;
         if (topic === 'ota') {
           console.log('\x1B[F\x1B[K', `Upload: ${offset}`);
-          if (offset % CHUNK_SIZE > 0) {
-              console.log('finish to read');
-              process.exit();
-          } else {
-              send(offset);
-          }
+          send(offset);
         }
       }
     });
