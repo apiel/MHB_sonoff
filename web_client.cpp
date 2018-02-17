@@ -110,7 +110,8 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 void web_client_set_ip(ip_addr_t * remote_addr)
 {
     if (sdk_wifi_get_opmode() == STATION_MODE) {
-        IP4_ADDR(remote_addr, 192, 168, 1, 111);
+        // IP4_ADDR(remote_addr, 192, 168, 1, 111);
+        IP4_ADDR(remote_addr, 192, 168, 10, 101);
     } else {
         IP4_ADDR(remote_addr, 192, 168, 0, 2);
     }

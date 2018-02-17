@@ -45,9 +45,6 @@ server.on('connection', function (ws, req) {
         ws.send(data);
         // process.stdout.write('.');
       } else {
-        // closeSync(fd);
-        // // console.log('finish to read');
-        // ws.send('ota end');     
         console.log('finish to read');
         (0, _fs.closeSync)(fd);
         ws.send('ota end', {}, function () {
@@ -70,11 +67,7 @@ server.on('connection', function (ws, req) {
 
         if (topic === 'ota') {
           console.log('\x1B[F\x1B[K', 'Upload: ' + offset);
-          // if (offset % CHUNK_SIZE > 0) {
-          /*if (lenRead === 0) {
-           } else {*/
           send(offset);
-          // }
         }
       }
     });

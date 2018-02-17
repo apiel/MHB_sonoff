@@ -123,7 +123,7 @@ void web_ws_ota_action(char * data)
     if (strncmp(data, " start", 6) == 0) {
         web_ota_start();
     } else if (strncmp(data, " end", 4) == 0) {
-        printf("ota finish received.\n");
+        web_ota_end();
     }
 }
 
