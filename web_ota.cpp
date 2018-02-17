@@ -51,16 +51,16 @@ void web_ota_recv(struct wsMessage * msg)
     if (current_offset  > MAX_FIRMWARE_SIZE) {
         web_client_ws_send((char *)". ota error OTA firmware too large");
     } else if (slot > -1) {
-        printf("bin[%d]: '%s'\n", msg->len, msg->data);
-        web_ota_send(current_offset);
+        // printf("bin[%d]: '%s'\n", msg->len, msg->data);
+        // web_ota_send(current_offset);
 
-        // rboot_write_status rboot_status;
-        // if (!rboot_write_flash(&rboot_status, (uint8 *)msg->data, msg->len)) {
-        //     logError("OTA writting error");
-        //     web_client_ws_send((char *)". ota error OTA writting error");
-        // } else {
-        //     web_ota_send(current_offset);
-        // }
+        rboot_write_status rboot_status;
+        if (!rboot_write_flash(&rboot_status, (uint8 *)msg->data, msg->len)) {
+            logError("OTA writting error");
+            web_client_ws_send((char *)". ota error OTA writting error");
+        } else {
+            web_ota_send(current_offset);
+        }
 
 
         // // if(flash_pos % SECTOR_SIZE == 0) {
