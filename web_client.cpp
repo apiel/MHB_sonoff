@@ -7,6 +7,7 @@
 #include "wifi.h"
 #include "web.h"
 #include "web_client.h"
+#include "web_ota.h"
 #include "utils.h"
 #include "config.h"
 #include "log.h"
@@ -26,16 +27,7 @@ static err_t ws_close()
     return err;
 }
 
-int current_offset = 0;
-void web_client_send_ota(int offset)
-{
-    char response[20];
-    sprintf(response, ". ota %d", offset);
-    current_offset = offset;
-    web_client_ws_send(response);
-}
-
-void ws_read(u8_t * data)
+void web_client_read(u8_t * data)
 {
     struct wsMessage msg;
     retries = 0;
@@ -46,9 +38,7 @@ void ws_read(u8_t * data)
     // printf("opcode %d len %d ismasked %d\n", msg.opcode, msg.len, msg.isMasked);
 
     if (msg.opcode == OPCODE_BINARY) {
-        // printf(".%d %d\n", msg.len, offset);
-        current_offset += msg.len;
-        web_client_send_ota(current_offset);
+        web_ota_recv(&msg);
     } else {
         web_ws_parse((char *)msg.data);
     }
@@ -62,7 +52,7 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
     } else {
         tcp_recved(pcb, p->tot_len);
         u8_t *data = (u8_t *) p->payload;
-        ws_read(data);   
+        web_client_read(data);   
     }
     pbuf_free(p);
     return ERR_OK;

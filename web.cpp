@@ -12,6 +12,7 @@
 #include "config.h"
 #include "rf.h"
 #include "web_client.h"
+#include "web_ota.h"
 
 int web_close(struct tcp_pcb *pcb)
 {
@@ -120,7 +121,7 @@ void web_ws_ota_action(char * data)
 {
     data += 3;
     if (strncmp(data, " start", 6) == 0) {
-        web_client_send_ota(0);
+        web_ota_start();
     } else if (strncmp(data, " end", 4) == 0) {
         printf("ota finish received.\n");
     }

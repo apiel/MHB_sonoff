@@ -4,6 +4,6 @@
 
 void web_client_task(void *pvParameters);
 void web_client_ws_send(char *msg);
-void web_client_send_ota(int offset);
+void web_client_start_ota();
 
 #endif
