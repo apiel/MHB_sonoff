@@ -19,7 +19,8 @@ server.on('connection', (ws, req) => {
 
   // ws.send(`wifi/set ${ssid} ${password}`);
 
-  const CHUNK_SIZE = 100,
+  // const CHUNK_SIZE = 100,
+  const CHUNK_SIZE = 508,
     buffer = new Buffer(CHUNK_SIZE),
     filePath = '../firmware/firmware.bin';
 
@@ -32,6 +33,7 @@ server.on('connection', (ws, req) => {
       lenRead = readSync(fd, buffer, 0, CHUNK_SIZE, value);
       // console.log('lenRead', lenRead);
       const data = lenRead < CHUNK_SIZE ? buffer.slice(0, lenRead) : buffer;
+      console.log("bin[%d]: '%s'\n", lenRead, data);
       if (lenRead > 0) {
         ws.send(data);
         // process.stdout.write('.');

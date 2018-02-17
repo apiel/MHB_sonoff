@@ -30,19 +30,22 @@ void web_ws_read(struct wsMessage * msg)
 {
     msg->opcode = (*msg->data) & 0x0F;
     msg->data += 1;
-    msg->isMasked = (*msg->data) & (1<<7);
+    // msg->isMasked = (*msg->data) & (1<<7);
+    msg->isMasked = ((*msg->data) & 0x80) == 0x80;
     msg->len = (*msg->data) & 0x7F;
     msg->data += 1;
-    // logDebug("opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
 
-    if (msg->len == 126) {
-        memcpy(&msg->len, msg->data, sizeof(uint16_t));
-        msg->data += sizeof(uint16_t);
+    if (msg->len == 126) { // messages > 125 but <= 65536 bytes
+        msg->len = msg->data[0] << 8 | msg->data[1];
+        msg->data += 2;
     } else if (msg->len == 127) {
-        memcpy(&msg->len, msg->data, sizeof(uint64_t));
-        msg->data += sizeof(uint64_t);
+        logDebug("ws msg 65536 bits not supported\n");
     }
-    msg->data[msg->len] = '\0';
+    if (msg->opcode == OPCODE_TEXT) {
+        msg->data[msg->len] = '\0';
+    }
+
+    // printf("opcode %d len %d ismasked %d\n", msg->opcode, msg->len, msg->isMasked);
 }
 
 char * web_ws_encode_msg(char * data, unsigned int opcode)
