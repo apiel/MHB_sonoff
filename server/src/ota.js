@@ -28,8 +28,8 @@ server.on('connection', (ws, req) => {
     if (err) throw err;
 
     let lenRead = -1;
-    function send(offset = null) {
-      lenRead = readSync(fd, buffer, 0, CHUNK_SIZE, offset);
+    function send(value = null) {
+      lenRead = readSync(fd, buffer, 0, CHUNK_SIZE, value);
       // console.log('lenRead', lenRead);
       const data = lenRead < CHUNK_SIZE ? buffer.slice(0, lenRead) : buffer;
       if (lenRead > 0) {
@@ -47,10 +47,14 @@ server.on('connection', (ws, req) => {
       // console.log('received: %s', message);
       const [type, ...payload] = message.split(' ');
       if (type === '.') {
-        const [topic, offset] = payload;
+        const [topic, value, ...message] = payload;
         if (topic === 'ota') {
-          console.log('\x1B[F\x1B[K', `Upload: ${offset}`);
-          send(offset);
+          if (value === 'error') {
+            console.error('ota errror', message);
+          } else {
+            console.log('\x1B[F\x1B[K', `Upload: ${value}`);
+            send(value);
+          }
         }
       }
     });

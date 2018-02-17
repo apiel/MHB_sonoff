@@ -1,7 +1,5 @@
 'use strict';
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
 var _ws = require('ws');
 
 var _fs = require('fs');
@@ -36,9 +34,9 @@ server.on('connection', function (ws, req) {
 
     var lenRead = -1;
     function send() {
-      var offset = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+      var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
-      lenRead = (0, _fs.readSync)(fd, buffer, 0, CHUNK_SIZE, offset);
+      lenRead = (0, _fs.readSync)(fd, buffer, 0, CHUNK_SIZE, value);
       // console.log('lenRead', lenRead);
       var data = lenRead < CHUNK_SIZE ? buffer.slice(0, lenRead) : buffer;
       if (lenRead > 0) {
@@ -61,13 +59,18 @@ server.on('connection', function (ws, req) {
           payload = _message$split2.slice(1);
 
       if (type === '.') {
-        var _payload = _slicedToArray(payload, 2),
+        var _payload = _toArray(payload),
             topic = _payload[0],
-            offset = _payload[1];
+            value = _payload[1],
+            _message = _payload.slice(2);
 
         if (topic === 'ota') {
-          console.log('\x1B[F\x1B[K', 'Upload: ' + offset);
-          send(offset);
+          if (value === 'error') {
+            console.error('ota errror', _message);
+          } else {
+            console.log('\x1B[F\x1B[K', 'Upload: ' + value);
+            send(value);
+          }
         }
       }
     });

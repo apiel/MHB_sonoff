@@ -36,9 +36,9 @@ void web_ota_start()
         logError("FATAL ERROR: Only one OTA slot is configured!\n");
         web_client_ws_send((char *)". ota error OTA no slot available");
     } else {
-    //     rboot_write_init(conf.roms[slot]);
+        rboot_write_init(conf.roms[slot]);
+        // flash_offset = conf.roms[slot];
         current_offset = 0;
-        flash_offset = conf.roms[slot];
         web_ota_send(0);
     }
 }
@@ -46,25 +46,24 @@ void web_ota_start()
 void web_ota_recv(struct wsMessage * msg)
 {
     // printf(".%d %d\n", msg->len, offset);
-    unsigned int next_offset = current_offset + msg->len;
-    if (next_offset  > MAX_FIRMWARE_SIZE) {
+    // unsigned int flash_pos = flash_offset+current_offset;    
+    current_offset += msg->len;
+    if (current_offset  > MAX_FIRMWARE_SIZE) {
         web_client_ws_send((char *)". ota error OTA firmware too large");
     } else if (slot > -1) {
-        // rboot_write_status rboot_status;
-        // if (!rboot_write_flash(&rboot_status, (uint8 *)msg->data, msg->len)) {
-        //     web_client_ws_send((char *)". ota error OTA writting error");
-        // } else {
-        //     web_ota_send(current_offset);
-        // }
-        unsigned int flash_pos = flash_offset+current_offset;
-        // if(flash_pos % SECTOR_SIZE == 0) {
-        if ((flash_pos&(SPI_FLASH_SEC_SIZE-1))==0) {
-            sdk_spi_flash_erase_sector(flash_pos / SECTOR_SIZE);
+        rboot_write_status rboot_status;
+        if (!rboot_write_flash(&rboot_status, (uint8 *)msg->data, msg->len)) {
+            logError("OTA writting error");
+            web_client_ws_send((char *)". ota error OTA writting error");
+        } else {
+            web_ota_send(current_offset);
         }
-        sdk_spi_flash_write(flash_pos, (uint32_t*)msg->data, (uint32_t)msg->len);
-        // sdk_spi_flash_write(flash_pos, (uint32_t*)"muter foker", 11);
-        current_offset = next_offset;
-        web_ota_send(current_offset);
+        // // if(flash_pos % SECTOR_SIZE == 0) {
+        // if ((flash_pos&(SPI_FLASH_SEC_SIZE-1))==0) {
+        //     sdk_spi_flash_erase_sector(flash_pos / SECTOR_SIZE);
+        // }
+        // sdk_spi_flash_write(flash_pos, (uint32_t*)msg->data, (uint32_t)msg->len);
+        // web_ota_send(current_offset);
     } else {
         web_client_ws_send((char *)". ota error OTA was not initialized");
     }
