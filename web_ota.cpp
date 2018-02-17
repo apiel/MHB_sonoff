@@ -7,15 +7,20 @@
 #include "web.h"
 #include "log.h"
 
-int slot;
-int current_offset = 0;
+int slot = -1;
+unsigned int current_offset;
+unsigned int flash_offset;
 
 void web_ota_send(int offset)
 {
     char response[20];
-    sprintf(response, ". ota %d", offset);
-    current_offset = offset;
-    web_client_ws_send(response);
+    if (slot > -1) {
+        sprintf(response, ". ota %d", offset);
+        current_offset = offset;
+        web_client_ws_send(response);
+    } else {
+        web_client_ws_send((char *)". ota error OTA was not initialized");
+    }
 }
 
 void web_ota_start()
@@ -26,9 +31,12 @@ void web_ota_start()
 
     logInfo("OTA start (%d)\n", slot);
     if(slot == conf.current_rom) {
+        slot = -1;
         logError("FATAL ERROR: Only one OTA slot is configured!\n");
-        // we could send back an error
+        web_client_ws_send((char *)". ota error OTA no slot available");
     } else {
+        current_offset = 0;
+        flash_offset = conf.roms[slot];
         web_ota_send(0);
     }
 }
