@@ -136,6 +136,18 @@ uint8_t * EEPROMClass::getDataPtr() {
   return &_data[0];
 }
 
+bool EEPROMClass::save(int address, char * data)
+{
+    int len = strlen(data);
+    for(int pos = 0; pos < len; pos++, address++) {
+        if (address > EEPROM_SIZE) {
+            break;
+        }
+        write(address, data[pos]);
+    }
+    return commit();
+}
+
 #if !defined(NO_GLOBAL_INSTANCES) && !defined(NO_GLOBAL_EEPROM)
 EEPROMClass EEPROM;
 #endif

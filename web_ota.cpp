@@ -6,12 +6,15 @@
 #include "web_client.h"
 #include "web.h"
 #include "log.h"
+#include "EEPROM.h"
 
 #define MAX_FIRMWARE_SIZE 0x100000 /*1MB firmware max at the moment */
 
 int slot = -1;
 unsigned int current_offset;
 unsigned int flash_offset;
+
+EEPROMClass * flash;
 
 void web_ota_error()
 {
@@ -36,8 +39,10 @@ void web_ota_start()
         logError("FATAL ERROR: Only one OTA slot is configured!\n");
         web_client_ws_send((char *)". ota error OTA no slot available");
     } else {
-        rboot_write_init(conf.roms[slot]);
-        // flash_offset = conf.roms[slot];
+        EEPROMClass OTAflash(conf.roms[slot]);
+        OTAflash.begin(MAX_FIRMWARE_SIZE);
+        flash = &OTAflash;
+
         current_offset = 0;
         web_ota_send(0);
     }
@@ -45,30 +50,14 @@ void web_ota_start()
 
 void web_ota_recv(struct wsMessage * msg)
 {
-    // printf(".%d %d\n", msg->len, offset);
-    // unsigned int flash_pos = flash_offset+current_offset;    
-    current_offset += msg->len;
-    if (current_offset  > MAX_FIRMWARE_SIZE) {
+    if (current_offset + msg->len  > MAX_FIRMWARE_SIZE) {
         web_client_ws_send((char *)". ota error OTA firmware too large");
     } else if (slot > -1) {
-        // printf("bin[%d]: '%s'\n", msg->len, msg->data);
-        // web_ota_send(current_offset);
-
-        rboot_write_status rboot_status;
-        if (!rboot_write_flash(&rboot_status, (uint8 *)msg->data, msg->len)) {
-            logError("OTA writting error");
-            web_client_ws_send((char *)". ota error OTA writting error");
-        } else {
-            web_ota_send(current_offset);
-        }
-
-
-        // // if(flash_pos % SECTOR_SIZE == 0) {
-        // if ((flash_pos&(SPI_FLASH_SEC_SIZE-1))==0) {
-        //     sdk_spi_flash_erase_sector(flash_pos / SECTOR_SIZE);
-        // }
-        // sdk_spi_flash_write(flash_pos, (uint32_t*)msg->data, (uint32_t)msg->len);
-        // web_ota_send(current_offset);
+        // printf("bin[%d -> %d]: '%s'\n", msg->len, current_offset, (char *)msg->data);
+        printf(".");
+        flash->save(current_offset, (char *)msg->data);
+        current_offset += msg->len;
+        web_ota_send(current_offset);
     } else {
         web_client_ws_send((char *)". ota error OTA was not initialized");
     }
@@ -79,6 +68,7 @@ void web_ota_end()
     logInfo("OTA end\n");
 
     uint32_t length;
+    // flash->end();
     rboot_config conf = rboot_get_config();
     if (!rboot_verify_image(conf.roms[slot], &length, NULL)) {
         logError("OTA verify image invalid");

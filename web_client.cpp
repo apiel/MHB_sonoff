@@ -27,11 +27,12 @@ static err_t ws_close()
     return err;
 }
 
-void web_client_read(u8_t * data)
+void web_client_read(void * data)
 {
     struct wsMessage msg;
     retries = 0;
-    msg.data = data;
+    msg.data = (uint8_t *)data;
+    msg.data32 = (uint32_t *)data;
     web_ws_read(&msg);
 
     // printf("ws_read []: %s\n", msg.opcode, msg.data);
@@ -51,7 +52,7 @@ static err_t ws_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
         ws_close();
     } else {
         tcp_recved(pcb, p->tot_len);
-        u8_t *data = (u8_t *) p->payload;
+        void *data = p->payload;
         web_client_read(data);   
     }
     pbuf_free(p);
@@ -110,6 +111,7 @@ static err_t ws_tcp_client_connected(void *arg, struct tcp_pcb *pcb, err_t err)
 void web_client_set_ip(ip_addr_t * remote_addr)
 {
     if (sdk_wifi_get_opmode() == STATION_MODE) {
+        // IP4_ADDR(remote_addr, 192, 168, 1, 111);
         IP4_ADDR(remote_addr, 192, 168, 1, 111);
         // IP4_ADDR(remote_addr, 192, 168, 10, 101);
     } else {

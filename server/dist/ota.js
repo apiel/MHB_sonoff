@@ -115,19 +115,16 @@ server.on('connection', function (ws, req) {
 
     // Listen for data
     readStream.on('data', function (chunk) {
-      // console.log('datatat', chunk.toString());
-      // process.exit();
       ws.send(chunk);
-
-      // if chunk empty { 
-      //   console.log('finish to read');
-      //   closeSync(fd);
-      //   ws.send('ota end', {}, () => process.exit());
-      // }          
     });
 
     readStream.on('close', function () {
-      // Create a buffer of the image from the stream
+      if (!readStream.bytesRead) {
+        console.log('finish to read');
+        ws.send('ota end', {}, function () {
+          return process.exit();
+        });
+      }
     });
   }
 

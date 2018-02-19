@@ -5,7 +5,7 @@
 #include "log.h"
 #include "web.h"
 #include "EEPROM.h"
-#include "store.h"
+// #include "store.h"
 #include "relay.h"
 
 void task_rf_t::task()
@@ -34,7 +34,7 @@ void task_rf_t::task()
 
 void rf_save_store(char * data)
 {
-    save_store(EEPROM_RF_STORE_START, data);
+    EEPROM.save(EEPROM_RF_STORE_START, data);
 }
 
 // 12345678 protocol id

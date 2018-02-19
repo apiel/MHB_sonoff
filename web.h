@@ -11,7 +11,9 @@
 
 struct wsMessage
 {
-    u8_t * data;
+    uint8_t * data;
+    uint32_t * data32;
+    // void * data;
     uint8_t opcode;
     uint8_t isMasked;
     uint32_t len;

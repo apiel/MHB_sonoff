@@ -36,6 +36,7 @@ public:
   void write(int address, uint8_t val);
   bool commit();
   void end();
+  bool save(int address, char * data);
 
   uint8_t * getDataPtr();
 
