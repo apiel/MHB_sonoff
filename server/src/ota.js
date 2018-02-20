@@ -99,6 +99,8 @@ server.on('connection', (ws, req) => {
 
   // const CHUNK_SIZE = 100,
   const CHUNK_SIZE = 508,
+  // const CHUNK_SIZE = 4096,
+  // const CHUNK_SIZE = 1024,
     buffer = new Buffer(CHUNK_SIZE),
     filePath = '../firmware/firmware.bin';
 

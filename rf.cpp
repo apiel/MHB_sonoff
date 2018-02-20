@@ -34,7 +34,7 @@ void task_rf_t::task()
 
 void rf_save_store(char * data)
 {
-    EEPROM.save(EEPROM_RF_STORE_START, data);
+    EEPROM.save(EEPROM_RF_STORE_START, (uint8_t *)data, strlen(data));
 }
 
 // 12345678 protocol id

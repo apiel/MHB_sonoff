@@ -99,7 +99,10 @@ server.on('connection', function (ws, req) {
 
   // const CHUNK_SIZE = 100,
   var CHUNK_SIZE = 508,
-      buffer = new Buffer(CHUNK_SIZE),
+
+  // const CHUNK_SIZE = 4096,
+  // const CHUNK_SIZE = 1024,
+  buffer = new Buffer(CHUNK_SIZE),
       filePath = '../firmware/firmware.bin';
 
   var lenRead = -1;

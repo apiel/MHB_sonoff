@@ -39,9 +39,9 @@ void web_ota_start()
         logError("FATAL ERROR: Only one OTA slot is configured!\n");
         web_client_ws_send((char *)". ota error OTA no slot available");
     } else {
-        EEPROMClass OTAflash(conf.roms[slot]);
-        OTAflash.begin(MAX_FIRMWARE_SIZE);
-        flash = &OTAflash;
+        flash_offset = conf.roms[slot];
+        // EEPROMClass OTAflash(conf.roms[slot]);
+        // flash = &OTAflash;
 
         current_offset = 0;
         web_ota_send(0);
@@ -55,7 +55,11 @@ void web_ota_recv(struct wsMessage * msg)
     } else if (slot > -1) {
         // printf("bin[%d -> %d]: '%s'\n", msg->len, current_offset, (char *)msg->data);
         printf(".");
-        flash->save(current_offset, (char *)msg->data);
+        EEPROMClass OTAflash(flash_offset + current_offset);
+        OTAflash.begin(SPI_FLASH_SEC_SIZE);
+        OTAflash.save(0, msg->data, msg->len);
+        // flash->begin(SPI_FLASH_SEC_SIZE);
+        // flash->save(current_offset, msg->data, msg->len);
         current_offset += msg->len;
         web_ota_send(current_offset);
     } else {
