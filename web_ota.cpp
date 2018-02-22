@@ -14,13 +14,6 @@ int slot = -1;
 unsigned int current_offset;
 unsigned int flash_offset;
 
-EEPROMClass * flash;
-
-void web_ota_error()
-{
-    // todo
-}
-
 void web_ota_saved()
 {
     char response[26];
@@ -52,21 +45,17 @@ void web_ota_start()
     }
 }
 
-void flash2(uint32_t *chunk, uint16_t chunk_len)
+// we might create a file flash
+// maybe with EEPROMClass::save
+void web_ota_flash(uint32_t *chunk, uint16_t chunk_len)
 {
     int offset = 0;
     if(chunk_len && ((uint32_t)chunk % 4)) {
-        /* sdk_spi_flash_write requires a word aligned
-            buffer, so if the UDP payload is unaligned
-            (common) then we copy the first word to the stack
-            and write that to flash, then move the rest of the
-            buffer internally to sit on an aligned offset.
-
-            Assuming chunk_len is always a multiple of 4 bytes.
-        */
+        // sdk_spi_flash_write requires a word aligned
+        // Assuming chunk_len is always a multiple of 4 bytes.
         uint32_t first_word;
         memcpy(&first_word, chunk, 4);
-        sdk_spi_flash_write(flash_offset + current_offset + offset, &first_word, 4);
+        sdk_spi_flash_write(flash_offset + current_offset, &first_word, 4);
         memmove(LWIP_MEM_ALIGN(chunk),&chunk[1],chunk_len-4);
         chunk = (uint32_t *)LWIP_MEM_ALIGN(chunk);
         offset += 4;
@@ -78,16 +67,18 @@ void flash2(uint32_t *chunk, uint16_t chunk_len)
 void web_ota_recv(struct wsMessage * msg)
 {
     if (current_offset + msg->len  > MAX_FIRMWARE_SIZE) {
+        logError("FATAL ERROR: OTA firmware too large\n");
         web_client_ws_send((char *)". ota error OTA firmware too large");
     } else if (slot > -1) {
         // msg->data32 += msg->len > 125 ? 4 : 2;
         msg->data32++; // but this is right only if len > 125, need to find a fix
         printf(".");    
-        flash2(msg->data32, msg->len);
+        web_ota_flash(msg->data32, msg->len);
 
         web_ota_saved();
         current_offset += msg->len;
     } else {
+        logError("FATAL ERROR: OTA was not initialized\n");
         web_client_ws_send((char *)". ota error OTA was not initialized");
     }
 }

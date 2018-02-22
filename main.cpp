@@ -54,7 +54,7 @@ extern "C" void user_init(void)
     #endif
 
     #ifdef TFTP_PORT
-    ota_tftp_init_server(TFTP_PORT); // not very stable because of TFTP protocol, need to implement OTA with websocket
+    ota_tftp_init_server(TFTP_PORT); // not very stable because of TFTP protocol
     #endif
 
     // need to convert to cpp
