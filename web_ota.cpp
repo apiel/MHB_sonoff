@@ -87,10 +87,18 @@ void web_ota_recv(struct wsMessage * msg)
     if (current_offset + msg->len  > MAX_FIRMWARE_SIZE) {
         web_client_ws_send((char *)". ota error OTA firmware too large");
     } else if (slot > -1) {
-        msg->data32 += msg->len > 125 ? 4 : 2;
+        // msg->data32 += msg->len > 125 ? 4 : 2;
+        msg->data32++; // but this is right only if len > 125, need to find a fix
         if (current_offset == 0) {
-            msg->data32 += 4;
-            msg->len -= 4;
+            // msg->data32 += 4;
+            // msg->data32++;
+            // msg->len -= 4;
+            if(flash_offset % SECTOR_SIZE == 0) {
+                sdk_spi_flash_erase_sector(flash_offset / SECTOR_SIZE);
+            }
+            // for(int i = 0; i < 30; i++) {
+            //     printf("%d:", &msg->data32[i]);
+            // }
         }
         printf(".");
         // sdk_spi_flash_write(flash_offset + current_offset, msg->data32, msg->len);
@@ -144,14 +152,14 @@ void web_ota_end()
     uint32_t length;
     // flash->end();
     rboot_config conf = rboot_get_config();
-    if (!rboot_verify_image(conf.roms[slot], &length, NULL)) {
-        logError("OTA verify image invalid");
-        web_client_ws_send((char *)". ota error OTA verify image invalid");
-    } else {
+    // if (!rboot_verify_image(conf.roms[slot], &length, NULL)) {
+    //     logError("OTA verify image invalid");
+    //     web_client_ws_send((char *)". ota error OTA verify image invalid");
+    // } else {
         // here we could cheksum the firmware
         web_client_ws_send((char *)". ota success");
         logInfo("OTA reboot on slot %d\n", slot);
-        // rboot_set_current_rom(slot);
-        // sdk_system_restart();
-    }
+        rboot_set_current_rom(slot);
+        sdk_system_restart();
+    // }
 }
