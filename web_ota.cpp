@@ -55,21 +55,83 @@ void web_ota_start()
     }
 }
 
+// void web_ota_recv(struct wsMessage * msg)
+// {
+//     if (current_offset + msg->len  > MAX_FIRMWARE_SIZE) {
+//         web_client_ws_send((char *)". ota error OTA firmware too large");
+//     } else if (slot > -1) {
+//         // printf("bin[%d -> %d]: '%s'\n", msg->len, current_offset, (char *)msg->data);
+//         if (current_offset == 0) {
+//             msg->data += 4;
+//             msg->len -= 4;
+//             // for(int i = 0; i < msg->len; i++) {
+//             //     printf("%d:", msg->data[i]);
+//             // }
+//         }
+//         printf(".");
+//         EEPROMClass OTAflash(flash_offset + current_offset);
+//         OTAflash.begin(SPI_FLASH_SEC_SIZE);
+//         OTAflash.save(0, msg->data, msg->len);
+//         // flash->begin(SPI_FLASH_SEC_SIZE);
+//         // flash->save(current_offset, msg->data, msg->len);
+//         web_ota_saved();
+//         current_offset += msg->len;
+//         // printf("rcv5 %d\n", current_offset);
+//     } else {
+//         web_client_ws_send((char *)". ota error OTA was not initialized");
+//     }
+// }
+
 void web_ota_recv(struct wsMessage * msg)
 {
     if (current_offset + msg->len  > MAX_FIRMWARE_SIZE) {
         web_client_ws_send((char *)". ota error OTA firmware too large");
     } else if (slot > -1) {
-        // printf("bin[%d -> %d]: '%s'\n", msg->len, current_offset, (char *)msg->data);
+        msg->data32 += msg->len > 125 ? 4 : 2;
+        if (current_offset == 0) {
+            msg->data32 += 4;
+            msg->len -= 4;
+        }
         printf(".");
-        EEPROMClass OTAflash(flash_offset + current_offset);
-        OTAflash.begin(SPI_FLASH_SEC_SIZE);
-        OTAflash.save(0, msg->data, msg->len);
-        // flash->begin(SPI_FLASH_SEC_SIZE);
-        // flash->save(current_offset, msg->data, msg->len);
+        // sdk_spi_flash_write(flash_offset + current_offset, msg->data32, msg->len);
+
+
+
+
+        int offset = 0;
+        uint16_t chunk_len = msg->len;
+        uint32_t *chunk = msg->data32;
+        // netbuf_data(netbuf, (void **)&chunk, &chunk_len);
+        
+        if(chunk_len && ((uint32_t)chunk % 4)) {
+            /* sdk_spi_flash_write requires a word aligned
+                buffer, so if the UDP payload is unaligned
+                (common) then we copy the first word to the stack
+                and write that to flash, then move the rest of the
+                buffer internally to sit on an aligned offset.
+
+                Assuming chunk_len is always a multiple of 4 bytes.
+            */
+            uint32_t first_word;
+            memcpy(&first_word, chunk, 4);
+            sdk_spi_flash_write(flash_offset + current_offset + offset, &first_word, 4);
+            memmove(LWIP_MEM_ALIGN(chunk),&chunk[1],chunk_len-4);
+            chunk = (uint32_t *)LWIP_MEM_ALIGN(chunk);
+            offset += 4;
+            chunk_len -= 4;
+        }
+        // printf("bin[%d -> %d]: '%s'\n", chunk_len, write_offs+offset, chunk);
+        // sdk_spi_flash_write(write_offs+offset, chunk, chunk_len);
+        sdk_spi_flash_write(flash_offset + current_offset + offset, chunk, chunk_len);
+
+
+
+
+
+
+
         web_ota_saved();
         current_offset += msg->len;
-        // printf("rcv5 %d\n", current_offset);
     } else {
         web_client_ws_send((char *)". ota error OTA was not initialized");
     }

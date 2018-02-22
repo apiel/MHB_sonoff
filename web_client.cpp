@@ -27,12 +27,18 @@ static err_t ws_close()
     return err;
 }
 
+// void yo(void * data, void **dataptr)
+// {
+//   *dataptr = data;
+// }
+
 void web_client_read(void * data)
 {
     struct wsMessage msg;
     retries = 0;
     msg.data = (uint8_t *)data;
     msg.data32 = (uint32_t *)data;
+    // yo(data, (void **)&msg.data32);
     web_ws_read(&msg);
 
     // printf("ws_read []: %s\n", msg.opcode, msg.data);

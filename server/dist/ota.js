@@ -122,6 +122,7 @@ server.on('connection', function (ws, req) {
 
     // Listen for data
     readStream.on('data', function (chunk) {
+      // if (start === 0) console.log('chunk', chunk);
       ws.send(chunk);
       timer = setTimeout(function () {
         return ws.send('ota next');

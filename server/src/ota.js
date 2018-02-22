@@ -117,6 +117,7 @@ server.on('connection', (ws, req) => {
 
     // Listen for data
     readStream.on('data', chunk => {
+        // if (start === 0) console.log('chunk', chunk);
         ws.send(chunk);
         timer = setTimeout(() => ws.send('ota next'), 2000); // we could also use setInterval
     });
