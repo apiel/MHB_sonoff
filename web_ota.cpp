@@ -21,10 +21,17 @@ void web_ota_error()
     // todo
 }
 
-void web_ota_send(int offset)
+void web_ota_saved()
 {
-    char response[20];
-    sprintf(response, ". ota %d", offset);
+    char response[26];
+    sprintf(response, ". ota saved %d", current_offset);
+    web_client_ws_send(response);
+}
+
+void web_ota_next()
+{
+    char response[25];
+    sprintf(response, ". ota next %d", current_offset);
     web_client_ws_send(response);
 }
 
@@ -44,7 +51,7 @@ void web_ota_start()
         // flash = &OTAflash;
 
         current_offset = 0;
-        web_ota_send(0);
+        web_ota_next();
     }
 }
 
@@ -60,8 +67,9 @@ void web_ota_recv(struct wsMessage * msg)
         OTAflash.save(0, msg->data, msg->len);
         // flash->begin(SPI_FLASH_SEC_SIZE);
         // flash->save(current_offset, msg->data, msg->len);
+        web_ota_saved();
         current_offset += msg->len;
-        web_ota_send(current_offset);
+        // printf("rcv5 %d\n", current_offset);
     } else {
         web_client_ws_send((char *)". ota error OTA was not initialized");
     }

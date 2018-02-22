@@ -3,6 +3,7 @@
 #include <lwip/tcp.h>
 #include <string.h>
 #include <espressif/esp_common.h>
+#include <semphr.h>
 
 #include "web.h"
 #include "log.h"
@@ -70,12 +71,15 @@ char * web_ws_encode_msg(char * data, unsigned int opcode)
   return buf;
 }
 
+SemaphoreHandle_t mutex = xSemaphoreCreateMutex(); // I am not sure this make a difference 
 void web_ws_send(struct tcp_pcb *pcb, char *msg, unsigned int opcode)
 {
-    if (pcb) {
+    if (pcb && xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
         msg = web_ws_encode_msg(msg, opcode);
         err_t err = tcp_write(pcb, msg, strlen(msg), 0);
+        // printf("tcpwrite done %d %s\n", err, msg);
         LWIP_ASSERT("Something went wrong while tcp write to client", err == ERR_OK);
+        xSemaphoreGive(mutex);
     }    
 }
 
@@ -127,6 +131,8 @@ void web_ws_ota_action(char * data)
         web_ota_start();
     } else if (strncmp(data, " end", 4) == 0) {
         web_ota_end();
+    } else if (strncmp(data, " next", 5) == 0) {
+        web_ota_next();
     }
 }
 

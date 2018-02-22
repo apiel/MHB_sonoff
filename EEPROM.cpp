@@ -29,6 +29,8 @@ Still not sure about the EEPROM_START
 
 #include "config.h"
 
+// #include <espressif/esp_common.h> // printf
+
 #ifndef __STRINGIFY
 #define __STRINGIFY(a) #a
 #endif
