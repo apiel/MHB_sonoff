@@ -50,6 +50,9 @@ void web_ota_start()
 void web_ota_flash(uint32_t *chunk, uint16_t chunk_len)
 {
     int offset = 0;
+    // if (current_offset == 0 && flash_offset % SECTOR_SIZE == 0) {
+    //     sdk_spi_flash_erase_sector(flash_offset / SECTOR_SIZE);
+    // }
     if(chunk_len && ((uint32_t)chunk % 4)) {
         // sdk_spi_flash_write requires a word aligned
         // Assuming chunk_len is always a multiple of 4 bytes.
@@ -87,7 +90,17 @@ void web_ota_end()
 {
     logInfo("OTA end\n");
     web_client_ws_send((char *)". ota success");
-    logInfo("OTA reboot on slot %d\n", slot);
-    rboot_set_current_rom(slot);
-    sdk_system_restart();
+
+    rboot_config conf = rboot_get_config();
+    uint32_t length;
+    if (!rboot_verify_image(conf.roms[slot], &length, NULL)) {
+        logError("OTA verify image invalid");
+        web_client_ws_send((char *)". ota error OTA verify image invalid");
+    } else {
+        // here we could cheksum the firmware
+        web_client_ws_send((char *)". ota success");
+        logInfo("OTA reboot on slot %d\n", slot);
+        rboot_set_current_rom(slot);
+        sdk_system_restart();
+    }
 }
