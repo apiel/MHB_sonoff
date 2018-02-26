@@ -9,6 +9,8 @@
 
 #define AP_PSK "myhomebridge" // between 8 and 63 ASCII-encoded characters
 
+#define XXTEA_KEY "strong password"
+
 #define TFTP_PORT 69 // OTA is now over WebSocket
 
 #define EEPROM_START 0xEB000 // it was working with 0x200000 but maybe we should increse to 0x250000

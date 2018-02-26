@@ -56,7 +56,7 @@ char * web_ws_encode_msg(char * data, unsigned int opcode)
 
   int offset = 2;
   buf[0] = 0x80 + opcode;
-  if (len > 125) {
+  if (len > 125) { // my not be necessary (need to see RF)
     offset = 4;
     buf[1] = 126;
     buf[2] = len >> 8;
@@ -133,6 +133,13 @@ void web_ws_ota_action(char * data)
         web_ota_end();
     } else if (strncmp(data, " next", 5) == 0) {
         web_ota_next();
+    } else if (strncmp(data, " slot", 5) == 0) {
+        data += 5;
+        if (data[0] == '\0') {
+            web_ota_get_slot();
+        } else {
+            web_ota_set_slot(data[0]);
+        }
     }
 }
 

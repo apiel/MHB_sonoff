@@ -73,6 +73,7 @@ void web_ota_recv(struct wsMessage * msg)
         logError("FATAL ERROR: OTA firmware too large\n");
         web_client_ws_send((char *)". ota error OTA firmware too large");
     } else if (slot > -1) {
+        if (msg->len < 126) printf("there might be a pb because len < 126");
         // msg->data32 += msg->len > 125 ? 4 : 2;
         msg->data32++; // but this is right only if len > 125, need to find a fix
         printf(".");    
@@ -103,4 +104,15 @@ void web_ota_end()
         rboot_set_current_rom(slot);
         sdk_system_restart();
     }
+}
+
+void web_ota_get_slot() {
+    char response[22];
+    sprintf(response, ". ota current slot %d", rboot_get_current_rom());
+    web_client_ws_send(response);
+}
+
+void web_ota_set_slot(char n) {
+    rboot_set_current_rom(n - '0');
+    sdk_system_restart();
 }
