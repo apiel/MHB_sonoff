@@ -18,9 +18,12 @@
 
 task_rf_t task_rf;
 
-// ping pong
+// toggle
+// relay timer
+// status
+
 // wifi task to detect disconnect, with callback
-// AES
+// AES or encryption XOR...
 // improve wifi
 // fix log
 
@@ -45,7 +48,7 @@ extern "C" void user_init(void)
 
     // on  000001000101010100111100
     // off 000001000101011100001100
-    rf_save_store("a000000010110010101001000b000000010110010101000001E");
+    // rf_save_store("a000000010110010101001000b000000010110010101000001E");
 
     #ifdef PIN_RF433_RECEIVER
     task_rf.init_store();

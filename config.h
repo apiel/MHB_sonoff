@@ -19,7 +19,7 @@
 #define EEPROM_RF_STORE_START 10 // byte where rf storage start
 #define EEPROM_RF_STORE_SIZE 512
 
-#define WS_CLIENT_PORT 8080
+#define WS_CLIENT_PORT 3080
 
 #define LOG_ERROR
 #define LOG_INFO

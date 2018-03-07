@@ -112,6 +112,8 @@ void web_ws_relay_action(char * data)
         relay_on();
     } else if (strncmp(data, " off", 4) == 0) {
         relay_off();
+    } else if (strncmp(data, " toggle", 7) == 0) {
+        relay_toggle();
     } else if (strncmp(data, " status", 6) == 0) {
         web_ws_relay_send_status();
     }
