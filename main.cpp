@@ -26,6 +26,7 @@ task_rf_t task_rf;
 // AES or encryption XOR...
 // improve wifi
 // fix log
+// unit test https://github.com/SuperHouse/esp-open-rtos/tree/master/tests
 
 extern "C" void user_init(void)
 {
