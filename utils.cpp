@@ -20,3 +20,16 @@ void char_replace(char * str, char search, char replace)
         if (str[pos] == search) str[pos] = replace;
     }
 }
+
+int char_to_int(char * str)
+{
+    int value = 0;
+    for(int pos = 0, end = strlen(str); pos < end; pos++) {
+        if (str[pos] >= '0' && str[pos] <= '9') {
+            value = value * 10 + str[pos] - '0';
+        } else {
+            break;
+        }
+    }
+    return value;
+}
