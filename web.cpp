@@ -105,15 +105,36 @@ void web_ws_relay_send_status()
     }
 }
 
+void web_ws_relay_action_timer(void (*callback)(void), char * data) {
+    if (data[0] == ' ') {
+        data++;
+        int seconds = char_to_int(data++);
+        if (seconds > 0) {
+            // we also might need a way to have an id to cancel timer?
+            // we might then use (int) strtol(str, (char **)NULL, 10) or atoi
+            // or we could use pointer as well
+            printf("...........relay callback with timer %d\n", seconds);
+            return;
+        }
+    }
+    callback();
+}
+
 void web_ws_relay_action(char * data)
 {
     data += 5;
     if (strncmp(data, " on", 3) == 0) {
-        relay_on();
+        // relay_on();
+        data += 3;
+        web_ws_relay_action_timer(relay_on, data);
     } else if (strncmp(data, " off", 4) == 0) {
-        relay_off();
+        // relay_off();
+        data += 4;
+        web_ws_relay_action_timer(relay_off, data);        
     } else if (strncmp(data, " toggle", 7) == 0) {
-        relay_toggle();
+        // relay_toggle();
+        data += 7;
+        web_ws_relay_action_timer(relay_toggle, data);
     } else if (strncmp(data, " status", 6) == 0) {
         web_ws_relay_send_status();
     }

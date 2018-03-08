@@ -4,6 +4,10 @@
         "initializer_list": "cpp",
         "string_view": "cpp",
         "system_error": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "istream": "cpp",
+        "optional": "cpp",
+        "ostream": "cpp",
+        "type_traits": "cpp"
     }
 }

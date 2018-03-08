@@ -2,7 +2,7 @@
 #ifndef __VERSION_H__
 #define __VERSION_H__
 
-#define VERSION "0.45"
+#define VERSION "0.57"
 
 #endif
 
