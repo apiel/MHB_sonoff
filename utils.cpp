@@ -1,5 +1,13 @@
 #include <string.h>
 
+#define TIMER_SIZE 10
+
+struct Timer {
+    void (*callback)(void);
+    int time;
+};
+Timer timer[TIMER_SIZE];
+
 char * str_extract(char * str, int start, int end, char * ret)
 {
     char *str_start, *str_end;
@@ -32,4 +40,10 @@ int char_to_int(char * str)
         }
     }
     return value;
+}
+
+int add_timer(void (*callback)(void), int seconds)
+{
+    int pos = 0;
+    return pos;
 }

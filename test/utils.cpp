@@ -22,3 +22,14 @@ TEST(char_to_int, 8123)
 	ASSERT_EQ(8123, char_to_int((char *)"8123"));
 	ASSERT_EQ(8123, char_to_int((char *)"8123abcd"));
 }
+
+void hello() {
+
+}
+
+TEST(add_timer, add)
+{
+	ASSERT_EQ(0, add_timer(hello, 10));
+	ASSERT_EQ(1, add_timer(hello, 20));
+	ASSERT_EQ(2, add_timer(hello, 10));
+}
