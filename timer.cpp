@@ -1,10 +1,13 @@
 #ifndef TEST
 #include <espressif/esp_common.h>
+#include <lwip/api.h> // vtask
 #else
 #include "test/mock.cpp"
 #endif
 
 #include <string.h>
+
+#include "log.h"
 
 #define TIMER_SIZE 10
 
@@ -28,6 +31,7 @@ int add_timer(void (*callback)(void), int seconds)
         timer[pos].time = sdk_system_get_time() + (seconds * 1000000);
         timer[pos].callback = callback;
     }
+    logInfo("add timer at position %d in %d seconds.\n", pos, seconds);
     return pos;
 }
 
@@ -40,5 +44,13 @@ void execute_timer()
             timer[pos].callback();
             timer[pos].time = 0;
         }
+    }
+}
+
+void timer_task(void *pvParameters)
+{
+    while(1) {
+        vTaskDelay(100);
+        execute_timer();
     }
 }

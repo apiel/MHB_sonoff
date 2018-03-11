@@ -15,6 +15,7 @@
 #include "version.h"
 #include "rf.h"
 #include "relay.h"
+#include "timer.h"
 
 task_rf_t task_rf;
 
@@ -67,4 +68,6 @@ extern "C" void user_init(void)
     #ifdef WS_CLIENT_PORT
     xTaskCreate(&web_client_task, "web_client_task", 1024, NULL, 3, NULL);
     #endif
+
+    xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
 }

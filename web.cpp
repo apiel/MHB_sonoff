@@ -14,6 +14,7 @@
 #include "rf.h"
 #include "web_client.h"
 #include "web_ota.h"
+#include "timer.h"
 
 int web_close(struct tcp_pcb *pcb)
 {
@@ -113,7 +114,7 @@ void web_ws_relay_action_timer(void (*callback)(void), char * data) {
             // we also might need a way to have an id to cancel timer?
             // we might then use (int) strtol(str, (char **)NULL, 10) or atoi
             // or we could use pointer as well
-            printf("...........relay callback with timer %d\n", seconds);
+            add_timer(callback, seconds);
             return;
         }
     }
