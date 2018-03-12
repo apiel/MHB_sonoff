@@ -19,8 +19,7 @@
 
 task_rf_t task_rf;
 
-// toggle
-// relay timer
+// add id to timer -> to dont duplicate them -> to use in rf to dont repeat timer 
 // status
 
 // wifi task to detect disconnect, with callback
