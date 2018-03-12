@@ -15,12 +15,14 @@ class task_rf_t: public esp_open_rtos::thread::task_t
         struct Store {
             int protocol;
             int action;
+            int timer;
             char code[RCSWITCH_MAX_CHANGES];
         };
         Store store[RF_STORE_SIZE];
         void task();    
-        void trigger_action(int action);
-        void trigger(char * code, int protocol);        
+        void trigger_action(int action, int timer);
+        void trigger_action_timer(void (*callback)(void), int timer);        
+        void trigger(char * code, int protocol);   
 
     public:
         void init_store();
