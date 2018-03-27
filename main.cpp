@@ -17,6 +17,10 @@
 #include "relay.h"
 #include "timer.h"
 
+#ifdef PIN_DHT
+    #include "dht.h"
+#endif
+
 task_rf_t task_rf;
 
 // add id to timer -> to dont duplicate them -> to use in rf to dont repeat timer 
@@ -51,7 +55,6 @@ extern "C" void user_init(void)
     // off 000001000101011100001100
     // rf_save_store((char *)"c000000010110010101000001	b000000010110010101001000E");
     // rf_save_store((char *)"c000000010110010101000001b000000010110010101001000E");
-    
 
     #ifdef PIN_RF433_RECEIVER
     task_rf.init_store();
@@ -71,4 +74,8 @@ extern "C" void user_init(void)
     #endif
 
     xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
+
+    #ifdef PIN_DHT
+    xTaskCreate(dhtTask, "dhtTask", 256, NULL, 2, NULL);
+    #endif
 }

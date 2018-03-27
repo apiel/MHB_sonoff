@@ -25,10 +25,23 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-#define PIN_BUTTON 0 // D3
-#define PIN_LED 13
-#define PIN_RF433_RECEIVER 14 // D5
-#define PIN_RELAY 12
+// #define SONOFF 1
+#ifdef SONOFF
+    #define PIN_BUTTON 0 // D3
+    #define PIN_LED 13
+    #define PIN_RF433_RECEIVER 14 // D5
+    #define PIN_RELAY 12
+#endif
+
+#define WEMOS 1
+#ifdef WEMOS
+    #define PIN_BUTTON 0 // D3
+    #define PIN_LED 2
+    #define PIN_RF433_RECEIVER 14 // D5
+    #define PIN_RELAY 5 // D1
+    #define PIN_DHT 12 // D6
+#endif
+
 #define RELAY_ON 1
 #define RELAY_OFF 0
 
