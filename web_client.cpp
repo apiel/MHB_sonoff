@@ -19,6 +19,11 @@ unsigned int retries = 0;
 struct tcp_pcb * ws_pcb_c = NULL;
 bool ws_is_connected = false;
 
+bool web_client_ws_is_connected()
+{
+    return ws_is_connected;
+}
+
 static err_t ws_close() 
 {
     err_t err = web_close(ws_pcb_c);

@@ -106,6 +106,22 @@ void web_ws_relay_send_status()
     }
 }
 
+void web_ws_temperature_send(int16_t temperature)
+{
+    // char msg[16]; // need to fix
+    // sprintf(msg, ". temperature %s%d", temperature < 10 ? "0" : "", temperature);
+    // web_send_all(msg);
+    web_send_all((char *)". temperature 10");
+}
+
+void web_ws_humidity_send(int16_t humidity)
+{
+    // char msg[13]; // need to fix
+    // sprintf(msg, ". humidity %s%d", humidity < 10 ? "0" : "", humidity);
+    // web_send_all(msg);
+    web_send_all((char *)". humidity 10");
+}
+
 void web_ws_relay_action_timer(void (*callback)(void), char * data) {
     if (data[0] == ' ') {
         data++;
@@ -182,6 +198,8 @@ void web_ws_parse(char *data)
 
 void web_send_all(char * msg)
 {
-    logInfo("Send msg: %s\n", msg);
-    web_client_ws_send(msg);
+    if (web_client_ws_is_connected()) {
+        logInfo("Send msg: %s\n", msg);
+        web_client_ws_send(msg);
+    }
 }

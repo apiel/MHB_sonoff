@@ -7,8 +7,12 @@
 
 #include "dht.h"
 #include "config.h"
+#include "web.h"
 
 const dht_sensor_type_t sensor_type = DHT_TYPE_DHT11;
+
+int16_t prev_temperature = 0;
+int16_t prev_humidity = 0;
 
 void dhtTask(void *pvParameters)
 {
@@ -22,9 +26,18 @@ void dhtTask(void *pvParameters)
 
     while(1) {
         if (dht_read_data(sensor_type, PIN_DHT, &humidity, &temperature)) {
-            printf("Humidity: %d%% Temp: %dC\n",
-                    humidity / 10,
-                    temperature / 10); //dht11 precision to deciaml, no need to try to get coma
+            humidity /= 10;
+            temperature /= 10;
+            if (prev_temperature != temperature) {
+                printf("temp: %d °C\n", temperature);
+                web_ws_temperature_send(temperature);
+            }
+            if (prev_humidity != humidity) {
+                printf("humidity: %d %%\n", humidity);
+                web_ws_humidity_send(humidity);
+            }
+            prev_temperature = temperature;
+            prev_humidity = humidity;
         } else {
             printf("Could not read data from sensor\n");
         }

@@ -26,5 +26,7 @@ void web_ws_send(struct tcp_pcb *pcb, char *msg, unsigned int opcode = OPCODE_TE
 void web_ws_parse(char *data);
 void web_send_all(char * msg);
 void web_ws_relay_send_status();
+void web_ws_temperature_send(int16_t temperature);
+void web_ws_humidity_send(int16_t humidity);
 
 #endif
