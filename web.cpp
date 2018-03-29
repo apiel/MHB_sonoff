@@ -108,18 +108,18 @@ void web_ws_relay_send_status()
 
 void web_ws_temperature_send(int16_t temperature)
 {
-    // char msg[16]; // need to fix
-    // sprintf(msg, ". temperature %s%d", temperature < 10 ? "0" : "", temperature);
-    // web_send_all(msg);
-    web_send_all((char *)". temperature 10");
+    char msg[17];
+    sprintf(msg, ". temperature %d%c", temperature, '\0');
+    web_send_all(msg);
+    // web_send_all((char *)". temperature 10");
 }
 
 void web_ws_humidity_send(int16_t humidity)
 {
-    // char msg[13]; // need to fix
-    // sprintf(msg, ". humidity %s%d", humidity < 10 ? "0" : "", humidity);
-    // web_send_all(msg);
-    web_send_all((char *)". humidity 10");
+    char msg[14];
+    sprintf(msg, ". humidity %d%c", humidity, '\0');
+    web_send_all(msg);
+    // web_send_all((char *)". humidity 10");
 }
 
 void web_ws_relay_action_timer(void (*callback)(void), char * data) {
@@ -199,7 +199,8 @@ void web_ws_parse(char *data)
 void web_send_all(char * msg)
 {
     if (web_client_ws_is_connected()) {
-        logInfo("Send msg: %s\n", msg);
+        // logInfo("Send msg: %s\n", msg);
+        printf("# Send msg: %s\n", msg); // logInfo does not work
         web_client_ws_send(msg);
     }
 }
