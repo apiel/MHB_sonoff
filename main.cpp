@@ -16,6 +16,7 @@
 #include "rf.h"
 #include "relay.h"
 #include "timer.h"
+#include "thermostat.h"
 
 #ifdef PIN_DHT
     #include "dht.h"
@@ -77,5 +78,6 @@ extern "C" void user_init(void)
 
     #ifdef PIN_DHT
     xTaskCreate(dhtTask, "dhtTask", 256, NULL, 2, NULL);
+    thermostat_init();
     #endif
 }

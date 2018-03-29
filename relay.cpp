@@ -10,7 +10,8 @@ int lastUpdate = 0;
 
 bool can_update()
 {
-    if (sdk_system_get_time() - lastUpdate > 1000000) { // 1 sec
+    if (sdk_system_get_time() < 1000000 // let's allow to switch the relay at init of mcu
+     || sdk_system_get_time() - lastUpdate > 1000000) { // 1 sec
         lastUpdate = sdk_system_get_time();
         return true;
     }

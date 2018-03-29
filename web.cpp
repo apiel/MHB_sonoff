@@ -15,6 +15,7 @@
 #include "web_client.h"
 #include "web_ota.h"
 #include "timer.h"
+#include "thermostat.h"
 
 int web_close(struct tcp_pcb *pcb)
 {
@@ -72,7 +73,7 @@ char * web_ws_encode_msg(char * data, unsigned int opcode)
   return buf;
 }
 
-SemaphoreHandle_t mutex = xSemaphoreCreateMutex(); // I am not sure this make a difference 
+SemaphoreHandle_t mutex = xSemaphoreCreateMutex(); // I am not sure this make a difference
 void web_ws_send(struct tcp_pcb *pcb, char *msg, unsigned int opcode)
 {
     if (pcb && xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
@@ -81,7 +82,7 @@ void web_ws_send(struct tcp_pcb *pcb, char *msg, unsigned int opcode)
         // printf("tcpwrite done %d %s\n", err, msg);
         LWIP_ASSERT("Something went wrong while tcp write to client", err == ERR_OK);
         xSemaphoreGive(mutex);
-    }    
+    }
 }
 
 void web_ws_set_wifi(char * data)
@@ -147,7 +148,7 @@ void web_ws_relay_action(char * data)
     } else if (strncmp(data, " off", 4) == 0) {
         // relay_off();
         data += 4;
-        web_ws_relay_action_timer(relay_off, data);        
+        web_ws_relay_action_timer(relay_off, data);
     } else if (strncmp(data, " toggle", 7) == 0) {
         // relay_toggle();
         data += 7;
@@ -183,6 +184,16 @@ void web_ws_ota_action(char * data)
     }
 }
 
+void web_ws_thermostat_action(char * data)
+{
+    data += 10;
+    if (data[0] == ' ') {
+        data++;
+        int temperature = char_to_int(data++);
+        set_thermostat(temperature);
+    }
+}
+
 void web_ws_parse(char *data)
 {
     if (strncmp(data, "wifi/set ", 9) == 0) {
@@ -193,6 +204,8 @@ void web_ws_parse(char *data)
         web_ws_rf_save_action(data);
     } else if (strncmp(data, "ota", 3) == 0) {
         web_ws_ota_action(data);
+    } else if (strncmp(data, "thermostat", 10) == 0) {
+        web_ws_thermostat_action(data);
     }
 }
 
