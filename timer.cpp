@@ -31,7 +31,7 @@ int add_timer(void (*callback)(void), int seconds)
         timer[pos].time = sdk_system_get_time() + (seconds * 1000000);
         timer[pos].callback = callback;
     }
-    logInfo("add timer at position %d in %d seconds.\n", pos, seconds);
+    logInfo("add timer\n");
     return pos;
 }
 

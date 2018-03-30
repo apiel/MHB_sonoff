@@ -56,7 +56,7 @@ void relay_init()
 
 int relay_status()
 {
-    logInfo("relay status %d\n", status);
+    printf("-> relay status %d\n", status);
     return status;
 }
 

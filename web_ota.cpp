@@ -33,7 +33,7 @@ void web_ota_start()
     rboot_config conf = rboot_get_config();
     slot = (conf.current_rom + 1) % conf.count;
 
-    logInfo("OTA start ([%d] %d -> %d)\n", conf.count, conf.current_rom, slot);
+    logInfo("OTA start\n");
     if(slot == conf.current_rom) {
         slot = -1;
         logError("FATAL ERROR: Only one OTA slot is configured!\n");
@@ -100,7 +100,7 @@ void web_ota_end()
     } else {
         // here we could cheksum the firmware
         web_client_ws_send((char *)". ota success");
-        logInfo("OTA reboot on slot %d\n", slot);
+        logInfo("OTA reboot\n");
         rboot_set_current_rom(slot);
         sdk_system_restart();
     }

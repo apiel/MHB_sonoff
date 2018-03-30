@@ -137,7 +137,7 @@ void web_client_task(void *pvParameters)
             ws_close();
         }
         if (ws_pcb_c && sdk_wifi_get_opmode() == STATION_MODE && sdk_wifi_station_get_connect_status() != STATION_GOT_IP) {
-            logDebug("ws we should close %d == %d && %d != %d\n", sdk_wifi_get_opmode(), STATION_MODE, sdk_wifi_station_get_connect_status(), STATION_GOT_IP);
+            // printf("ws we should close %d == %d && %d != %d\n", sdk_wifi_get_opmode(), STATION_MODE, sdk_wifi_station_get_connect_status(), STATION_GOT_IP);
             ws_close();
         }
         if (!ws_pcb_c && (sdk_wifi_get_opmode() == SOFTAP_MODE || sdk_wifi_station_get_connect_status() == STATION_GOT_IP)) {

@@ -16,13 +16,13 @@
 void wifi_init(void)
 {
     int mode = EEPROM.read(EEPROM_WIFI_MODE);
-    logDebug("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
-    
+    // logDebug("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
+
     if (mode == SOFTAP_MODE) {
-        wifi_access_point();        
+        wifi_access_point();
     } else {
         wifi_sta_connect();
-    }  
+    }
 }
 
 void wifi_toggle(void)
@@ -99,7 +99,7 @@ const char * get_uid(void)
             strcat(uid, mac); 
         }
         uid_done = true;
-        logInfo("Device unique id: %s\n", uid);
+        printf("-> Device unique id: %s\n", uid);
     }
 
     return uid;

@@ -92,7 +92,7 @@ void web_ws_set_wifi(char * data)
     char ssid[32], password[64];
     char * next = str_extract(data, 0, ' ', ssid);
     str_extract(next, ' ', '\0', password);
-    logInfo("Set wifi ssid: %s password: %s\n\n", ssid, password);
+    logInfo("Set wifi ssid and password\n");
 
     wifi_new_connection(ssid, password);
     web_send_all((char *)". wifi configured");

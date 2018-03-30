@@ -21,7 +21,7 @@ void temperature_changed(int temperature)
 
 void set_thermostat(int temperature)
 {
-    logInfo("Set thermostat %d\n", temperature);
+    logInfo("Set thermostat\n");
     tempLimit = temperature;
     EEPROM.write(EEPROM_THERMOSTAT, tempLimit);
     EEPROM.commit();
@@ -30,5 +30,5 @@ void set_thermostat(int temperature)
 void thermostat_init(void)
 {
     tempLimit = EEPROM.read(EEPROM_THERMOSTAT);
-    logDebug("eeprom tempLimit %d\n", tempLimit);
+    logDebug("eeprom tempLimit\n");
 }
