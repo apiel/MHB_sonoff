@@ -22,6 +22,10 @@
     #include "dht.h"
 #endif
 
+#ifdef PIN_DS18B20
+    #include "ds18b20.h"
+#endif
+
 task_rf_t task_rf;
 
 // add id to timer -> to dont duplicate them -> to use in rf to dont repeat timer 
@@ -77,7 +81,12 @@ extern "C" void user_init(void)
     xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
 
     #ifdef PIN_DHT
-    xTaskCreate(dhtTask, "dhtTask", 256, NULL, 2, NULL);
     thermostat_init();
+    xTaskCreate(dhtTask, "dhtTask", 256, NULL, 2, NULL);
+    #endif
+
+    #ifdef PIN_DS18B20
+    thermostat_init();
+    xTaskCreate(ds18b20Task, "ds18b20Task", 256, NULL, 2, NULL);
     #endif
 }

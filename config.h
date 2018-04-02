@@ -41,6 +41,7 @@
     #define PIN_RF433_RECEIVER 14 // D5
     #define PIN_RELAY 5 // D1
     #define PIN_DHT 12 // D6
+    // #define PIN_DS18B20 12 // D6
 #endif
 
 #define RELAY_ON 1

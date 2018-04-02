@@ -1,3 +1,6 @@
+#include "config.h"
+#ifdef PIN_DHT
+
 #include <espressif/esp_common.h>
 #include <esp/uart.h>
 #include <FreeRTOS.h>
@@ -5,8 +8,6 @@
 #include <dht/dht.h>
 #include <esp8266.h>
 
-#include "dht.h"
-#include "config.h"
 #include "web.h"
 #include "thermostat.h"
 
@@ -30,12 +31,10 @@ void dhtTask(void *pvParameters)
             humidity /= 10;
             temperature /= 10;
             if (prev_temperature != temperature) {
-                printf("temp: %d °C\n", temperature);
                 web_ws_temperature_send(temperature);
                 temperature_changed((int)temperature);
             }
             if (prev_humidity != humidity) {
-                printf("humidity: %d %%\n", humidity);
                 web_ws_humidity_send(humidity);
             }
             prev_temperature = temperature;
@@ -48,3 +47,5 @@ void dhtTask(void *pvParameters)
         vTaskDelay(3000 / portTICK_PERIOD_MS);
     }
 }
+
+#endif
