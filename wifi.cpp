@@ -74,18 +74,20 @@ const char * get_uid(void)
 {
     // Use MAC address for Station as unique ID
     static char uid[20];
-    char mac[13];
     static bool uid_done = false;
-    int8_t i;
-    uint8_t x;
     if (!uid_done) {
         memset(uid, 0, sizeof(uid));
         strcpy(uid, DEVICE_ID);
-
+#ifdef DEVICE_NAME
+        strcat(uid, DEVICE_NAME);
+#else
+        char mac[13];
         if (!sdk_wifi_get_macaddr(STATION_IF, (uint8_t *)mac)) {
             strcat(uid, "generic"); 
         }
         else {
+            int8_t i;
+            uint8_t x;
             for (i = 5; i >= 0; --i)
             {
                 x = mac[i] & 0x0F;
@@ -98,6 +100,7 @@ const char * get_uid(void)
             mac[12] = '\0';
             strcat(uid, mac); 
         }
+#endif
         uid_done = true;
         printf("-> Device unique id: %s\n", uid);
     }

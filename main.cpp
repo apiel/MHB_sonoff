@@ -16,13 +16,14 @@
 #include "rf.h"
 #include "relay.h"
 #include "timer.h"
-#include "thermostat.h"
 
 #ifdef PIN_DHT
+    #include "thermostat.h"
     #include "dht.h"
 #endif
 
 #ifdef PIN_DS18B20
+    #include "thermostat.h"
     #include "ds18b20.h"
 #endif
 
@@ -45,12 +46,8 @@ extern "C" void user_init(void)
 
     EEPROM.begin(EEPROM_SIZE);
 
-    #ifdef PIN_RELAY
-    relay_init();
-    #endif
-
-    // wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
-    wifi_init(); // default
+    wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
+    // wifi_init(); // default
 
     Button button = Button(wifi_toggle);
     button.init();
@@ -58,8 +55,7 @@ extern "C" void user_init(void)
 
     // on  000001000101010100111100
     // off 000001000101011100001100
-    // rf_save_store((char *)"c000000010110010101000001	b000000010110010101001000E");
-    // rf_save_store((char *)"c000000010110010101000001b000000010110010101001000E");
+    // rf_save_store((char *)"c000000010110010101001000E");
 
     #ifdef PIN_RF433_RECEIVER
     task_rf.init_store();

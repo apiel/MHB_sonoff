@@ -12,9 +12,9 @@ void temperature_changed(int temperature)
 {
     if (tempLimit > 0) {
         if (temperature < tempLimit) {
-            relay_on();
+            Relay1.relay_on();
         } else {
-            relay_off();
+            Relay1.relay_off();
         }
     }
 }

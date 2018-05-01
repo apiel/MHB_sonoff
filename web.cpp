@@ -100,7 +100,7 @@ void web_ws_set_wifi(char * data)
 
 void web_ws_relay_send_status()
 {
-    if (relay_status() == RELAY_ON) {
+    if (Relay1.relay_status() == RELAY_ON) {
         web_send_all((char *)". relay on");
     } else {
         web_send_all((char *)". relay off");
@@ -144,15 +144,15 @@ void web_ws_relay_action(char * data)
     if (strncmp(data, " on", 3) == 0) {
         // relay_on();
         data += 3;
-        web_ws_relay_action_timer(relay_on, data);
+        web_ws_relay_action_timer([]()->void{ Relay1.relay_on(); }, data);
     } else if (strncmp(data, " off", 4) == 0) {
         // relay_off();
         data += 4;
-        web_ws_relay_action_timer(relay_off, data);
+        web_ws_relay_action_timer([]()->void{ Relay1.relay_off(); }, data);
     } else if (strncmp(data, " toggle", 7) == 0) {
         // relay_toggle();
         data += 7;
-        web_ws_relay_action_timer(relay_toggle, data);
+        web_ws_relay_action_timer([]()->void{ Relay1.relay_toggle(); }, data);
     } else if (strncmp(data, " status", 6) == 0) {
         web_ws_relay_send_status();
     }

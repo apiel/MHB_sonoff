@@ -3,13 +3,12 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
+#define DEVICE_NAME "WEMOS"
 
 #define MHB_USER "alex"
 #define MHB_ZONE "garage"
 
 #define AP_PSK "myhomebridge" // between 8 and 63 ASCII-encoded characters
-
-#define XXTEA_KEY "strong password"
 
 #define TFTP_PORT 69 // OTA is now over WebSocket
 
@@ -34,13 +33,24 @@
     #define PIN_RELAY 12
 #endif
 
+// #define SONOFF4CH 1
+#ifdef SONOFF4CH
+    #define PIN_BUTTON 0
+    #define PIN_LED 13
+    #define PIN_RF433_RECEIVER 2
+    #define PIN_RELAY 12
+    #define PIN_RELAY_2 5
+    #define PIN_RELAY_3 4
+    #define PIN_RELAY_4 15
+#endif
+
 #define WEMOS 1
 #ifdef WEMOS
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2
     #define PIN_RF433_RECEIVER 14 // D5
     #define PIN_RELAY 5 // D1
-    #define PIN_DHT 12 // D6
+    // #define PIN_DHT 12 // D6
     // #define PIN_DS18B20 12 // D6
 #endif
 
