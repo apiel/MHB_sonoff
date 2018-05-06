@@ -139,21 +139,21 @@ void web_ws_relay_action_timer(Action * object, int action, char * data) {
     (* object)(action);
 }
 
-void web_ws_relay_action(char * data)
+void web_ws_relay_action(Action * object, char * data)
 {
     data += 5;
     if (strncmp(data, " on", 3) == 0) {
         // relay_on();
         data += 3;
-        web_ws_relay_action_timer(&Relay1, ACTION_RELAY_ON, data);
+        web_ws_relay_action_timer(object, ACTION_RELAY_ON, data);
     } else if (strncmp(data, " off", 4) == 0) {
         // relay_off();
         data += 4;
-        web_ws_relay_action_timer(&Relay1, ACTION_RELAY_OFF, data);
+        web_ws_relay_action_timer(object, ACTION_RELAY_OFF, data);
     } else if (strncmp(data, " toggle", 7) == 0) {
         // relay_toggle();
         data += 7;
-        web_ws_relay_action_timer(&Relay1, ACTION_RELAY_TOGGLE, data);
+        web_ws_relay_action_timer(object, ACTION_RELAY_TOGGLE, data);
     } else if (strncmp(data, " status", 6) == 0) {
         web_ws_relay_send_status();
     }
@@ -199,8 +199,22 @@ void web_ws_parse(char *data)
 {
     if (strncmp(data, "wifi/set ", 9) == 0) {
         web_ws_set_wifi(data);
+    } else if (strncmp(data, "relay/1", 7) == 0) {
+        web_ws_relay_action(&Relay1, data);
+#ifdef PIN_RELAY_2
+    } else if (strncmp(data, "relay/2", 7) == 0) {
+        web_ws_relay_action(&Relay2, data);
+#endif
+#ifdef PIN_RELAY_3
+    } else if (strncmp(data, "relay/3", 7) == 0) {
+        web_ws_relay_action(&Relay3, data);
+#endif
+#ifdef PIN_RELAY_4
+    } else if (strncmp(data, "relay/4", 7) == 0) {
+        web_ws_relay_action(&Relay4, data);
+#endif
     } else if (strncmp(data, "relay", 5) == 0) {
-        web_ws_relay_action(data);
+        web_ws_relay_action(&Relay1, data);
     } else if (strncmp(data, "rf/save", 7) == 0) {
         web_ws_rf_save_action(data);
     } else if (strncmp(data, "ota", 3) == 0) {
