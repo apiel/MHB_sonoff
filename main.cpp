@@ -55,7 +55,7 @@ extern "C" void user_init(void)
 
     // on  000001000101010100111100
     // off 000001000101011100001100
-    // rf_save_store((char *)"c000000010110010101000010E");
+    rf_save_store((char *)"c000000010110010101000010E");
 
     #ifdef PIN_RF433_RECEIVER
     task_rf.init_store();
