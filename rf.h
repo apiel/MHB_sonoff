@@ -6,6 +6,8 @@
 #include "task.hpp"
 #include "espressif/esp_common.h"
 
+#include "action.h"
+
 #define RF_STORE_SIZE 5
 
 class task_rf_t: public esp_open_rtos::thread::task_t
@@ -21,7 +23,8 @@ class task_rf_t: public esp_open_rtos::thread::task_t
         Store store[RF_STORE_SIZE];
         void task();    
         void trigger_action(int action, int timer);
-        void trigger_action_timer(void (*callback)(void), int timer);        
+        void trigger_action_timer(void (*callback)(void), int timer);
+        void trigger_action_timer(Action * object, int action, int timer);
         void trigger(char * code, int protocol);   
 
     public:

@@ -3,14 +3,20 @@
 #define __RELAY_H__
 
 #include "config.h"
+#include "action.h"
 
-class Relay {
+#define ACTION_RELAY_ON 1
+#define ACTION_RELAY_OFF 2
+#define ACTION_RELAY_TOGGLE 3
+
+class Relay: public Action {
     public:
         Relay(int pin);
         void relay_on();
         void relay_off();
         void relay_toggle();
         int relay_status();
+        virtual void operator() (int key);
 
     protected:
         int _pin;

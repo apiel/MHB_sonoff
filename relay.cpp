@@ -59,6 +59,17 @@ int Relay::relay_status()
     return _status;
 }
 
+void Relay::operator() (int key)
+{
+    if (key == ACTION_RELAY_ON) {
+        relay_on();
+    } else if (key == ACTION_RELAY_OFF) {
+        relay_off();
+    } else {
+        relay_toggle();
+    }
+}
+
 // need task for timeout
 
 #ifdef PIN_RELAY

@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include "action.h"
 #include "log.h"
 
 #define TIMER_SIZE 10
@@ -14,9 +15,9 @@
 // look at http://www.cplusplus.com/forum/general/136410/
 
 struct Timer {
-    void (*callback)(void);
-    void (*callbackObject)(void *);
-	void* object = NULL;
+    void (*callback)(void) = NULL;
+    Action * object = NULL;
+    int action = 0;
     unsigned long time = 0;
 };
 Timer timer[TIMER_SIZE];
@@ -47,12 +48,12 @@ int add_timer(void (*callback)(void), int seconds)
     return pos;
 }
 
-int add_timer(void * obj, void (*callback)(void *), int seconds)
+int add_timer(Action * object, int action, int seconds)
 {
     int pos = add_timer(seconds);
     if (pos > -1) {
-        timer[pos].callbackObject = callback;
-        timer[pos].object = obj;
+        timer[pos].object = object;
+        timer[pos].action = action;
     }
     return pos;
 }
@@ -64,7 +65,7 @@ void execute_timer()
     for(; pos < TIMER_SIZE; pos++) {
         if (timer[pos].time > 0 && timer[pos].time < current_time) {
             if (timer[pos].object != NULL) {
-                timer[pos].callbackObject(timer[pos].object);
+                (* timer[pos].object)(timer[pos].action);
             } else {
                 timer[pos].callback();
             }
