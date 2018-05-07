@@ -11,10 +11,12 @@ client.on('connect', () => {
   // client.subscribe('presence')
   // client.publish('presence', 'Hello mqtt');
 });
- 
+
 client.on('message', (topic, message) => {
     console.log('received msg:', topic, message.toString());
-    const [device, key] = topic.split('/', 2);
+    const arr = topic.split('/');
+    const device = arr.shift();
+    const key = arr.join('/');
     // console.log('uiui:', device, key);
     if (devices[device]) {
       devices[device].send(`${key} ${message.toString().trim()}`);
