@@ -11,14 +11,16 @@
 
 class Relay: public Action {
     public:
-        Relay(int pin);
+        Relay(int pin, const char * id);
         void relay_on();
         void relay_off();
         void relay_toggle();
         int relay_status();
+        const char * get_id();
         virtual void operator() (int key);
 
     protected:
+        const char * _id;
         int _pin;
         int _status = -1;
         int _lastUpdate = 0;

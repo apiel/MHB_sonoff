@@ -99,13 +99,11 @@ void web_ws_set_wifi(char * data)
     web_send_all((char *)". wifi configured");
 }
 
-void web_ws_relay_send_status()
+void web_ws_relay_send_status(Relay * relay)
 {
-    if (Relay1.relay_status() == RELAY_ON) {
-        web_send_all((char *)". relay on");
-    } else {
-        web_send_all((char *)". relay off");
-    }
+    char msg[15];
+    sprintf(msg, ". %s %s%c", relay->get_id(), relay->relay_status() == RELAY_ON ? "on" : "off", '\0');
+    web_send_all(msg);
 }
 
 void web_ws_temperature_send(int16_t temperature)
@@ -155,7 +153,7 @@ void web_ws_relay_action(Action * object, char * data)
         data += 7;
         web_ws_relay_action_timer(object, ACTION_RELAY_TOGGLE, data);
     } else if (strncmp(data, " status", 6) == 0) {
-        web_ws_relay_send_status();
+        web_ws_relay_send_status((Relay *)object);
     }
 }
 
@@ -197,23 +195,29 @@ void web_ws_thermostat_action(char * data)
 
 void web_ws_parse(char *data)
 {
+    // printf("data: %s\n", data);
     if (strncmp(data, "wifi/set ", 9) == 0) {
         web_ws_set_wifi(data);
     } else if (strncmp(data, "relay/1", 7) == 0) {
+        data += 2;
         web_ws_relay_action(&Relay1, data);
 #ifdef PIN_RELAY_2
     } else if (strncmp(data, "relay/2", 7) == 0) {
+        data += 2;
         web_ws_relay_action(&Relay2, data);
 #endif
 #ifdef PIN_RELAY_3
     } else if (strncmp(data, "relay/3", 7) == 0) {
+        data += 2;
         web_ws_relay_action(&Relay3, data);
 #endif
 #ifdef PIN_RELAY_4
     } else if (strncmp(data, "relay/4", 7) == 0) {
+        data += 2;
         web_ws_relay_action(&Relay4, data);
 #endif
     } else if (strncmp(data, "relay", 5) == 0) {
+        printf("relay default\n");
         web_ws_relay_action(&Relay1, data);
     } else if (strncmp(data, "rf/save", 7) == 0) {
         web_ws_rf_save_action(data);

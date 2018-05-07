@@ -9,6 +9,7 @@
         "optional": "cpp",
         "ostream": "cpp",
         "type_traits": "cpp",
-        "chrono": "cpp"
+        "chrono": "cpp",
+        "thread": "cpp"
     }
 }

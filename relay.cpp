@@ -6,10 +6,16 @@
 #include "web.h"
 #include "relay.h"
 
-Relay::Relay(int pin)
+Relay::Relay(int pin, const char * id)
 {
+    _id = id;
     _pin = pin;
     relay_off();
+}
+
+const char * Relay::get_id()
+{
+    return _id;
 }
 
 bool Relay::_can_update()
@@ -29,7 +35,7 @@ void Relay::relay_on()
         gpio_enable(_pin, GPIO_OUTPUT);
         gpio_write(_pin, RELAY_ON);
         _status = RELAY_ON;
-        web_ws_relay_send_status();
+        web_ws_relay_send_status(this);
     }
 }
 
@@ -40,7 +46,7 @@ void Relay::relay_off()
         gpio_enable(_pin, GPIO_OUTPUT);
         gpio_write(_pin, RELAY_OFF);
         _status = RELAY_OFF;
-        web_ws_relay_send_status();
+        web_ws_relay_send_status(this);
     }
 }
 
@@ -73,17 +79,17 @@ void Relay::operator() (int key)
 // need task for timeout
 
 #ifdef PIN_RELAY
-Relay Relay1 = Relay(PIN_RELAY);
+Relay Relay1 = Relay(PIN_RELAY, "relay/1");
 #endif
 
 #ifdef PIN_RELAY_2
-Relay Relay2 = Relay(PIN_RELAY_2);
+Relay Relay2 = Relay(PIN_RELAY_2, "relay/2");
 #endif
 
 #ifdef PIN_RELAY_3
-Relay Relay3 = Relay(PIN_RELAY_3);
+Relay Relay3 = Relay(PIN_RELAY_3, "relay/3");
 #endif
 
 #ifdef PIN_RELAY_4
-Relay Relay4 = Relay(PIN_RELAY_4);
+Relay Relay4 = Relay(PIN_RELAY_4, "relay/4");
 #endif
