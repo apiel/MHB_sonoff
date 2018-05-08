@@ -125,12 +125,14 @@ void web_ws_humidity_send(int16_t humidity)
 void web_ws_relay_action_timer(Action * object, int action, char * data) {
     if (data[0] == ' ') {
         data++;
-        int seconds = char_to_int(data++);
-        if (seconds > 0) {
-            // we also might need a way to have an id to cancel timer?
-            // we might then use (int) strtol(str, (char **)NULL, 10) or atoi
-            // or we could use pointer as well
-            add_timer(object, action, seconds);
+        int seconds = char_to_int(data++); // maybe we should use strtol(str, (char **)NULL, 10) or atoi
+        int id = 0;
+        if (data[0] == ' ') {
+            data++;
+            id = char_to_int(data++);
+        }
+        if (id > 0 || seconds > 0) {
+            add_timer(object, action, seconds, id);
             return;
         }
     }
