@@ -18,12 +18,13 @@ class task_rf_t: public esp_open_rtos::thread::task_t
             int protocol;
             int action;
             int timer;
+            int timer_id;
             char code[RCSWITCH_MAX_CHANGES];
         };
         Store store[RF_STORE_SIZE];
         void task();
-        void trigger_action(int action, int timer);
-        void trigger_action_timer(Action * object, int action, int timer);
+        void trigger_action(int action, int timer, int timer_id);
+        void trigger_action_timer(Action * object, int action, int timer, int timer_id);
         void trigger(char * code, int protocol);
         Action * get_relay(int action);
 

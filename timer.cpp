@@ -18,24 +18,55 @@ struct Timer {
     Action * object = NULL;
     int action = 0;
     unsigned long time = 0;
+    int id = -1;
 };
 Timer timer[TIMER_SIZE];
 
-int get_free_timer() {
+int get_free_timer()
+{
     int pos = 0;
     unsigned long current_time = sdk_system_get_time();
-    for(; pos < TIMER_SIZE && timer[pos].time > current_time; pos++);
-    return timer[pos].time > current_time ? -1 : pos;
+    for(; pos < TIMER_SIZE; pos++) {
+        if (timer[pos].time < current_time) {
+            return pos;
+        }
+    }
+    return -1;
 }
 
-int add_timer(Action * object, int action, int seconds)
+int get_timer_by_id(int id)
 {
-    int pos = get_free_timer();
+    int pos = 0;
+    for(; pos < TIMER_SIZE; pos++) {
+        if (timer[pos].id == id) {
+            return pos;
+        }
+    }
+    return -1;
+}
+
+int get_timer_pos(int id)
+{
+    int pos = -1;
+    if (id > 0) {
+        pos = get_timer_by_id(id);
+    }
+    if (pos == -1) {
+        pos = get_free_timer();
+    }
+    return pos;
+}
+
+int add_timer(Action * object, int action, int seconds, int id)
+{
+    int pos = get_timer_pos(id);
     if (pos > -1) {
+        timer[pos].id = id;
         timer[pos].time = sdk_system_get_time() + (seconds * 1000000);
         timer[pos].object = object;
         timer[pos].action = action;
     }
+    printf("timer added at pos %d with id %d\n", pos, id);
     logInfo("add timer\n");
     return pos;
 }
