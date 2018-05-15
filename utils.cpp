@@ -9,7 +9,7 @@ char * str_extract(char * str, int start, int end, char * ret)
     int len = str_end - str_start;
     // if (len > strlen(ret)) len = strlen(ret);  // it could be out of memory?
     memcpy(ret, str_start, len);
-    ret[len] = '\0'; 
+    ret[len] = '\0';
 
     return str_end;
 }

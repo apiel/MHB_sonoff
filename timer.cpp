@@ -66,7 +66,7 @@ int add_timer(Action * object, int action, int seconds, int id)
         timer[pos].object = object;
         timer[pos].action = action;
     }
-    printf("timer added at pos %d with id %d\n", pos, id);
+    printf("timer added at pos %d with id %d in %d sec\n", pos, id, seconds);
     logInfo("add timer\n");
     return pos;
 }

@@ -3,7 +3,7 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "ENTRANCE"
+#define DEVICE_NAME "WEMOS"
 
 #define MHB_USER "alex"
 #define MHB_ZONE "garage"

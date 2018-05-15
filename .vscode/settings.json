@@ -10,6 +10,7 @@
         "ostream": "cpp",
         "type_traits": "cpp",
         "chrono": "cpp",
-        "thread": "cpp"
+        "thread": "cpp",
+        "config.h": "c"
     }
 }

@@ -17,6 +17,10 @@
 #include "relay.h"
 #include "timer.h"
 
+#include "lwipopts.h"
+#include "httpd.h"
+#include "upnp.h"
+
 #ifdef PIN_DHT
     #include "thermostat.h"
     #include "dht.h"
@@ -29,7 +33,8 @@
 
 task_rf_t task_rf;
 
-// add id to timer -> to dont duplicate them -> to use in rf to dont repeat timer 
+// alexa
+// mqtt > remove websocket and directly use mqtt
 // status
 
 // wifi task to detect disconnect, with callback
@@ -56,7 +61,7 @@ extern "C" void user_init(void)
     // on  000001000101010100111100
     // off 000001000101011100001100
     // rf_save_store((char *)"0c000000010110010101000010E");
-    rf_save_store((char *)"1c000000010110010101000010E");
+    rf_save_store((char *)"0a0100110100101100101001101b0100110100101100101001100b000000010110010101000010E"); // pir on, pir 16 sec off, right button off
 
     #ifdef PIN_RF433_RECEIVER
     task_rf.init_store();
@@ -86,4 +91,7 @@ extern "C" void user_init(void)
     thermostat_init();
     xTaskCreate(ds18b20Task, "ds18b20Task", 256, NULL, 2, NULL);
     #endif
+
+    xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
+    xTaskCreate(&upnp_task, "upnp_task", 1024, NULL, 5, NULL);
 }
