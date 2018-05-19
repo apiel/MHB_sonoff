@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "utils.cpp"
 #include "timer.cpp"
+#include "upnp_utils.cpp"
 
 // mocking is just bullshit in cpp
 // #include "web.cpp"

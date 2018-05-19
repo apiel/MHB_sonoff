@@ -272,11 +272,11 @@ void upnp_update_state(char * request, char * data, char * state)
     if (index < hueItems_count) {
         printf("change state: %d :: %s :: %s\n", index, hueItems[index].name, state);
         char params[512];
-        if (strcmp(state, " true}") == 0) {
+        if (strcmp(state, " true}") == 0) { // upnp_utils_get_requested_state here we use, == "on": true
             strcpy(params, hueItems[index].on);
-        } else {
+        } else { // upnp_utils_get_requested_state here we use, == "on": false
             strcpy(params, hueItems[index].off);
-        }
+        } // we could upnp_utils_get_requested_state check "bri": 90 for sonoff bulb
         // reducer(hueItems[index].action, params);
         printf("here we go, we need to update state: %s then: %s", hueItems[index].action, params);
     }
