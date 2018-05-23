@@ -15,8 +15,8 @@ char * upnp_utils_get_requested_state(char * data)
     // char * state = data + strlen(data) - 9; // "false}" or " true}" // true false not done correctly, to fix
 
     static char state[32];
-    char * next = str_extract(data, '{', '}', state);
+    str_extract(data, '{', '}', state);
 
-    printf("the state: %s\n", state);
+    // printf("the state: %s\n", state);
     return state;
 }

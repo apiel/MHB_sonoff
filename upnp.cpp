@@ -1,4 +1,5 @@
 #include "config.h"
+#include "upnp_utils.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -20,6 +21,10 @@ struct HUEitems
     char * on;
     char * off;
 };
+
+// need define RELAY_NAME
+#define RELAY_NAME "bed light"
+#define RELAY_2_NAME "table light"
 
 struct HUEitems hueItems[] = {
     { "windows lights", "rf433", "1 0101010101100101011001100110101001010101010110100", "1 0101010101100101011001100110101001010101101001010"},
@@ -264,15 +269,16 @@ char * upnp_state_response()
         "{\"name\": \"generic\", \"state\": {\"on\": true, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}";
 }
 
-void upnp_update_state(char * request, char * data, char * state)
+char * upnp_update_state(char * request, char * data)
 {
     char strIndex[2];
     strncpy(strIndex, request + strlen(request) - 8, 2);
     unsigned int index = atoi(strIndex);
+    char * state = upnp_utils_get_requested_state(data);
     if (index < hueItems_count) {
         printf("change state: %d :: %s :: %s\n", index, hueItems[index].name, state);
         char params[512];
-        if (strcmp(state, " true}") == 0) { // upnp_utils_get_requested_state here we use, == "on": true
+        if (strcmp(state, "\"on\": true") == 0) { // upnp_utils_get_requested_state here we use, == "on": true
             strcpy(params, hueItems[index].on);
         } else { // upnp_utils_get_requested_state here we use, == "on": false
             strcpy(params, hueItems[index].off);
@@ -280,6 +286,7 @@ void upnp_update_state(char * request, char * data, char * state)
         // reducer(hueItems[index].action, params);
         printf("here we go, we need to update state: %s then: %s", hueItems[index].action, params);
     }
+    return state;
 }
 
 // {"bri":127} // not supported yet, need to respond with bri instead of on
@@ -294,16 +301,16 @@ void upnp_update_state(char * request, char * data, char * state)
 
 char * upnp_update_state_response(char * request, char * data)
 {
-    printf("update state data(%s): %s\n", request, data);
-    char * state = data + strlen(data) - 9; // "false}" or " true}" // true false not done correctly, to fix
-    upnp_update_state(request, data, state);
+    // printf("update state data(%s): %s\n", request, data);
+    // char * state = data + strlen(data) - 9; // "false}" or " true}" // true false not done correctly, to fix
+    char * state = upnp_update_state(request, data);
 
-    char * light = request + 40;
+    // char * light = request + 40;
     static char response[256];
     snprintf(response, sizeof(response),
         "HTTP/1.1 200 OK\r\n"
         "Content-type: application/json\r\n\r\n"
-        "[{\"success\":{\"%s/on\":%s}]", light, state);
+        "[{\"success\":{%s}]", state);
     // printf("upnp state response: %s\n", response);
 
     return response;
