@@ -1,5 +1,6 @@
 #include "config.h"
 #include "upnp_utils.h"
+#include "relay.h"
 
 #include <unistd.h>
 #include <string.h>
@@ -16,10 +17,8 @@
 
 struct HUEitems
 {
-    char * name;
-    char * action;
-    char * on;
-    char * off;
+    const char * name;
+    Relay * relay;
 };
 
 // need define RELAY_NAME
@@ -27,12 +26,12 @@ struct HUEitems
 #define RELAY_2_NAME "table light"
 
 struct HUEitems hueItems[] = {
-    { "windows lights", "rf433", "1 0101010101100101011001100110101001010101010110100", "1 0101010101100101011001100110101001010101101001010"},
-    { "bed lights", "rf433", "1 0101010101100101011001100110011010100101010110100", "1 0101010101100101011001100110011010100101101001010"},
-    { "room lights", "rf433", "1 0101010101100101011001100110011001011010010110100", "1 0101010101100101011001100110011001011010101001010"},
-    { "kitchen lights", "rf433", "1 0101010101100110010101100110101001010101010110100", "1 0101010101100110010101100110101001010101101001010"},
-    { "toilet lights", "rf433", "1 0101010101100110010101100110011001011010010110100", "1 0101010101100110010101100110011001011010101001010"},    
-    { "wall lights", "rf433", "1 0101010101100110010101100110011010100101010110100", "1 0101010101100110010101100110011010100101101001010"}
+#if defined(RELAY_NAME) && defined(PIN_RELAY)
+    { "table light", &Relay1},
+#endif
+#if defined(RELAY_2_NAME) && defined(PIN_RELAY_2)
+    { "kitchen light", &Relay2},
+#endif
 };
 
 uint8_t hueItems_count = sizeof(hueItems) / sizeof(hueItems[0]);
@@ -260,13 +259,26 @@ char * upnp_config_response()
     //     "}}";
 }
 
-char * upnp_state_response()
+char * upnp_state_response(char * request)
 {
-    printf("return state\n");
-    return (char *)
-        "HTTP/1.1 200 OK\r\n"
+    char strIndex[2]; // duplicate code from next function
+    strncpy(strIndex, request + strlen(request) - 8, 2); // duplicate code from next function
+    unsigned int index = atoi(strIndex); // duplicate code from next function
+
+    printf("return state %d\n", index);
+    // return (char *)
+    //     "HTTP/1.1 200 OK\r\n"
+    //     "Content-type: application/json\r\n\r\n"
+    //     "{\"name\": \"generic\", \"state\": {\"on\": true, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}";
+
+    char response[512];
+    sprintf(response, "HTTP/1.1 200 OK\r\n"
         "Content-type: application/json\r\n\r\n"
-        "{\"name\": \"generic\", \"state\": {\"on\": true, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}";
+        "{\"name\": \"generic\", \"state\": {\"on\": %s, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
+        hueItems[index].relay->relay_status() == RELAY_ON ? "true" : "false");
+
+    printf("the response: %s\n", response);
+    return response;
 }
 
 char * upnp_update_state(char * request, char * data)
@@ -279,12 +291,14 @@ char * upnp_update_state(char * request, char * data)
         printf("change state: %d :: %s :: %s\n", index, hueItems[index].name, state);
         char params[512];
         if (strcmp(state, "\"on\": true") == 0) { // upnp_utils_get_requested_state here we use, == "on": true
-            strcpy(params, hueItems[index].on);
+            strcpy(params, hueItems[index].relay->get_id());
+            (* hueItems[index].relay)(ACTION_RELAY_ON);
         } else { // upnp_utils_get_requested_state here we use, == "on": false
-            strcpy(params, hueItems[index].off);
+            strcpy(params, hueItems[index].relay->get_id());
+            (* hueItems[index].relay)(ACTION_RELAY_OFF);
         } // we could upnp_utils_get_requested_state check "bri": 90 for sonoff bulb
         // reducer(hueItems[index].action, params);
-        printf("here we go, we need to update state: %s then: %s", hueItems[index].action, params);
+        printf("here we go, we need to update state: %s then: %s\n", hueItems[index].name, params);
     }
     return state;
 }
@@ -311,7 +325,7 @@ char * upnp_update_state_response(char * request, char * data)
         "HTTP/1.1 200 OK\r\n"
         "Content-type: application/json\r\n\r\n"
         "[{\"success\":{%s}]", state);
-    // printf("upnp state response: %s\n", response);
+    printf("upnp state response: %s\n", response);
 
     return response;
 }
@@ -335,7 +349,7 @@ char * upnp_action(char * request, char * data)
             if (strcmp(request + strlen(request) - 5, "state") == 0) {
                 response = upnp_update_state_response(request, data);
             } else {
-                response = upnp_state_response();
+                response = upnp_state_response(request);
             }
         }
     }
