@@ -11,6 +11,7 @@
         "type_traits": "cpp",
         "chrono": "cpp",
         "thread": "cpp",
-        "config.h": "c"
+        "config.h": "c",
+        "typeinfo": "cpp"
     }
 }
