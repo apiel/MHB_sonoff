@@ -99,9 +99,9 @@ extern "C" void user_init(void)
     // need to convert to cpp
 
     // we should create a onwificonnectevent
-    #ifdef WS_CLIENT_PORT
-    xTaskCreate(&web_client_task, "web_client_task", 1024, NULL, 3, NULL);
-    #endif
+    // #ifdef WS_CLIENT_PORT
+    // xTaskCreate(&web_client_task, "web_client_task", 1024, NULL, 3, NULL);
+    // #endif
 
     xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
 

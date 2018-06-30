@@ -18,6 +18,7 @@ extern "C" {
 }
 
 #include "wifi.h"
+#include "controller.h"
 
 /* You can use http://test.mosquitto.org/ to test mqtt_client instead
  * of setting up your own MQTT server */
@@ -30,6 +31,8 @@ extern "C" {
 // SemaphoreHandle_t wifi_alive;
 QueueHandle_t publish_queue;
 #define PUB_MSG_LEN 16
+
+char topic[22];
 
 void  beat_task(void *pvParameters)
 {
@@ -49,17 +52,20 @@ void  beat_task(void *pvParameters)
 
 void  topic_received(mqtt_message_data_t *md)
 {
-    int i;
-    mqtt_message_t *message = md->message;
-    printf("Received: ");
-    for( i = 0; i < md->topic->lenstring.len; ++i)
-        printf("%c", md->topic->lenstring.data[ i ]);
+    char msg[1048];
+    memcpy(msg, md->message->payload, md->message->payloadlen);
+    msg[md->message->payloadlen] = '\0';
 
-    printf(" = ");
-    for( i = 0; i < (int)message->payloadlen; ++i)
-        printf("%c", ((char *)(message->payload))[i]);
+    md->topic->lenstring.data[md->topic->lenstring.len] = '\0';
 
-    printf("\r\n");
+    char * action = md->topic->lenstring.data;
+    action += strlen(topic) - 1;
+    // printf("action: %s\nMsg: %s\n\n", action, msg);
+    char tmp[1048]; // to remove later
+    // controller_parse(action, md->message->payload);
+    sprintf(tmp, "%s %s", action, msg);
+    // printf("yoyoyo: %s\n", tmp);
+    controller_parse(tmp);
 }
 
 int queue_publisher(mqtt_client_t * client)
@@ -97,7 +103,6 @@ void  mqtt_task(void *pvParameters)
     struct mqtt_network network;
     mqtt_client_t client   = mqtt_client_default;
     char mqtt_client_id[20];
-    char topic[22];
     uint8_t mqtt_buf[100];
     uint8_t mqtt_readbuf[100];
     mqtt_packet_connect_data_t data = mqtt_packet_connect_data_initializer;
