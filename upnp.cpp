@@ -21,16 +21,16 @@ struct HUEitems
     Relay * relay;
 };
 
-// need define RELAY_NAME
-#define RELAY_NAME "bed light"
-#define RELAY_2_NAME "table light"
+// need refactoring
+// need different id per device instead of abcd1234ef0
+// need define RELAY_NAME in config
 
 struct HUEitems hueItems[] = {
 #if defined(RELAY_NAME) && defined(PIN_RELAY)
     { "table light", &Relay1},
 #endif
 #if defined(RELAY_2_NAME) && defined(PIN_RELAY_2)
-    { "kitchen light", &Relay2},
+    { "entrance light", &Relay2},
 #endif
 };
 

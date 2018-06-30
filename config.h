@@ -3,10 +3,13 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "WEMOS"
+#define DEVICE_NAME "MQTT"
 
-#define MHB_USER "alex"
-#define MHB_ZONE "garage"
+#define RELAY_NAME "mqtt light"
+#define RELAY_2_NAME "entrance light"
+
+#define MHB_USER "alex" // this is not used
+#define MHB_ZONE "garage" // not used
 
 #define AP_PSK "myhomebridge" // between 8 and 63 ASCII-encoded characters
 

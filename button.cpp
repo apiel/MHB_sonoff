@@ -7,6 +7,7 @@
 #include "log.h"
 
 void (*bt_callback)(void);
+void (*bt_callback_short)(void);
 
 unsigned long startTime = 0; 
 
@@ -20,6 +21,8 @@ void handleButton(unsigned char pin) {
         printf(" -> Button was press %lu second.\n", duration);
         if (duration > 3) {
             bt_callback();
+        } else if (bt_callback_short) {
+            bt_callback_short();
         }
     }
 }
@@ -33,4 +36,9 @@ void Button::init() {
 
 Button::Button(void (*callback)(void)) {
     bt_callback = callback;
+}
+
+Button::Button(void (*callback)(void), void (*callback_short)(void)) {
+    bt_callback = callback;
+    bt_callback_short = callback_short;
 }

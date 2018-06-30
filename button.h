@@ -5,6 +5,7 @@
 class Button {
     public:
         Button(void (*callback)(void));
+        Button(void (*callback)(void), void (*callback_short)(void));
         void init();
 
     // private:

@@ -27,12 +27,13 @@ const char * req_true_state2 = "Host: 192.168.0.66\n\r"
 
 TEST(upnp_utils_get_requested_state, try_false)
 {
-	ASSERT_EQ("false", upnp_utils_get_requested_state((char *)req_false_state));
-    ASSERT_EQ("false", upnp_utils_get_requested_state((char *)req_false_state2));
+    // printf("the state: '%s' == '%s'\n", "\"on\": false", upnp_utils_get_requested_state((char *)req_false_state));
+	ASSERT_EQ("\"on\": false", upnp_utils_get_requested_state((char *)req_false_state));
+    ASSERT_EQ("\"on\": false", upnp_utils_get_requested_state((char *)req_false_state2));
 }
 
 TEST(upnp_utils_get_requested_state, try_true)
 {
-	ASSERT_EQ("true", upnp_utils_get_requested_state((char *)req_true_state));
-    ASSERT_EQ("true", upnp_utils_get_requested_state((char *)req_true_state2));
+	ASSERT_EQ("\"on\": true", upnp_utils_get_requested_state((char *)req_true_state));
+    ASSERT_EQ("\"on\": true", upnp_utils_get_requested_state((char *)req_true_state2));
 }
