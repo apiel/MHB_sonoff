@@ -33,6 +33,7 @@
 #endif
 
 task_rf_t task_rf;
+mqtt_t mqtt;
 
 // alexa
 // mqtt > remove websocket and directly use mqtt
@@ -117,5 +118,6 @@ extern "C" void user_init(void)
     xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
     xTaskCreate(&upnp_task, "upnp_task", 1024, NULL, 5, NULL);
 
-    mqtt_start();
+    mqtt.init();
+    mqtt.task_create("mqtt");
 }
