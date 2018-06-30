@@ -10,6 +10,7 @@
 
 #include "web.h"
 #include "thermostat.h"
+#include "controller.h"
 
 const dht_sensor_type_t sensor_type = DHT_TYPE_DHT11;
 
@@ -31,11 +32,11 @@ void dhtTask(void *pvParameters)
             humidity /= 10;
             temperature /= 10;
             if (prev_temperature != temperature) {
-                web_ws_temperature_send(temperature);
+                controller_temperature_send(temperature);
                 temperature_changed((int)temperature);
             }
             if (prev_humidity != humidity) {
-                web_ws_humidity_send(humidity);
+                controller_humidity_send(humidity);
             }
             prev_temperature = temperature;
             prev_humidity = humidity;

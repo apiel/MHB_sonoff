@@ -11,6 +11,7 @@
 #include "utils.h"
 #include "config.h"
 #include "log.h"
+#include "controller.h"
 
 #define POLL_INTERVAL 4
 
@@ -46,7 +47,7 @@ void web_client_read(void * data)
     if (msg.opcode == OPCODE_BINARY) {
         web_ota_recv(&msg);
     } else {
-        web_ws_parse((char *)msg.data);
+        controller_parse((char *)msg.data);
     }
 }
 

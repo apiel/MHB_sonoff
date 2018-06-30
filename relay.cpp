@@ -5,6 +5,7 @@
 #include "log.h"
 #include "web.h"
 #include "relay.h"
+#include "controller.h"
 
 Relay::Relay(int pin, const char * id)
 {
@@ -35,7 +36,7 @@ void Relay::relay_on()
         gpio_enable(_pin, GPIO_OUTPUT);
         gpio_write(_pin, RELAY_ON);
         _status = RELAY_ON;
-        web_ws_relay_send_status(this);
+        controller_relay_send_status(this);
     }
 }
 
@@ -46,7 +47,7 @@ void Relay::relay_off()
         gpio_enable(_pin, GPIO_OUTPUT);
         gpio_write(_pin, RELAY_OFF);
         _status = RELAY_OFF;
-        web_ws_relay_send_status(this);
+        controller_relay_send_status(this);
     }
 }
 

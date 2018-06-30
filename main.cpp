@@ -16,6 +16,7 @@
 #include "rf.h"
 #include "relay.h"
 #include "timer.h"
+#include "controller.h"
 
 #include "lwipopts.h"
 #include "httpd.h"

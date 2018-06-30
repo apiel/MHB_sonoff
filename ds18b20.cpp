@@ -11,6 +11,7 @@
 
 #include "web.h"
 #include "thermostat.h"
+#include "controller.h"
 
 float prev_temperature = 0;
 
@@ -22,7 +23,7 @@ void ds18b20Task(void *pvParameters)
         if (temperature) {
             if (prev_temperature != temperature) {
                 printf("-> temp: %.1f\n", temperature);
-                web_ws_temperature_send(temperature);
+                controller_temperature_send(temperature);
                 temperature_changed((int)temperature);
             }
             prev_temperature = temperature;
