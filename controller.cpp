@@ -68,33 +68,32 @@ void controller_relay_action_timer(Action * object, int action, char * data) {
 
 void controller_relay_action(Action * object, char * data)
 {
-    data += 5;
-    if (strncmp(data, " on", 3) == 0) {
+    if (strncmp(data, "on", 2) == 0) {
         // relay_on();
         data += 3;
         controller_relay_action_timer(object, ACTION_RELAY_ON, data);
-    } else if (strncmp(data, " off", 4) == 0) {
+    } else if (strncmp(data, "off", 3) == 0) {
         // relay_off();
         data += 4;
         controller_relay_action_timer(object, ACTION_RELAY_OFF, data);
-    } else if (strncmp(data, " toggle", 7) == 0) {
+    } else if (strncmp(data, "toggle", 6) == 0) {
         // relay_toggle();
         data += 7;
         controller_relay_action_timer(object, ACTION_RELAY_TOGGLE, data);
-    } else if (strncmp(data, " status", 6) == 0) {
+    } else if (strncmp(data, "status", 6) == 0) {
         controller_relay_send_status((Relay *)object);
     }
 }
 
 void controller_rf_save_action(char * data)
 {
-    data += 7;
     rf_save_store(data);
     mqtt_send("log", "rf saved");
 }
 
 // void controller_ota_action(char * data)
 // {
+// need 3 params
 //     data += 3;
 //     if (strncmp(data, " start", 6) == 0) {
 //         web_ota_start();
@@ -114,7 +113,6 @@ void controller_rf_save_action(char * data)
 
 void controller_thermostat_action(char * data)
 {
-    data += 10;
     if (data[0] == ' ') {
         data++;
         int temperature = char_to_int(data++);
@@ -122,37 +120,32 @@ void controller_thermostat_action(char * data)
     }
 }
 
-void controller_parse(char *data)
+void controller_parse(char *action, char *data)
 {
-    // printf("data: %s\n", data);
-    if (strncmp(data, "wifi/set ", 9) == 0) {
+    if (strncmp(action, "wifi/set", 9) == 0) {
         controller_set_wifi(data);
-    } else if (strncmp(data, "relay/1", 7) == 0) {
-        data += 2;
+    } else if (strncmp(action, "relay/1", 7) == 0) {
         controller_relay_action(&Relay1, data);
 #ifdef PIN_RELAY_2
-    } else if (strncmp(data, "relay/2", 7) == 0) {
-        data += 2;
+    } else if (strncmp(action, "relay/2", 7) == 0) {
         controller_relay_action(&Relay2, data);
 #endif
 #ifdef PIN_RELAY_3
-    } else if (strncmp(data, "relay/3", 7) == 0) {
-        data += 2;
+    } else if (strncmp(action, "relay/3", 7) == 0) {
         controller_relay_action(&Relay3, data);
 #endif
 #ifdef PIN_RELAY_4
-    } else if (strncmp(data, "relay/4", 7) == 0) {
-        data += 2;
+    } else if (strncmp(action, "relay/4", 7) == 0) {
         controller_relay_action(&Relay4, data);
 #endif
-    } else if (strncmp(data, "relay", 5) == 0) {
+    } else if (strncmp(action, "relay", 5) == 0) {
         printf("relay default\n");
         controller_relay_action(&Relay1, data);
-    } else if (strncmp(data, "rf/save", 7) == 0) {
+    } else if (strncmp(action, "rf/save", 7) == 0) {
         controller_rf_save_action(data);
     // } else if (strncmp(data, "ota", 3) == 0) {
     //     controller_ota_action(data);
-    } else if (strncmp(data, "thermostat", 10) == 0) {
+    } else if (strncmp(action, "thermostat", 10) == 0) {
         controller_thermostat_action(data);
     }
 }

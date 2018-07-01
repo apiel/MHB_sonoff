@@ -56,12 +56,11 @@ void  topic_received(mqtt_message_data_t *md)
 
     char * action = md->topic->lenstring.data;
     action += strlen(subscribe_topic) - 1;
-    // printf("action: %s\nMsg: %s\n\n", action, msg);
-    char tmp[PAYLOAD_LEN]; // to remove later
-    // controller_parse(action, md->message->payload);
-    sprintf(tmp, "%s %s", action, msg);
-    // printf("yoyoyo: %s\n", tmp);
-    controller_parse(tmp);
+    printf("action: %s msg: %s\n\n", action, msg);
+    controller_parse(action, msg);
+    // char tmp[PAYLOAD_LEN]; // to remove later
+    // sprintf(tmp, "%s %s", action, msg);
+    // controller_parse(tmp);
 }
 
 int queue_publisher(mqtt_client_t * client)
