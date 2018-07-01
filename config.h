@@ -6,7 +6,7 @@
 #define DEVICE_NAME "MQTT"
 
 #define RELAY_NAME "mqtt light"
-#define RELAY_2_NAME "entrance light"
+#define RELAY_2_NAME "mqtt2 light"
 
 #define MHB_USER "alex" // this is not used
 #define MHB_ZONE "garage" // not used
@@ -53,7 +53,7 @@
     #define PIN_LED 2
     #define PIN_RF433_RECEIVER 14 // D5
     #define PIN_RELAY 5 // D1
-    #define PIN_RELAY_2 5
+    // #define PIN_RELAY_2 5
     // #define PIN_DHT 12 // D6
     // #define PIN_DS18B20 12 // D6
 #endif

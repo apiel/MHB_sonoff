@@ -10,10 +10,14 @@
 #include <espressif/esp_common.h>
 
 #include "upnp.h"
+#include "wifi.h"
+
 // #include "action.h"
 
 #define UPNP_MCAST_GRP  ("239.255.255.250")
 #define UPNP_MCAST_PORT (1900)
+
+const char * uid;
 
 struct HUEitems
 {
@@ -27,10 +31,10 @@ struct HUEitems
 
 struct HUEitems hueItems[] = {
 #if defined(RELAY_NAME) && defined(PIN_RELAY)
-    { "table light", &Relay1},
+    { RELAY_NAME, &Relay1},
 #endif
 #if defined(RELAY_2_NAME) && defined(PIN_RELAY_2)
-    { "entrance light", &Relay2},
+    { RELAY_2_NAME, &Relay2},
 #endif
 };
 
@@ -170,6 +174,8 @@ void upnp_task(void *pvParameters)
     bool ok = false;
     printf("Upnp task\n\r");
 
+    uid = get_uid();
+
     while (1) {
         if (!ok) ok = upnp_server_init();
         vTaskDelay(1000);
@@ -238,25 +244,14 @@ char * upnp_config_response()
             strcat(response, ",");
         }
         snprintf(item, sizeof(item),
-            "\"abcd1234ef0%d\": {\"name\": \"%s\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"abcd1234ef0%d\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
-            index, hueItems[index].name, index);
+            "\"%s0%d\": {\"name\": \"%s\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"%s0%d\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
+            uid, index, hueItems[index].name, uid, index);
         strcat(response, item);
     }
     strcat(response, "}}");
 
     printf("-->> config response: %s\n", response);
     return response;
-
-    // return
-    //     "{\"lights\":{"
-    //     "\"5102d46c-50d5-4bc7-a180-38623e4bbb00\": {\"name\": \"windows lights\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}},"
-    //     "\"abcd1234ef1\": {\"name\": \"bed lights\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}},"
-    //     "\"5102d46c-50d5-4bc7-a180-38623e4bbb02\": {\"name\": \"room lights\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}},"
-    //     "\"5102d46c-50d5-4bc7-a180-38623e4bbb03\": {\"name\": \"kitchen lights\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}},"
-    //     "\"5102d46c-50d5-4bc7-a180-38623e4bbb04\": {\"name\": \"toilet lights\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}},"
-    //     "\"5102d46c-50d5-4bc7-a180-38623e4bbb05\": {\"name\": \"wall lights\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}},"
-    //     "\"5102d46c-50d5-4bc7-a180-38623e4bbb06\": {\"name\": \"store\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}"
-    //     "}}";
 }
 
 char theResponse[512];
@@ -268,19 +263,14 @@ char * upnp_state_response(char * request)
     unsigned int index = atoi(strIndex); // duplicate code from next function
 
     printf("return state (%d)[%s]: %s\n", index, strIndex, request);
-    // return (char *)
-    //     "HTTP/1.1 200 OK\r\n"
-    //     "Content-type: application/json\r\n\r\n"
-    //     "{\"name\": \"generic\", \"state\": {\"on\": true, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}";
 
-    // sprintf(response, "HTTP/1.1 200 OK\r\n"
     sprintf(theResponse, "HTTP/1.1 200 OK\r\n"
         "Content-type: application/json\r\n\r\n"
     // sprintf(theResponse, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nDate: Fri, 01 Jun 2018 22:17:37 GMT\r\nConnection: keep-alive\r\nTransfer-Encoding: chunked\r\n\r\n"
         // "{\"name\": \"generic\", \"state\": {\"on\": %s, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"5102d46c-50d5-4bc7-a180-38623e4bbb08\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
         // "{\"state\": {\"on\": %s, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"ct\": 365, \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"name\": \"%s\", \"modelid\": \"LCT004\", \"manufacturername\": \"Philips\", \"uniqueid\": \"abcd1234ef0%d\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
-        "{\"state\": {\"on\": %s, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"alert\": \"none\", \"colormode\": \"ct\", \"ct\": 365, \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"name\": \"%s\", \"modelid\": \"LCT004\", \"manufacturername\": \"Philips\", \"uniqueid\": \"abcd1234ef0%d\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
-        hueItems[index].relay->relay_status() == RELAY_ON ? "true" : "false", hueItems[index].name, index);
+        "{\"state\": {\"on\": %s, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"alert\": \"none\", \"colormode\": \"ct\", \"ct\": 365, \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"name\": \"%s\", \"modelid\": \"LCT004\", \"manufacturername\": \"Philips\", \"uniqueid\": \"%s0%d\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
+        hueItems[index].relay->relay_status() == RELAY_ON ? "true" : "false", hueItems[index].name, uid, index);
 
     printf("the response: %s\n", theResponse);
     return theResponse;
@@ -329,7 +319,6 @@ char * upnp_update_state_response(char * request, char * data)
     snprintf(response, sizeof(response),
         "HTTP/1.1 200 OK\r\n"
         "Content-type: application/json\r\n\r\n"
-        // "[{\"success\":{\"/lights/abcd1234ef01/state/on\":true}}]");
         "[{\"success\":{\"%s/on\":%s}}]", light, strcmp(state, "\"on\": true") == 0 ? "true" : "false");
     printf("upnp state response: %s\n", response);
 
