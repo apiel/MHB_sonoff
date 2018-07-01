@@ -10,7 +10,6 @@
 #include "config.h"
 #include "wifi.h"
 #include "button.h"
-#include "web_client.h"
 #include "EEPROM.h"
 #include "version.h"
 #include "rf.h"
@@ -38,10 +37,7 @@ task_rf_t task_rf;
 // todo
 // #include "http_client_ota.h"
 
-// alexa
-// mqtt > remove websocket and directly use mqtt
 // status
-
 // wifi task to detect disconnect, with callback
 // AES or encryption XOR...
 // improve wifi
@@ -98,13 +94,6 @@ extern "C" void user_init(void)
     #ifdef TFTP_PORT
     ota_tftp_init_server(TFTP_PORT); // not very stable because of TFTP protocol
     #endif
-
-    // need to convert to cpp
-
-    // we should create a onwificonnectevent
-    // #ifdef WS_CLIENT_PORT
-    // xTaskCreate(&web_client_task, "web_client_task", 1024, NULL, 3, NULL);
-    // #endif
 
     xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
 

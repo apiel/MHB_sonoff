@@ -3,7 +3,6 @@
 
 #include "config.h"
 #include "log.h"
-#include "web.h"
 #include "relay.h"
 #include "controller.h"
 

@@ -1,7 +1,6 @@
 #include <espressif/esp_common.h>
 
 #include "config.h"
-#include "web.h"
 #include "log.h"
 #include "relay.h"
 #include "EEPROM.h"
