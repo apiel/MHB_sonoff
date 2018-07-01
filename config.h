@@ -29,6 +29,10 @@
 
 #define WS_CLIENT_PORT 3080
 
+#define OTA_HOST "vps.alexparadise.com"
+#define OTA_PORT "8080"
+#define OTA_PATH "/firmware.bin"
+
 #define LOG_ERROR
 #define LOG_INFO
 #define LOG_DEBUG

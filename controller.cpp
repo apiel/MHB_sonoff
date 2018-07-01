@@ -27,6 +27,24 @@ void controller_set_wifi(char * data)
     mqtt_send("log", "wifi configured");
 }
 
+void controller_ota_action(char * data)
+{
+    printf("controller_ota_action\n");
+    char host[32] = OTA_HOST;
+    char port[5] = OTA_PORT;
+    char path[64] = OTA_PATH;
+    // still not completely working
+    char * next = str_extract(data, 0, ' ', host); // str_extract(data, 0, ' ' || '\0', host)
+    if (next) {
+        next = str_extract(data, ' ', ' ', port);
+        if (next) {
+            str_extract(next, ' ', '\0', path);
+        }
+    }
+
+    printf("host: %s, port: %s, path: %s\n", host, port, path);
+}
+
 void controller_relay_send_status(Relay * relay)
 {
     mqtt_send(
@@ -91,26 +109,6 @@ void controller_rf_save_action(char * data)
     mqtt_send("log", "rf saved");
 }
 
-// void controller_ota_action(char * data)
-// {
-// need 3 params
-//     data += 3;
-//     if (strncmp(data, " start", 6) == 0) {
-//         web_ota_start();
-//     } else if (strncmp(data, " end", 4) == 0) {
-//         web_ota_end();
-//     } else if (strncmp(data, " next", 5) == 0) {
-//         web_ota_next();
-//     } else if (strncmp(data, " slot", 5) == 0) {
-//         data += 5;
-//         if (data[0] == '\0') {
-//             web_ota_get_slot();
-//         } else {
-//             web_ota_set_slot(data[0]);
-//         }
-//     }
-// }
-
 void controller_thermostat_action(char * data)
 {
     if (data[0] == ' ') {
@@ -143,8 +141,8 @@ void controller_parse(char *action, char *data)
         controller_relay_action(&Relay1, data);
     } else if (strncmp(action, "rf/save", 7) == 0) {
         controller_rf_save_action(data);
-    // } else if (strncmp(data, "ota", 3) == 0) {
-    //     controller_ota_action(data);
+    } else if (strncmp(action, "ota", 3) == 0) {
+        controller_ota_action(data);
     } else if (strncmp(action, "thermostat", 10) == 0) {
         controller_thermostat_action(data);
     }
