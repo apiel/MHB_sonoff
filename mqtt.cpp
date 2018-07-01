@@ -17,47 +17,26 @@ extern "C" {
   #include <paho_mqtt_c/MQTTClient.h>
 }
 
+#include "config.h"
 #include "wifi.h"
 #include "controller.h"
 
-/* You can use http://test.mosquitto.org/ to test mqtt_client instead
- * of setting up your own MQTT server */
-#define MQTT_HOST ("vps.alexparadise.com")
-#define MQTT_PORT 1883
-
-#define MQTT_USER NULL
-#define MQTT_PASS NULL
-
-// SemaphoreHandle_t wifi_alive;
 QueueHandle_t publish_queue;
+
+#define PAYLOAD_LEN 128
 
 typedef struct
 {
     char topic[64];
-    char payload[128];
+    char payload[PAYLOAD_LEN];
 } mqtt_msg;
 
 char subscribe_topic[22];
 
-#define PUB_MSG_LEN 16
-int count = 0;
-
 void mqtt_send(const char * topic, const char * payload)
 {
     if (publish_queue) {
-        printf("Put mqtt msg in queue (%s): %s\n", topic, payload);
-        // char msg[1024];
-        // snprintf(msg, 1024, "%s%c", payload, '\0');
-        // if (xQueueSend(publish_queue, (void *)msg, 0) == pdFALSE) {
-        //     printf("Publish queue overflow (no more place in queue).\r\n");
-        // }
-
-        // char msg[PUB_MSG_LEN];
-        // snprintf(msg, PUB_MSG_LEN, "Beat %d\r\n", count++);
-        // if (xQueueSend(publish_queue, (void *)msg, 0) == pdFALSE) {
-        //     printf("Publish queue overflow.\r\n");
-        // }
-
+        // printf("Put mqtt msg in queue (%s): %s\n", topic, payload);
         mqtt_msg msg;
         strcpy(msg.topic, topic);
         strcpy(msg.payload, payload);
@@ -69,7 +48,7 @@ void mqtt_send(const char * topic, const char * payload)
 
 void  topic_received(mqtt_message_data_t *md)
 {
-    char msg[128];
+    char msg[PAYLOAD_LEN];
     memcpy(msg, md->message->payload, md->message->payloadlen);
     msg[md->message->payloadlen] = '\0';
 
@@ -78,7 +57,7 @@ void  topic_received(mqtt_message_data_t *md)
     char * action = md->topic->lenstring.data;
     action += strlen(subscribe_topic) - 1;
     // printf("action: %s\nMsg: %s\n\n", action, msg);
-    char tmp[128]; // to remove later
+    char tmp[PAYLOAD_LEN]; // to remove later
     // controller_parse(action, md->message->payload);
     sprintf(tmp, "%s %s", action, msg);
     // printf("yoyoyo: %s\n", tmp);
@@ -92,7 +71,7 @@ int queue_publisher(mqtt_client_t * client)
         mqtt_msg msg;
         while(xQueueReceive(publish_queue, &msg, 0) ==
                 pdTRUE){
-            printf("got message to publish\r\n");
+            // printf("got message to publish\r\n");
             mqtt_message_t message;
             message.payload = msg.payload;
             message.payloadlen = strlen(msg.payload);
@@ -105,23 +84,6 @@ int queue_publisher(mqtt_client_t * client)
                 break;
             }
         }
-
-        // char msg[PUB_MSG_LEN - 1] = "\0";
-        // while(xQueueReceive(publish_queue, (void *)msg, 0) ==
-        //         pdTRUE){
-        //     printf("got message to publish\r\n");
-        //     mqtt_message_t message;
-        //     message.payload = msg;
-        //     message.payloadlen = PUB_MSG_LEN;
-        //     message.dup = 0;
-        //     message.qos = MQTT_QOS1;
-        //     message.retained = 0;
-        //     ret = mqtt_publish(client, "beat", &message);
-        //     if (ret != MQTT_SUCCESS ){
-        //         printf("error while publishing message: %d\n", ret );
-        //         break;
-        //     }
-        // }
 
         ret = mqtt_yield(client, 1000);
         if (ret == MQTT_DISCONNECTED)
@@ -192,7 +154,6 @@ void  mqtt_task(void *pvParameters)
 
 void mqtt_start()
 {
-    publish_queue = xQueueCreate(3, sizeof(mqtt_msg) + 64 + 128);
-    // publish_queue = xQueueCreate(3, PUB_MSG_LEN);
+    publish_queue = xQueueCreate(3, sizeof(mqtt_msg));
     xTaskCreate(&mqtt_task, "mqtt_task", 1024, NULL, 4, NULL);
 }
