@@ -30,38 +30,55 @@ extern "C" {
 
 // SemaphoreHandle_t wifi_alive;
 QueueHandle_t publish_queue;
-#define PUB_MSG_LEN 16
 
-char topic[22];
-
-void  beat_task(void *pvParameters)
+typedef struct
 {
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    char msg[PUB_MSG_LEN];
-    int count = 0;
+    char topic[64];
+    char payload[128];
+} mqtt_msg;
 
-    while (1) {
-        vTaskDelayUntil(&xLastWakeTime, 10000 / portTICK_PERIOD_MS);
-        printf("beat\r\n");
-        snprintf(msg, PUB_MSG_LEN, "Beat %d\r\n", count++);
-        if (xQueueSend(publish_queue, (void *)msg, 0) == pdFALSE) {
-            printf("Publish queue overflow.\r\n");
+char subscribe_topic[22];
+
+#define PUB_MSG_LEN 16
+int count = 0;
+
+void mqtt_send(const char * topic, const char * payload)
+{
+    if (publish_queue) {
+        printf("Put mqtt msg in queue (%s): %s\n", topic, payload);
+        // char msg[1024];
+        // snprintf(msg, 1024, "%s%c", payload, '\0');
+        // if (xQueueSend(publish_queue, (void *)msg, 0) == pdFALSE) {
+        //     printf("Publish queue overflow (no more place in queue).\r\n");
+        // }
+
+        // char msg[PUB_MSG_LEN];
+        // snprintf(msg, PUB_MSG_LEN, "Beat %d\r\n", count++);
+        // if (xQueueSend(publish_queue, (void *)msg, 0) == pdFALSE) {
+        //     printf("Publish queue overflow.\r\n");
+        // }
+
+        mqtt_msg msg;
+        strcpy(msg.topic, topic);
+        strcpy(msg.payload, payload);
+        if (xQueueSend(publish_queue, &msg, 0) == pdFALSE) {
+            printf("Publish queue overflow (no more place in queue).\r\n");
         }
     }
 }
 
 void  topic_received(mqtt_message_data_t *md)
 {
-    char msg[1048];
+    char msg[128];
     memcpy(msg, md->message->payload, md->message->payloadlen);
     msg[md->message->payloadlen] = '\0';
 
     md->topic->lenstring.data[md->topic->lenstring.len] = '\0';
 
     char * action = md->topic->lenstring.data;
-    action += strlen(topic) - 1;
+    action += strlen(subscribe_topic) - 1;
     // printf("action: %s\nMsg: %s\n\n", action, msg);
-    char tmp[1048]; // to remove later
+    char tmp[128]; // to remove later
     // controller_parse(action, md->message->payload);
     sprintf(tmp, "%s %s", action, msg);
     // printf("yoyoyo: %s\n", tmp);
@@ -72,23 +89,39 @@ int queue_publisher(mqtt_client_t * client)
 {
     int ret = 0;
     while(1){
-
-        char msg[PUB_MSG_LEN - 1] = "\0";
-        while(xQueueReceive(publish_queue, (void *)msg, 0) ==
+        mqtt_msg msg;
+        while(xQueueReceive(publish_queue, &msg, 0) ==
                 pdTRUE){
             printf("got message to publish\r\n");
             mqtt_message_t message;
-            message.payload = msg;
-            message.payloadlen = PUB_MSG_LEN;
+            message.payload = msg.payload;
+            message.payloadlen = strlen(msg.payload);
             message.dup = 0;
             message.qos = MQTT_QOS1;
             message.retained = 0;
-            ret = mqtt_publish(client, "/beat", &message);
+            ret = mqtt_publish(client, msg.topic, &message);
             if (ret != MQTT_SUCCESS ){
                 printf("error while publishing message: %d\n", ret );
                 break;
             }
         }
+
+        // char msg[PUB_MSG_LEN - 1] = "\0";
+        // while(xQueueReceive(publish_queue, (void *)msg, 0) ==
+        //         pdTRUE){
+        //     printf("got message to publish\r\n");
+        //     mqtt_message_t message;
+        //     message.payload = msg;
+        //     message.payloadlen = PUB_MSG_LEN;
+        //     message.dup = 0;
+        //     message.qos = MQTT_QOS1;
+        //     message.retained = 0;
+        //     ret = mqtt_publish(client, "beat", &message);
+        //     if (ret != MQTT_SUCCESS ){
+        //         printf("error while publishing message: %d\n", ret );
+        //         break;
+        //     }
+        // }
 
         ret = mqtt_yield(client, 1000);
         if (ret == MQTT_DISCONNECTED)
@@ -110,8 +143,8 @@ void  mqtt_task(void *pvParameters)
     mqtt_network_new( &network );
     memset(mqtt_client_id, 0, sizeof(mqtt_client_id));
     strcpy(mqtt_client_id, get_uid());
-    strcpy(topic, mqtt_client_id);
-    strcat(topic, "/#");
+    strcpy(subscribe_topic, mqtt_client_id);
+    strcat(subscribe_topic, "/#");
 
     while(1) {
         // xSemaphoreTake(wifi_alive, portMAX_DELAY);
@@ -146,7 +179,7 @@ void  mqtt_task(void *pvParameters)
             continue;
         }
         printf("done\r\n");
-        mqtt_subscribe(&client, topic, MQTT_QOS1, topic_received);
+        mqtt_subscribe(&client, subscribe_topic, MQTT_QOS1, topic_received);
         xQueueReset(publish_queue);
 
         ret = queue_publisher(&client);
@@ -159,7 +192,7 @@ void  mqtt_task(void *pvParameters)
 
 void mqtt_start()
 {
-    publish_queue = xQueueCreate(3, PUB_MSG_LEN);
-    // xTaskCreate(&beat_task, "beat_task", 256, NULL, 3, NULL);
+    publish_queue = xQueueCreate(3, sizeof(mqtt_msg) + 64 + 128);
+    // publish_queue = xQueueCreate(3, PUB_MSG_LEN);
     xTaskCreate(&mqtt_task, "mqtt_task", 1024, NULL, 4, NULL);
 }

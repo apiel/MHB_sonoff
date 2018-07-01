@@ -1,17 +1,18 @@
 #include <string.h>
 #include <espressif/esp_common.h>
 
-#include "web.h"
+// #include "web.h"
 #include "log.h"
 #include "wifi.h"
 #include "utils.h"
 #include "relay.h"
 #include "config.h"
 #include "rf.h"
-#include "web_ota.h"
+// #include "web_ota.h"
 #include "timer.h"
 #include "thermostat.h"
 #include "action.h"
+#include "mqtt.h"
 
 void controller_set_wifi(char * data)
 {
@@ -23,29 +24,29 @@ void controller_set_wifi(char * data)
     logInfo("Set wifi ssid and password\n");
 
     wifi_new_connection(ssid, password);
-    web_send_all((char *)". wifi configured");
+    mqtt_send("log", "wifi configured");
 }
 
 void controller_relay_send_status(Relay * relay)
 {
-    char msg[15];
-    sprintf(msg, ". %s %s%c", relay->get_id(), relay->relay_status() == RELAY_ON ? "on" : "off", '\0');
-    web_send_all(msg);
+    mqtt_send(
+        relay->get_id(),
+        relay->relay_status() == RELAY_ON ? "on" : "off"
+    );
 }
 
 void controller_temperature_send(int16_t temperature)
 {
-    char msg[17];
-    sprintf(msg, ". temperature %d%c", temperature, '\0');
-    web_send_all(msg);
-    // web_send_all((char *)". temperature 10");
+    char value[3];
+    sprintf(value, "%d%c", temperature, '\0');
+    mqtt_send("temperature", (const char *)value);
 }
 
 void controller_humidity_send(int16_t humidity)
 {
-    char msg[14];
-    sprintf(msg, ". humidity %d%c", humidity, '\0');
-    web_send_all(msg);
+    char value[3];
+    sprintf(value, "%d%c", humidity, '\0');
+    mqtt_send("humidity", (const char *)value);
 }
 
 void controller_relay_action_timer(Action * object, int action, char * data) {
@@ -89,27 +90,27 @@ void controller_rf_save_action(char * data)
 {
     data += 7;
     rf_save_store(data);
-    web_send_all((char *)". rf saved");
+    mqtt_send("log", "rf saved");
 }
 
-void controller_ota_action(char * data)
-{
-    data += 3;
-    if (strncmp(data, " start", 6) == 0) {
-        web_ota_start();
-    } else if (strncmp(data, " end", 4) == 0) {
-        web_ota_end();
-    } else if (strncmp(data, " next", 5) == 0) {
-        web_ota_next();
-    } else if (strncmp(data, " slot", 5) == 0) {
-        data += 5;
-        if (data[0] == '\0') {
-            web_ota_get_slot();
-        } else {
-            web_ota_set_slot(data[0]);
-        }
-    }
-}
+// void controller_ota_action(char * data)
+// {
+//     data += 3;
+//     if (strncmp(data, " start", 6) == 0) {
+//         web_ota_start();
+//     } else if (strncmp(data, " end", 4) == 0) {
+//         web_ota_end();
+//     } else if (strncmp(data, " next", 5) == 0) {
+//         web_ota_next();
+//     } else if (strncmp(data, " slot", 5) == 0) {
+//         data += 5;
+//         if (data[0] == '\0') {
+//             web_ota_get_slot();
+//         } else {
+//             web_ota_set_slot(data[0]);
+//         }
+//     }
+// }
 
 void controller_thermostat_action(char * data)
 {
@@ -149,8 +150,8 @@ void controller_parse(char *data)
         controller_relay_action(&Relay1, data);
     } else if (strncmp(data, "rf/save", 7) == 0) {
         controller_rf_save_action(data);
-    } else if (strncmp(data, "ota", 3) == 0) {
-        controller_ota_action(data);
+    // } else if (strncmp(data, "ota", 3) == 0) {
+    //     controller_ota_action(data);
     } else if (strncmp(data, "thermostat", 10) == 0) {
         controller_thermostat_action(data);
     }
