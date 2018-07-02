@@ -13,6 +13,7 @@
 #include "thermostat.h"
 #include "action.h"
 #include "mqtt.h"
+#include "ota.h"
 
 void controller_set_wifi(char * data)
 {
@@ -33,16 +34,20 @@ void controller_ota_action(char * data)
     char host[32] = OTA_HOST;
     char port[5] = OTA_PORT;
     char path[64] = OTA_PATH;
-    // still not completely working
-    char * next = str_extract(data, 0, ' ', host); // str_extract(data, 0, ' ' || '\0', host)
-    if (next) {
+
+    char * next = str_extract(data, 0, ' ', host);
+    if (!next) next = str_extract(data, 0, '\0', host);
+    else if (next) {
         next = str_extract(data, ' ', ' ', port);
-        if (next) {
+        if (!next) next = str_extract(data, ' ', '\0', port);
+        else if (next) {
             str_extract(next, ' ', '\0', path);
         }
     }
+    if (!strlen(host)) strcpy(host, OTA_HOST);
 
-    printf("host: %s, port: %s, path: %s\n", host, port, path);
+    // printf("host: %s, port: %s, path: %s\n", host, port, path);
+    ota(host, port, path);
 }
 
 void controller_relay_send_status(Relay * relay)
