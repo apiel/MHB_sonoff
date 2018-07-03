@@ -37,13 +37,11 @@ task_rf_t task_rf;
 // todo
 // #include "http_client_ota.h"
 
+// uid in eeprom
+
 // status
 // wifi task to detect disconnect, with callback
-// AES or encryption XOR...
 // improve wifi
-// fix log
-// unit test https://github.com/SuperHouse/esp-open-rtos/tree/master/tests
-
 // esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm dout -ff 40m 0x0 ../esp-open-rtos/bootloader/firmware/rboot.bin 0x1000 ../esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin 0x2000 ./firmware/firmware.bin
 
 extern "C" void user_init(void)

@@ -2,6 +2,8 @@
 #include <esp8266.h>
 #include <string.h>
 
+// in http_buffered_client if (http_reponse.length && tot_http_pdu_rd != http_reponse.length)
+
 extern "C" {
     #include <http_client_ota.h>
 }
@@ -56,11 +58,10 @@ static inline void ota_error_handling(OTA_err err) {
     }
 }
 
-
 void ota(char * server, char * port, char * path)
 {
     // printf("host: %s, port: %s, path: %s\n", server, port, path);
-    ota_info info;
+    static ota_info info;
     info.server = server;
     info.port = port;
     info.binary_path = path;
@@ -69,9 +70,7 @@ void ota(char * server, char * port, char * path)
     err = ota_update(&info);
     ota_error_handling(err);
     if(err == OTA_UPDATE_DONE) {
-        mqtt_send("log", "ota success, reboot in 1sec...");
-        sdk_os_delay_us(1000);
-        printf("Reset\n");
+        printf("ota success, reboot...\n");
         sdk_system_restart();
     } else {
         mqtt_send("log", "ota failed");
