@@ -25,6 +25,8 @@ QueueHandle_t publish_queue;
 
 #define PAYLOAD_LEN 128
 
+bool mqtt_is_connected = false;
+
 typedef struct
 {
     char topic[64];
@@ -35,7 +37,7 @@ char subscribe_topic[22];
 
 void mqtt_send(const char * topic, const char * payload)
 {
-    if (publish_queue) {
+    if (mqtt_is_connected && publish_queue) {
         // printf("Put mqtt msg in queue (%s): %s\n", topic, payload);
         mqtt_msg msg;
         strcpy(msg.topic, topic);
@@ -108,6 +110,7 @@ void  mqtt_task(void *pvParameters)
     strcat(subscribe_topic, "/#");
 
     while(1) {
+        mqtt_is_connected = false;
         // xSemaphoreTake(wifi_alive, portMAX_DELAY);
         printf("%s: started\n\r", __func__);
         printf("%s: (Re)connecting to MQTT server %s ... ",__func__,
@@ -120,6 +123,7 @@ void  mqtt_task(void *pvParameters)
             taskYIELD();
             continue;
         }
+        mqtt_is_connected = true;
         printf("done\n\r");
         mqtt_client_new(&client, &network, 5000, mqtt_buf, 100,
                       mqtt_readbuf, 100);

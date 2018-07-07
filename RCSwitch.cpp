@@ -81,6 +81,7 @@ static const RCSwitch::Protocol PROGMEM proto[] = {
   { 450, { 23,  1 }, {  1,  2 }, {  2,  1 }, true, { 0, 0 } },     // protocol 6 (HT6P20B)
   { 150, {  2, 62 }, {  1,  6 }, {  6,  1 }, false, { 0, 0 } },    // protocol 7 (HS2303-PT, i. e. used in AUKEY Remote)
   { 300, {  1, 33 }, {  1,  1 }, {  1,  4 }, false, { 1, 9 } },    // protocol 8 Home easy
+  { 350, {  1, 31 }, {  4,  0 }, {  2,  0 }, false, { 0, 0 } },    // yo
 };
 
 enum {
@@ -639,6 +640,7 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
     if (pro.latch.low && pro.latch.high) {
         if (diff(RCSwitch::timings[2], delay * pro.latch.low) > delayTolerance ||
             diff(RCSwitch::timings[1], delay * pro.latch.high) > delayTolerance) {
+              // printf("nooo 1 (%d)\n", p);
               return false;
         }
         withLatch = 2;
@@ -650,19 +652,21 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
 
     for (unsigned int i = firstDataTiming; i < changeCount - 1; i += 2) {
         if (diff(RCSwitch::timings[i], delay * pro.zero.high) < delayTolerance &&
-            diff(RCSwitch::timings[i + 1], delay * pro.zero.low) < delayTolerance) {
+            (!pro.zero.low || diff(RCSwitch::timings[i + 1], delay * pro.zero.low) < delayTolerance)) {
+            // if (!pro.zero.low) i--;
             // zero
             sCodeWord[(i-withLatch)/2] = '0';
+            // printf("0\n");
         } else if (diff(RCSwitch::timings[i], delay * pro.one.high) < delayTolerance &&
-                   diff(RCSwitch::timings[i + 1], delay * pro.one.low) < delayTolerance) {
+                   (!pro.one.low || diff(RCSwitch::timings[i + 1], delay * pro.one.low) < delayTolerance)) {
+            // if (!pro.one.low) i--;
             // one
             sCodeWord[(i-withLatch)/2] = '1';
         } else {
-            // Failed
             return false;
         }
     }
-    
+
     if (changeCount > 7) {    // ignore very short transmissions: no device sends them, so this must be noise
         RCSwitch::nReceivedBitlength = (changeCount - (1 + withLatch)) / 2;
         sCodeWord[RCSwitch::nReceivedBitlength] = '\0';
@@ -672,7 +676,6 @@ bool RECEIVE_ATTR RCSwitch::receiveProtocol(const int p, unsigned int changeCoun
 
         return true;
     }
-
     return false;
 }
 
@@ -695,14 +698,23 @@ void RECEIVE_ATTR RCSwitch::handleInterrupt() {
       // here that a sender will send the signal multiple times,
       // with roughly the same gap between them).
       repeatCount++;
-      if (repeatCount == 2) {
+
+
+
+      if (repeatCount == 2 || repeatCount == 3) {
+        // printf("hereeeee (%d): ", repeatCount);
+        // for (unsigned int i = 0; i < changeCount - 1; i++) {
+        //   printf("%d,", RCSwitch::timings[i]);
+        // }
+        // printf("\n");
         for(unsigned int i = 1; i <= numProto; i++) {
           if (receiveProtocol(i, changeCount)) {
             // receive succeeded for protocol i
             break;
           }
         }
-        repeatCount = 0;
+        if (repeatCount == 3)
+          repeatCount = 0;
       }
     }
     changeCount = 0;
