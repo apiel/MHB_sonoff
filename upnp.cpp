@@ -129,7 +129,7 @@ static void send(struct udp_pcb *upcb, const ip_addr_t * addr, u16_t port)
         if (err < 0) {
             printf("Error sending message: %s (%d)\n", lwip_strerr(err), err);
         }
-        // else {
+        // else { // to comment
         //     printf("Sent message '%s'\n", msg);
         // }
         pbuf_free(p);
@@ -148,9 +148,9 @@ static void send(struct udp_pcb *upcb, const ip_addr_t * addr, u16_t port)
 static void receive_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, const ip_addr_t * addr, short unsigned int port)
 {
     if (p) {
-        // printf("Msg received port:%d len:%d\n", port, p->len);
-        // uint8_t *buf = (uint8_t*) p->payload;
-        // printf("Msg received port:%d len:%d\nbuf: %s\n", port, p->len, buf);
+        // printf("UDP Msg received port:%d len:%d\n", port, p->len);
+        // uint8_t *buf = (uint8_t*) p->payload; // to comment then
+        // printf("UDP Msg received port:%d len:%d\nbuf: %s\n", port, p->len, buf); // to comment then
 
         send(upcb, addr, port);
 
@@ -185,6 +185,8 @@ void upnp_task(void *pvParameters)
 char * upnp_setup_response()
 {
     return (char *)
+        "HTTP/1.1 200 OK\r\n"
+        "Content-type: application/xml\r\n\r\n"
         "<?xml version=\"1.0\"?>"
         "<root xmlns=\"urn:schemas-upnp-org:device-1-0\">"
         "<specVersion>"
@@ -238,7 +240,9 @@ char * upnp_config_response()
     static char item[1024];
     // static char response[sizeof(item)* sizeof(hueItems) / sizeof(hueItems[0])];
     static char response[4000];
-    strcpy(response, "{\"lights\":{");
+    strcpy(response, "HTTP/1.1 200 OK\r\n"
+        "Content-type: application/json\r\n\r\n"
+        "{\"lights\":{");
     for (int index = 0; index < hueItems_count; index++) {
         if (index > 0) {
             strcat(response, ",");
@@ -250,7 +254,7 @@ char * upnp_config_response()
     }
     strcat(response, "}}");
 
-    printf("-->> config response: %s\n", response);
+    // printf("-->> config response: %s\n", response);
     return response;
 }
 
@@ -283,7 +287,7 @@ char * upnp_update_state(char * request, char * data)
     unsigned int index = atoi(strIndex);
     char * state = upnp_utils_get_requested_state(data);
     if (index < hueItems_count) {
-        printf("change state: %d :: %s :: %s\n", index, hueItems[index].name, state);
+        // printf("change state: %d :: %s :: %s\n", index, hueItems[index].name, state);
         char params[512];
         if (strcmp(state, "\"on\": true") == 0) { // upnp_utils_get_requested_state here we use, == "on": true
             strcpy(params, hueItems[index].relay->get_id());
@@ -293,7 +297,7 @@ char * upnp_update_state(char * request, char * data)
             (* hueItems[index].relay)(ACTION_RELAY_OFF);
         } // we could upnp_utils_get_requested_state check "bri": 90 for sonoff bulb
         // reducer(hueItems[index].action, params);
-        printf("here we go, we need to update state: %s then: %s\n", hueItems[index].name, params);
+        // printf("here we go, we need to update state: %s then: %s\n", hueItems[index].name, params);
     }
     return state;
 }
@@ -336,6 +340,7 @@ char * upnp_action(char * request, char * data)
     } else if (strcmp(request, "config.json") == 0
     || strcmp(request, "S6QJ3NqpQzsR6ZFzOBgxSRJPW58C061um8oP8uhf") == 0) {
         response = upnp_config_response();
+        // printf("------config response------ %s\n", response);
     } else {
         char isLight[47];
         strncpy(isLight, request, 47);
@@ -346,7 +351,7 @@ char * upnp_action(char * request, char * data)
                 response = upnp_update_state_response(request, data);
             } else {
                 response = upnp_state_response(request);
-                printf("------------ %s\n", response);
+                // printf("------------ %s\n", response);
             }
         }
     }

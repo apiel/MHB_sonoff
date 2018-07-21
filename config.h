@@ -3,10 +3,10 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "MQTT"
+#define DEVICE_NAME "SOFA"
 
-#define RELAY_NAME "mqtt light"
-#define RELAY_2_NAME "mqtt2 light"
+#define RELAY_NAME "Sofa couch light"
+#define RELAY_2_NAME "Wemos2 light"
 
 #define MHB_USER "alex" // this is not used
 #define MHB_ZONE "garage" // not used
@@ -18,7 +18,7 @@
 #define MQTT_USER NULL
 #define MQTT_PASS NULL
 
-#define TFTP_PORT 69 // OTA is now over WebSocket
+#define TFTP_PORT 69
 
 #define EEPROM_START 0xEB000 // it was working with 0x200000 but maybe we should increse to 0x250000
 #define EEPROM_SIZE 1024 // I am not sure it is used
@@ -37,7 +37,7 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-// #define SONOFF 1
+#define SONOFF 1
 #ifdef SONOFF
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
@@ -56,7 +56,7 @@
     #define PIN_RELAY_4 15
 #endif
 
-#define WEMOS 1
+// #define WEMOS 1
 #ifdef WEMOS
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2

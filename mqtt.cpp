@@ -33,14 +33,16 @@ typedef struct
     char payload[PAYLOAD_LEN];
 } mqtt_msg;
 
-char subscribe_topic[22];
+char subscribe_topic[21];
 
 void mqtt_send(const char * topic, const char * payload)
 {
     if (mqtt_is_connected && publish_queue) {
         // printf("Put mqtt msg in queue (%s): %s\n", topic, payload);
         mqtt_msg msg;
-        strcpy(msg.topic, topic);
+        strcpy(msg.topic, subscribe_topic);
+        strcat(msg.topic, topic);
+        printf("topic to publish: %s\n", msg.topic);
         strcpy(msg.payload, payload);
         if (xQueueSend(publish_queue, &msg, 0) == pdFALSE) {
             printf("Publish queue overflow (no more place in queue).\r\n");
@@ -57,7 +59,7 @@ void  topic_received(mqtt_message_data_t *md)
     md->topic->lenstring.data[md->topic->lenstring.len] = '\0';
 
     char * action = md->topic->lenstring.data;
-    action += strlen(subscribe_topic) - 1;
+    action += strlen(subscribe_topic);
     printf("action: %s msg: %s\n\n", action, msg);
     controller_parse(action, msg);
     // char tmp[PAYLOAD_LEN]; // to remove later
@@ -103,11 +105,14 @@ void  mqtt_task(void *pvParameters)
     uint8_t mqtt_readbuf[100];
     mqtt_packet_connect_data_t data = mqtt_packet_connect_data_initializer;
 
+    char subscribe_topic_dash[22];
     mqtt_network_new( &network );
     memset(mqtt_client_id, 0, sizeof(mqtt_client_id));
     strcpy(mqtt_client_id, get_uid());
     strcpy(subscribe_topic, mqtt_client_id);
-    strcat(subscribe_topic, "/#");
+    strcat(subscribe_topic, "/");
+    strcpy(subscribe_topic_dash, subscribe_topic);
+    strcat(subscribe_topic_dash, "#");
 
     while(1) {
         mqtt_is_connected = false;
@@ -144,7 +149,7 @@ void  mqtt_task(void *pvParameters)
             continue;
         }
         printf("done\r\n");
-        mqtt_subscribe(&client, subscribe_topic, MQTT_QOS1, topic_received);
+        mqtt_subscribe(&client, subscribe_topic_dash, MQTT_QOS1, topic_received);
         xQueueReset(publish_queue);
 
         ret = queue_publisher(&client);

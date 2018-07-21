@@ -34,9 +34,6 @@
 
 task_rf_t task_rf;
 
-// todo
-// #include "http_client_ota.h"
-
 // uid in eeprom
 
 // status
