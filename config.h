@@ -3,9 +3,9 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "SOFA"
+#define DEVICE_NAME "ROOM"
 
-#define RELAY_NAME "Sofa couch light"
+#define RELAY_NAME "Small light"
 #define RELAY_2_NAME "Wemos2 light"
 
 #define MHB_USER "alex" // this is not used

@@ -12,6 +12,8 @@
         "chrono": "cpp",
         "thread": "cpp",
         "config.h": "c",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp"
     }
 }

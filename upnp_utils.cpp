@@ -1,4 +1,5 @@
 #include <string.h>
+// #include <espressif/esp_common.h> // for printf
 
 #include "utils.h"
 
@@ -15,7 +16,13 @@ char * upnp_utils_get_requested_state(char * data)
     // char * state = data + strlen(data) - 9; // "false}" or " true}" // true false not done correctly, to fix
 
     static char state[32];
-    str_extract(data, '{', '}', state);
+    if (strchr(data, '}') != NULL) {
+        str_extract(data, '{', '}', state);
+    }
+    else {
+        strcpy(state, "");
+        // printf("!! Upnp state request invalid\n");
+    }
 
     // printf("the state: %s\n", state);
     return state;

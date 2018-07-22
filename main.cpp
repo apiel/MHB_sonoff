@@ -34,11 +34,18 @@
 
 task_rf_t task_rf;
 
+// make own rf receiver (rcswitch not recurrent enough)
+// improve httpd, maybe use lib :p
+
+// maybe get rid of mqtt?
 // uid in eeprom
 
 // status
 // wifi task to detect disconnect, with callback
 // improve wifi
+// sonoff 4 channel
+// esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm dout -ff 40m 0x0 ../esp-open-rtos/bootloader/firmware/rboot.bin 0x1000 ../esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin 0x2000 ./firmware/firmware.bin
+// new sonoff basic v1.1
 // esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm dout -ff 40m 0x0 ../esp-open-rtos/bootloader/firmware/rboot.bin 0x1000 ../esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin 0x2000 ./firmware/firmware.bin
 
 extern "C" void user_init(void)
@@ -75,6 +82,9 @@ extern "C" void user_init(void)
 // 100000111011001101100010 toggle right button kitchen
     // rf_save_store((char *)"0c1000001110110011011000100b100000111011001101101000E");
 
+// 100000111011001101100010 room right btn toggle
+// 100000111011001101101000 room btn left
+    // rf_save_store((char *)"0c100000111011001101100010E");
 
     // 0a0100110100101100101001101b0100110100101100101001100c0000001011111110110000011b000000101111111011000001E // might be the new one
     // 000000101111111011000001

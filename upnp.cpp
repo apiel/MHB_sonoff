@@ -286,13 +286,16 @@ char * upnp_update_state(char * request, char * data)
     strncpy(strIndex, request + strlen(request) - 8, 2);
     unsigned int index = atoi(strIndex);
     char * state = upnp_utils_get_requested_state(data);
+    // printf(">>>>>>>>(%s): %d :: %s\n", strIndex, index, hueItems[index].name);
     if (index < hueItems_count) {
         // printf("change state: %d :: %s :: %s\n", index, hueItems[index].name, state);
         char params[512];
         if (strcmp(state, "\"on\": true") == 0) { // upnp_utils_get_requested_state here we use, == "on": true
+            // printf("switch on %d\n", index);
             strcpy(params, hueItems[index].relay->get_id());
             (* hueItems[index].relay)(ACTION_RELAY_ON);
         } else { // upnp_utils_get_requested_state here we use, == "on": false
+            // printf("switch off %d\n", index);
             strcpy(params, hueItems[index].relay->get_id());
             (* hueItems[index].relay)(ACTION_RELAY_OFF);
         } // we could upnp_utils_get_requested_state check "bri": 90 for sonoff bulb
@@ -314,9 +317,10 @@ char * upnp_update_state(char * request, char * data)
 
 char * upnp_update_state_response(char * request, char * data)
 {
-    // printf("update state data(%s): %s\n", request, data);
-    // char * state = data + strlen(data) - 9; // "false}" or " true}" // true false not done correctly, to fix
+    //// printf("update state data(%s): %s\n", request, data);
+    //// char * state = data + strlen(data) - 9; // "false}" or " true}" // true false not done correctly, to fix
     char * state = upnp_update_state(request, data);
+    // char * state = "\"on\": true";
 
     char * light = request + 40;
     static char response[256];
@@ -328,6 +332,7 @@ char * upnp_update_state_response(char * request, char * data)
 
     return response;
 }
+
 
 char * upnp_action(char * request, char * data)
 {
@@ -346,8 +351,10 @@ char * upnp_action(char * request, char * data)
         strncpy(isLight, request, 47);
         // printf("isLight: %s\n", isLight);
         if (strcmp(isLight, "S6QJ3NqpQzsR6ZFzOBgxSRJPW58C061um8oP8uhf/lights") == 0) {
-            // printf("yes it is a light action\n");
+            // printf("yes it is a light action(%d): %s\n", strcmp(request + strlen(request) - 5, "state"), data);
             if (strcmp(request + strlen(request) - 5, "state") == 0) {
+                // printf("yes it is there\n");
+                // printf(">>>>>> %s <<<<\n", data);
                 response = upnp_update_state_response(request, data);
             } else {
                 response = upnp_state_response(request);
