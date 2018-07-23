@@ -2,9 +2,10 @@
 #ifndef __RF_RECEIVER_H__
 #define __RF_RECEIVER_H__
 
-#define RF_MAX_CHANGES 256
-#define RF_RESULT_SIZE 4 // 256 / 4 = 64
-#define RF_SPLIT RF_MAX_CHANGES / RF_RESULT_SIZE
+
+#define RF_BIN_SPLIT 6
+#define RF_RESULT_SIZE 44
+#define RF_MAX_CHANGES RF_BIN_SPLIT*RF_RESULT_SIZE // 264
 #define RF_MAX_FALSE 100
 
 struct RfMinMax {
@@ -22,7 +23,7 @@ struct RfProtocol {
 
 // 78690 could be second latch but doesnt fit in 65535
 static const RfProtocol protocoles[] = {
-    {"remote", { 7700, 7900 }, { 0, 0 }, { 180, 320 }, { 670, 810 }}
+    {"remote", { 7700, 7900 }, { 0, 0 }, { 180, 360 }, { 630, 820 }}
 };
 
 class RfReceiver
