@@ -23,11 +23,11 @@ enum {
    numProto = sizeof(protocoles) / sizeof(protocoles[0])
 };
 
-RfReceiver rf = RfReceiver();
+RfReceiver rfReceiver = RfReceiver();
 
 void handleInterrupt(unsigned char pin)
 {
-    rf.onInterrupt();
+    rfReceiver.onInterrupt();
 }
 
 void RfReceiver::start(int pin) {

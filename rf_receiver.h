@@ -51,6 +51,6 @@ class RfReceiver
         bool _isOne(unsigned int duration);
 };
 
-extern RfReceiver rf;
+extern RfReceiver rfReceiver;
 
 #endif
