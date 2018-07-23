@@ -119,7 +119,10 @@ bool RfReceiver::_isOne(unsigned int duration) {
 
 void RfReceiver::_checkForResult(unsigned int duration) {
     if (_currentProtocole > -1 && _timingsPos > 0 && (_timingsPos >= RF_MAX_CHANGES || _isLatch(duration))) {
-        _result[(_timingsPos/RF_BIN_SPLIT)+1] = '\0';
+        int pos = _timingsPos/RF_BIN_SPLIT;
+        _result[pos++] = '-';
+        _result[pos++] = '0' + _currentProtocole;
+        _result[pos++] = '\0';
         printf("proto: %d resres: %s\n", _currentProtocole, _result);
         _currentProtocole = -1;
     }

@@ -32,8 +32,6 @@
     #include "ds18b20.h"
 #endif
 
-task_rf_t task_rf;
-
 // make own rf receiver (rcswitch not recurrent enough)
 // improve httpd, maybe use lib :p
 
@@ -91,9 +89,8 @@ extern "C" void user_init(void)
     // 0a0100110100101100101001101b0100110100101100101001100c0000000101100101010000100d1010100000001100100001101e101010000000110010000110E
 
     #ifdef PIN_RF433_RECEIVER
-    task_rf.init_store();
-    // task_rf.test();
-    task_rf.task_create("task_rf");
+    Rf rf;
+    rf.init();
     #endif
 
     #ifdef TFTP_PORT

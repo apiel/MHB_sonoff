@@ -37,10 +37,9 @@ class RfReceiver
         RfMinMax _mainLatch;
         int _currentProtocole = -1;
         unsigned int _timingsPos;
-        unsigned int _timings[RF_MAX_CHANGES];
         unsigned long _lastTime = 0;
         unsigned int _falseTimingCount = 0;
-        char _result[RF_RESULT_SIZE];
+        char _result[RF_RESULT_SIZE + 2];
         void _setMainLatch();
         void _attachInterrupt(int pin);
         void _initCurrentProtocole(unsigned int duration);
