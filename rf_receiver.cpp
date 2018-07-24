@@ -30,7 +30,8 @@ void handleInterrupt(unsigned char pin)
     rfReceiver.onInterrupt();
 }
 
-void RfReceiver::start(int pin) {
+void RfReceiver::start(int pin, void (*callback)(char * result)) {
+    _callback = callback;
     _setMainLatch();
     _attachInterrupt(pin);
 }
@@ -123,7 +124,8 @@ void RfReceiver::_checkForResult(unsigned int duration) {
         _result[pos++] = '-';
         _result[pos++] = '0' + _currentProtocole;
         _result[pos++] = '\0';
-        printf("proto: %d resres: %s\n", _currentProtocole, _result);
+        // printf("proto: %d resres: %s\n", _currentProtocole, _result);
+        _callback(_result);
         _currentProtocole = -1;
     }
 }

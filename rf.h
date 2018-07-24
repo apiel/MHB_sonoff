@@ -30,8 +30,11 @@ class Rf //: public esp_open_rtos::thread::task_t
     public:
         void init();
         void test();
+        void onReceived(char * result);
 };
 
 void rf_save_store(char * data);
+
+extern Rf rf;
 
 #endif

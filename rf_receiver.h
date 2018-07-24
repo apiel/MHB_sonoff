@@ -30,10 +30,11 @@ class RfReceiver
 {
     public:
         // RfReceiver(RfProtocol protocoles);
-        void start(int pin);
+        void start(int pin, void (*callback)(char * result));
         void onInterrupt();
 
     protected:
+        void (*_callback)(char * result);
         RfMinMax _mainLatch;
         int _currentProtocole = -1;
         unsigned int _timingsPos;
