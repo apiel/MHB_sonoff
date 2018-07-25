@@ -32,7 +32,9 @@
     #include "ds18b20.h"
 #endif
 
-// make own rf receiver (rcswitch not recurrent enough)
+
+// find out why web ota is not working
+// implement a rf protocol finder
 // improve httpd, maybe use lib :p
 
 // maybe get rid of mqtt?
@@ -69,6 +71,7 @@ extern "C" void user_init(void)
     // ZZVUVIZV-0 right
 
     // rf_save_store((char *)"b00ZZVUVIJZ-0#c00ZZVUVIZV-0#"); // table light
+    // rf_save_store((char *)"b00ZZVUVIJZ-0#c00ZZVUVIZJ-0#"); // sofa light
 
     #ifdef PIN_RF433_RECEIVER
     rf.init();

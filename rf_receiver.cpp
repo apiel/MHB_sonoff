@@ -56,12 +56,13 @@ void RfReceiver::_setMainLatch() { // we could easily write unit test there
 void RfReceiver::onInterrupt() {
     long time = sdk_system_get_time();
     unsigned int duration = time - _lastTime;
+    // printf(",%d", duration);
     if (duration > _mainLatch.min && duration < _mainLatch.max) {
         _checkForResult(duration);
         _initCurrentProtocole(duration);
         // _currentProtocole = 100; printf("\n");
     }
-    // if (_currentProtocole-- > 0) printf(",%d", duration);
+    // if (_currentProtocole > 0) printf(",%d", duration);
     _logTiming(duration);
     _lastTime = time;
 }

@@ -248,8 +248,8 @@ char * upnp_config_response()
             strcat(response, ",");
         }
         snprintf(item, sizeof(item),
-            "\"%s0%d\": {\"name\": \"%s\", \"state\": {\"on\": false, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"%s0%d\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
-            uid, index, hueItems[index].name, uid, index);
+            "\"%s0%d\": {\"name\": \"%s\", \"state\": {\"on\": %s, \"bri\": 254, \"hue\": 15823, \"sat\": 88, \"effect\": \"none\", \"ct\": 313, \"alert\": \"none\", \"colormode\": \"ct\", \"reachable\": true, \"xy\": [0.4255, 0.3998]}, \"type\": \"Extended color light\", \"modelid\": \"LCT001\", \"manufacturername\": \"Philips\", \"uniqueid\": \"%s0%d\", \"swversion\": \"65003148\", \"pointsymbol\": {\"1\": \"none\", \"2\": \"none\", \"3\": \"none\", \"4\": \"none\", \"5\": \"none\", \"6\": \"none\", \"7\": \"none\", \"8\": \"none\"}}",
+            uid, index, hueItems[index].name, hueItems[index].relay->relay_status() == RELAY_ON ? "true" : "false", uid, index);
         strcat(response, item);
     }
     strcat(response, "}}");
@@ -266,7 +266,7 @@ char * upnp_state_response(char * request)
     strncpy(strIndex, request + strlen(request) - 2, 2); // duplicate code from next function
     unsigned int index = atoi(strIndex); // duplicate code from next function
 
-    printf("return state (%d)[%s]: %s\n", index, strIndex, request);
+    printf("return state (%d)[%s]: %s [%d]\n", index, strIndex, request, hueItems[index].relay->relay_status());
 
     sprintf(theResponse, "HTTP/1.1 200 OK\r\n"
         "Content-type: application/json\r\n\r\n"
