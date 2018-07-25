@@ -2,7 +2,7 @@
 #include <espressif/esp_common.h>
 #include <esp8266.h>
 
-
+#include "rf_receiver.h"
 // #include <math.h> // pow not working :-/
 
 int pow(int x,int n)
@@ -15,9 +15,6 @@ int pow(int x,int n)
 
     return(number);
 }
-
-
-#include "rf_receiver.h"
 
 enum {
    numProto = sizeof(protocoles) / sizeof(protocoles[0])

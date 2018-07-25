@@ -3,9 +3,9 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "WEMOS"
+#define DEVICE_NAME "TABLE"
 
-#define RELAY_NAME "Wemos light"
+#define RELAY_NAME "Table light"
 #define RELAY_2_NAME "Wemos2 light"
 
 #define MHB_USER "alex" // this is not used
@@ -37,7 +37,7 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-// #define SONOFF 1
+#define SONOFF 1
 #ifdef SONOFF
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
@@ -56,7 +56,7 @@
     #define PIN_RELAY_4 15
 #endif
 
-#define WEMOS 1
+// #define WEMOS 1
 #ifdef WEMOS
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2

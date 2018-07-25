@@ -6,6 +6,7 @@
 #include <espressif/esp_common.h>
 
 #include "action.h"
+#include "rf_receiver.h"
 
 #define RF_STORE_SIZE 5
 
@@ -14,16 +15,16 @@ class Rf //: public esp_open_rtos::thread::task_t
     private:
         char cmd[1024];
         struct Store {
-            int protocol;
+            // int protocol;
             int action;
             int timer;
             int timer_id;
-            char code[RCSWITCH_MAX_CHANGES];
+            char code[RF_RESULT_SIZE+2];
         };
         Store store[RF_STORE_SIZE];
         void trigger_action(int action, int timer, int timer_id);
         void trigger_action_timer(Action * object, int action, int timer, int timer_id);
-        void trigger(char * code, int protocol);
+        void trigger(char * code);
         Action * get_relay(int action);
         void init_store();
 
