@@ -73,6 +73,13 @@ extern "C" void user_init(void)
     // rf_save_store((char *)"b00ZZVUVIJZ-0#c00ZZVUVIZV-0#"); // table light
     // rf_save_store((char *)"b00ZZVUVIJZ-0#c00ZZVUVIZJ-0#"); // sofa light
 
+    // >> room switch
+    // YZEFJIIZ-0 left
+    // YZEFJIYJ-0 middle
+    // YZEFJIYV-0 right
+
+    // rf_save_store((char *)"c00YZEFJIYV-0#"); // room small light
+
     #ifdef PIN_RF433_RECEIVER
     rf.init();
     // rf.test();

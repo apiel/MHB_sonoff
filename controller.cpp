@@ -108,6 +108,12 @@ void controller_relay_action(Action * object, char * data)
     }
 }
 
+void controller_uid_save_action(char * data)
+{
+    save_uid(data);
+    mqtt_send("log", "uid saved");
+}
+
 void controller_rf_save_action(char * data)
 {
     rf_save_store(data);
@@ -121,6 +127,11 @@ void controller_thermostat_action(char * data)
         int temperature = char_to_int(data++);
         set_thermostat(temperature);
     }
+}
+
+void controller_reboot()
+{
+    sdk_system_restart();
 }
 
 void controller_parse(char *action, char *data)
@@ -146,6 +157,10 @@ void controller_parse(char *action, char *data)
         controller_relay_action(&Relay1, data);
     } else if (strncmp(action, "rf/save", 7) == 0) {
         controller_rf_save_action(data);
+    } else if (strncmp(action, "uid/save", 8) == 0) {
+        controller_uid_save_action(data);
+    } else if (strncmp(action, "reboot", 6) == 0) {
+        controller_reboot();
     } else if (strncmp(action, "ota", 3) == 0) {
         controller_ota_action(data);
     } else if (strncmp(action, "thermostat", 10) == 0) {

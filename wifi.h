@@ -12,5 +12,6 @@ void wifi_new_connection(char * ssid, char * password);
 void wifi_access_point(void);
 void wifi_access_point_off(void);
 const char * get_uid(void);
+void save_uid(char * data);
 
 #endif

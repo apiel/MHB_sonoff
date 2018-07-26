@@ -66,41 +66,60 @@ void wifi_access_point(void)
 
     ip_addr_t first_client_ip;
     IP4_ADDR(&first_client_ip, 192, 168, 0, 2);
-    dhcpserver_start(&first_client_ip, 4);     
+    dhcpserver_start(&first_client_ip, 4);
+}
+
+void save_uid(char * data)
+{
+#ifdef EEPROM_UID_START
+    EEPROM.save(EEPROM_UID_START, (uint8_t *)data, strlen(data));
+#endif
+}
+
+const char * get_mac_uid()
+{
+    static char mac[13];
+
+    int8_t i;
+    uint8_t x;
+    for (i = 5; i >= 0; --i)
+    {
+        x = mac[i] & 0x0F;
+        if (x > 9) x += 7;
+        mac[i * 2 + 1] = x + '0';
+        x = mac[i] >> 4;
+        if (x > 9) x += 7;
+        mac[i * 2] = x + '0';
+    }
+    mac[12] = '\0';
+    return mac;
 }
 
 // this could go in utils
 const char * get_uid(void)
 {
     // Use MAC address for Station as unique ID
-    static char uid[20];
+    static char uid[EEPROM_UID_SIZE];
     static bool uid_done = false;
     if (!uid_done) {
-        memset(uid, 0, sizeof(uid));
-        strcpy(uid, DEVICE_ID);
-#ifdef DEVICE_NAME
-        strcat(uid, DEVICE_NAME);
-#else
-        char mac[13];
-        if (!sdk_wifi_get_macaddr(STATION_IF, (uint8_t *)mac)) {
-            strcat(uid, "generic"); 
+#ifdef EEPROM_UID_START
+        for(int pos = 0; pos < EEPROM_UID_SIZE; pos++) {
+            int bit = EEPROM.read(EEPROM_UID_START + pos);
+            if (bit == '#') break;
+            uid[pos] = bit;
         }
-        else {
-            int8_t i;
-            uint8_t x;
-            for (i = 5; i >= 0; --i)
-            {
-                x = mac[i] & 0x0F;
-                if (x > 9) x += 7;
-                mac[i * 2 + 1] = x + '0';
-                x = mac[i] >> 4;
-                if (x > 9) x += 7;
-                mac[i * 2] = x + '0';
-            }
-            mac[12] = '\0';
-            strcat(uid, mac); 
-        }
+        printf("UID from EEPROM %s (%d)\n", uid, strlen(uid));
 #endif
+
+        if (strlen(uid) == 0) {
+            memset(uid, 0, sizeof(uid));
+            strcpy(uid, DEVICE_ID);
+#ifdef DEVICE_NAME
+            strcat(uid, DEVICE_NAME);
+#else
+            strcat(uid, get_mac_uid());
+#endif
+        }
         uid_done = true;
         printf("-> Device unique id: %s\n", uid);
     }

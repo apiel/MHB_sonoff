@@ -3,9 +3,9 @@
 #define __CONFIG_H__
 
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "WEMOS"
+#define DEVICE_NAME "ROOM"
 
-#define RELAY_NAME "Wemos light"
+#define RELAY_NAME "Small light"
 #define RELAY_2_NAME "Wemos2 light"
 
 #define MHB_USER "alex" // this is not used
@@ -26,6 +26,8 @@
 #define EEPROM_THERMOSTAT 1 // byte containing the temp limit of the thermostat
 #define EEPROM_RF_STORE_START 10 // byte where rf storage start
 #define EEPROM_RF_STORE_SIZE 512
+#define EEPROM_UID_START EEPROM_RF_STORE_SIZE + EEPROM_RF_STORE_START + 1 // byte where uid storage start
+#define EEPROM_UID_SIZE 20
 
 #define WS_CLIENT_PORT 3080
 
@@ -37,7 +39,7 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-// #define SONOFF 1
+#define SONOFF 1
 #ifdef SONOFF
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
@@ -56,7 +58,7 @@
     #define PIN_RELAY_4 15
 #endif
 
-#define WEMOS 1
+// #define WEMOS 1
 #ifdef WEMOS
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2
