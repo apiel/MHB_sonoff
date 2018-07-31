@@ -1,5 +1,6 @@
 #include <string.h>
 #include <espressif/esp_common.h>
+#include <rboot-api.h>
 
 // #include "web.h"
 #include "log.h"
@@ -134,6 +135,13 @@ void controller_reboot()
     sdk_system_restart();
 }
 
+void controller_next_rom()
+{
+    rboot_config rboot_config = rboot_get_config();
+    rboot_set_current_rom((rboot_config.current_rom + 1) % rboot_config.count);
+    mqtt_send("log", "set next rom");
+}
+
 void controller_parse(char *action, char *data)
 {
     if (strncmp(action, "wifi/set", 9) == 0) {
@@ -161,6 +169,8 @@ void controller_parse(char *action, char *data)
         controller_uid_save_action(data);
     } else if (strncmp(action, "reboot", 6) == 0) {
         controller_reboot();
+    } else if (strncmp(action, "next/rom", 8) == 0) {
+        controller_next_rom();
     } else if (strncmp(action, "ota", 3) == 0) {
         controller_ota_action(data);
     } else if (strncmp(action, "thermostat", 10) == 0) {

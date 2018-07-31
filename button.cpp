@@ -28,8 +28,7 @@ void handleButton(unsigned char pin) {
 }
 
 void Button::init() {
-    logInfo("Init button\n");
-
+    // logInfo("Init button...\n");
     gpio_enable(PIN_BUTTON, GPIO_INPUT);
     gpio_set_interrupt(PIN_BUTTON, GPIO_INTTYPE_EDGE_ANY, handleButton);
 }
