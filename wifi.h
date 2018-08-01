@@ -13,5 +13,6 @@ void wifi_access_point(void);
 void wifi_access_point_off(void);
 const char * get_uid(void);
 void save_uid(char * data);
+void wifi_wait_connection(void);
 
 #endif

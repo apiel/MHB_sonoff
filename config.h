@@ -20,7 +20,6 @@
 
 #define TFTP_PORT 69
 
-#define EEPROM_START 0xEB000 // it was working with 0x200000 but maybe we should increse to 0x250000
 #define EEPROM_SIZE 1024 // I am not sure it is used
 #define EEPROM_WIFI_MODE 0 // byte containing the mode of the WIFI store in EEPROM: STATION_MODE or SOFTAP_MODE
 #define EEPROM_THERMOSTAT 1 // byte containing the temp limit of the thermostat
@@ -42,6 +41,7 @@
 
 #define SONOFF 1
 #ifdef SONOFF
+    #define EEPROM_START 0xFD8F0 // 8mb 0x100000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
     #define PIN_RF433_RECEIVER 14 // D5
@@ -50,6 +50,7 @@
 
 // #define SONOFF4CH 1
 #ifdef SONOFF4CH
+    #define EEPROM_START 0xFD8F0 // 8mb? 0x100000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0
     #define PIN_LED 13
     #define PIN_RF433_RECEIVER 2
@@ -61,6 +62,7 @@
 
 // #define WEMOS 1
 #ifdef WEMOS
+    #define EEPROM_START 0x1FD8F0 // 16mb 0x200000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2
     #define PIN_RF433_RECEIVER 14 // D5

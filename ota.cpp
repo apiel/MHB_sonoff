@@ -1,6 +1,7 @@
 #include <espressif/esp_common.h>
 #include <esp8266.h>
 #include <string.h>
+#include <rboot-api.h>
 
 // in http_buffered_client if (http_reponse.length && tot_http_pdu_rd != http_reponse.length)
 
@@ -71,8 +72,39 @@ void ota(char * server, char * port, char * path)
     ota_error_handling(err);
     if(err == OTA_UPDATE_DONE) {
         printf("ota success, reboot...\n");
+        sdk_os_delay_us(0XFFFF);
+        printf("ota success, reboot...\n");
+        sdk_os_delay_us(0XFFFF);
+        printf("ota success, reboot...\n");
+        sdk_os_delay_us(0XFFFF);
+        printf("ota success, reboot...\n");
         sdk_system_restart();
     } else {
         mqtt_send("log", "ota failed");
     }
+}
+
+void ota_prepare(void)
+{
+    rboot_config rboot_config = rboot_get_config();
+    uint8_t nextRom = (rboot_config.current_rom+1)%rboot_config.count;
+    printf("ROMROM: current %d count %d offset %d\n", rboot_config.current_rom, rboot_config.count, rboot_config.roms[rboot_config.current_rom]);
+    printf("ROMROM: next rom %d next offset %d\n", nextRom, rboot_config.roms[nextRom]);
+
+    if (nextRom != 0) { // we have to keep the first rom, the bootloader will copy the next rom at the first position, so most likely nextRom will always be 1
+        int end = rboot_config.roms[nextRom] + 350000; // we assume that our firmware is less than 350 000 bytes
+        for(int offset = rboot_config.roms[nextRom]; offset < end; offset += SPI_FLASH_SEC_SIZE) {
+            if(sdk_spi_flash_erase_sector(offset/SPI_FLASH_SEC_SIZE) != SPI_FLASH_RESULT_OK) {
+                printf("\nsdk_spi_flash_erase_sector stop earlier than plan at %d!\n", offset);
+                break;
+            }
+        }
+    }
+
+    // for(int test = 310000; test < 0x2000000; test += SPI_FLASH_SEC_SIZE) {
+    //     if(sdk_spi_flash_erase_sector(test/SPI_FLASH_SEC_SIZE) != SPI_FLASH_RESULT_OK) {
+    //         printf("\n\nstop at %d\n\n", test);
+    //         break;
+    //     }
+    // }
 }

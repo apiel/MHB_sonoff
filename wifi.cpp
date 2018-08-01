@@ -13,6 +13,22 @@
 #include "log.h"
 #include "EEPROM.h"
 
+void wifi_wait_connection(void)
+{
+    for(int retry = 20; retry > 0; retry--) {
+        if (sdk_wifi_station_get_connect_status() == STATION_GOT_IP) {
+            break;
+        }
+        printf(".\n"); // we could show the status
+        taskYIELD();
+        vTaskDelay(100);
+    }
+    if (sdk_wifi_station_get_connect_status() != STATION_GOT_IP) {
+        sdk_system_restart();
+    }
+    printf("\nConnected to wifi\n");
+}
+
 void wifi_init(void)
 {
     int mode = EEPROM.read(EEPROM_WIFI_MODE);
@@ -46,6 +62,9 @@ void wifi_new_connection(char * ssid, char * password)
     wifi_sta_new_connection(ssid, password);
 }
 
+// does it make sense to make it access point...
+// we could always create a shared wifi network on the laptop or on mobile...
+// if we want to keep it, we could use the retry from wait connection to switch to access point
 void wifi_access_point(void)
 {
     logInfo("Activate access point\n");
