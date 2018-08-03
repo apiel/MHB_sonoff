@@ -59,6 +59,15 @@ static inline void ota_error_handling(OTA_err err) {
     }
 }
 
+void sleep()
+{
+    // for(int s = 50; s > 0; s--) {
+    //     sdk_os_delay_us(0XFFFF);
+    // }
+    taskYIELD();
+    vTaskDelay(100);
+}
+
 void ota(char * server, char * port, char * path)
 {
     // printf("host: %s, port: %s, path: %s\n", server, port, path);
@@ -72,11 +81,11 @@ void ota(char * server, char * port, char * path)
     ota_error_handling(err);
     if(err == OTA_UPDATE_DONE) {
         printf("ota success, reboot...\n");
-        sdk_os_delay_us(0XFFFF);
+        sleep();
         printf("ota success, reboot...\n");
-        sdk_os_delay_us(0XFFFF);
+        sleep();
         printf("ota success, reboot...\n");
-        sdk_os_delay_us(0XFFFF);
+        sleep();
         printf("ota success, reboot...\n");
         sdk_system_restart();
     } else {

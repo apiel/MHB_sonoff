@@ -71,7 +71,7 @@ static void  main_task(void *pvParameters)
 
 // let s try to download OTA here... after connection
     printf("> try ota\n");
-    ota((char *)"192.168.0.179", OTA_PORT, OTA_PATH);
+    ota((char *)"192.168.0.179", OTA_PORT, (char *)"/firmware285.bin");
     printf("ota finished.\n");
 
 
