@@ -78,7 +78,6 @@ static void  main_task(void *pvParameters)
     ota((char *)"192.168.0.179", OTA_PORT, path);
     printf("ota finished.\n");
 
-
     EEPROM.begin(EEPROM_SIZE);
 
     // >> table switch
@@ -96,9 +95,12 @@ static void  main_task(void *pvParameters)
 
     // rf_save_store((char *)"c00YZEFJIYV-0#"); // room small light
 
+    // save_uid((char *)"MHB_SMALL#");
+
     #ifdef PIN_RF433_RECEIVER
     rf.init();
     // rf.test();
+    xTaskCreate(&rf_task, "rf_task", 1024, NULL, 4, NULL);
     #endif
 
     #ifdef TFTP_PORT
@@ -123,8 +125,8 @@ static void  main_task(void *pvParameters)
     mqtt_start();
 
     while(1) { // keep task running else program crash, we could also use xSemaphore
-        task_led_blink(2, 10, 20);
-        taskYIELD();
+        // task_led_blink(2, 10, 20);
+        // taskYIELD();
         vTaskDelay(200);
         taskYIELD();
     }
@@ -140,11 +142,11 @@ extern "C" void user_init(void)
     // find something if sonoff hang
     ota_prepare();
 
-    wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
-    // wifi_init(); // default
+    // wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
+    wifi_init(); // default
 
     Button button = Button(sdk_system_restart, [](){ Relay1.relay_toggle(); });
     button.init();
 
-    xTaskCreate(&main_task, "main_task", 1024, NULL, 1, NULL);
+    xTaskCreate(&main_task, "main_task", 1024, NULL, 9, NULL);
 }

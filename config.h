@@ -21,13 +21,17 @@
 
 #define TFTP_PORT 69
 
+#define EEPROM_START 0xBC000 // 0x55000 + 0x55000 + 0x2000 + 0x10000 = 0xBC000
+// 0x55000: rom size and we have 2 rom, 0x2000: first rom address, 0x10000: let's keep some extra space in case
+// we could also use if we use aboot do:
+//               (rboot_config.roms[1]-rboot_config.roms[0])*rboot_config.count + rboot_config.roms[0] (+0x10000)
+// it's the same (    0x57000         -     0x2000         )*    2              + 0x2000   (+0x10000) = 0xBC000
 #define EEPROM_SIZE 1024 // I am not sure it is used
 #define EEPROM_WIFI_MODE 0 // byte containing the mode of the WIFI store in EEPROM: STATION_MODE or SOFTAP_MODE
 #define EEPROM_THERMOSTAT 1 // byte containing the temp limit of the thermostat
 #define EEPROM_RF_STORE_START 10 // byte where rf storage start
 #define EEPROM_RF_STORE_SIZE 512
-// to put bak <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<-------------------------
-// #define EEPROM_UID_START EEPROM_RF_STORE_SIZE + EEPROM_RF_STORE_START + 1 // byte where uid storage start
+#define EEPROM_UID_START EEPROM_RF_STORE_SIZE + EEPROM_RF_STORE_START + 1 // byte where uid storage start
 #define EEPROM_UID_SIZE 20
 
 #define WS_CLIENT_PORT 3080
@@ -42,7 +46,7 @@
 
 #define SONOFF 1
 #ifdef SONOFF
-    #define EEPROM_START 0xFD8F0 // 8mb 0x100000-10000 so there 10000 bytes space
+    // #define EEPROM_START 0xFD8F0 // 8mb 0x100000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
     #define PIN_RF433_RECEIVER 14 // D5
@@ -51,7 +55,7 @@
 
 // #define SONOFF4CH 1
 #ifdef SONOFF4CH
-    #define EEPROM_START 0xFD8F0 // 8mb? 0x100000-10000 so there 10000 bytes space
+    // #define EEPROM_START 0xFD8F0 // 8mb? 0x100000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0
     #define PIN_LED 13
     #define PIN_RF433_RECEIVER 2
@@ -63,7 +67,7 @@
 
 // #define WEMOS 1
 #ifdef WEMOS
-    #define EEPROM_START 0x1FD8F0 // 16mb 0x200000-10000 so there 10000 bytes space
+    // #define EEPROM_START 0x1FD8F0 // 16mb 0x200000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2
     #define PIN_RF433_RECEIVER 14 // D5
