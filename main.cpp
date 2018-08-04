@@ -46,15 +46,13 @@
 // implement a rf protocol finder
 // improve httpd, maybe use lib :p
 
-// maybe get rid of mqtt?
-// uid in eeprom
-
-// use wait_connection retry for Access point feature
-// long press would then be reboot
+// maybe get rid of mqtt? -> http server doesnt seem so reliable
 
 // status
 // wifi task to detect disconnect, with callback
 // improve wifi
+
+
 // sonoff 4 channel
 // esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm dout -ff 40m 0x0 ../esp-open-rtos/bootloader/firmware/rboot.bin 0x1000 ../esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin 0x2000 ./firmware/firmware.bin
 // new sonoff basic v1.1
@@ -125,10 +123,11 @@ static void  main_task(void *pvParameters)
     mqtt_start();
 
     while(1) { // keep task running else program crash, we could also use xSemaphore
-        // task_led_blink(2, 10, 20);
-        // taskYIELD();
+        task_led_blink(2, 10, 20);
+        taskYIELD();
         vTaskDelay(200);
         taskYIELD();
+        // here we could check for wifi connection and reboot if disconnect
     }
 }
 
