@@ -10,6 +10,7 @@ extern "C" {
 }
 
 #include "mqtt.h"
+#include "config.h"
 
 #define vTaskDelayMs(ms) vTaskDelay((ms) / portTICK_PERIOD_MS)
 
@@ -100,6 +101,8 @@ void ota_prepare(void)
     printf("ROMROM: current %d count %d offset %d\n", rboot_config.current_rom, rboot_config.count, rboot_config.roms[rboot_config.current_rom]);
     printf("ROMROM: next rom %d next offset %d\n", nextRom, rboot_config.roms[nextRom]);
 
+    #ifndef USE_ABOOT
+    printf("ROmROM: cleanup next rom offset.\n");
     if (nextRom != 0) { // we have to keep the first rom, the bootloader will copy the next rom at the first position, so most likely nextRom will always be 1
         int end = rboot_config.roms[nextRom] + 350000; // we assume that our firmware is less than 350 000 bytes
         for(int offset = rboot_config.roms[nextRom]; offset < end; offset += SPI_FLASH_SEC_SIZE) {
@@ -109,11 +112,5 @@ void ota_prepare(void)
             }
         }
     }
-
-    // for(int test = 310000; test < 0x2000000; test += SPI_FLASH_SEC_SIZE) {
-    //     if(sdk_spi_flash_erase_sector(test/SPI_FLASH_SEC_SIZE) != SPI_FLASH_RESULT_OK) {
-    //         printf("\n\nstop at %d\n\n", test);
-    //         break;
-    //     }
-    // }
+    #endif
 }

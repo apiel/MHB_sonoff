@@ -2,6 +2,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
+#define USE_ABOOT
 #define DEVICE_ID "MHB_"
 #define DEVICE_NAME "SMALL"
 

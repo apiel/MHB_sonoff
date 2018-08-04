@@ -170,9 +170,9 @@ void controller_parse(char *action, char *data)
     } else if (strncmp(action, "reboot", 6) == 0) {
         controller_reboot();
     } else if (strncmp(action, "next/rom", 8) == 0) {
-        controller_next_rom();
+        controller_next_rom(); // should be deprecated ?
     } else if (strncmp(action, "ota", 3) == 0) {
-        controller_ota_action(data);
+        controller_ota_action(data); // should be deprecated ?
     } else if (strncmp(action, "thermostat", 10) == 0) {
         controller_thermostat_action(data);
     }

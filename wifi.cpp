@@ -31,61 +31,12 @@ void wifi_wait_connection(void)
 
 void wifi_init(void)
 {
-    int mode = EEPROM.read(EEPROM_WIFI_MODE);
-    // logDebug("eeprom val %d ap %d station %d\n", mode, SOFTAP_MODE, STATION_MODE);
-
-    if (mode == SOFTAP_MODE) {
-        wifi_access_point();
-    } else {
-        wifi_sta_connect();
-    }
-}
-
-void wifi_toggle(void)
-{
-    logInfo("Wifi toggle\n");
-    if (sdk_wifi_get_opmode() == SOFTAP_MODE) {
-        EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE);
-    } else {
-        EEPROM.write(EEPROM_WIFI_MODE, SOFTAP_MODE);
-    }
-    EEPROM.commit();
-
-    led_blink(10, 100);
-    sdk_system_restart();
+    wifi_sta_connect();
 }
 
 void wifi_new_connection(char * ssid, char * password)
 {
-    EEPROM.write(EEPROM_WIFI_MODE, STATION_MODE); // we might have to find a central place for this with wifi toggle
-    EEPROM.commit();
     wifi_sta_new_connection(ssid, password);
-}
-
-// does it make sense to make it access point...
-// we could always create a shared wifi network on the laptop or on mobile...
-// if we want to keep it, we could use the retry from wait connection to switch to access point
-void wifi_access_point(void)
-{
-    logInfo("Activate access point\n");
-    sdk_wifi_set_opmode(SOFTAP_MODE);
-    struct ip_info ap_ip;
-    IP4_ADDR(&ap_ip.ip, 192, 168, 0, 1);
-    IP4_ADDR(&ap_ip.gw, 0, 0, 0, 0);
-    IP4_ADDR(&ap_ip.netmask, 255, 255, 255, 0);
-    sdk_wifi_set_ip_info(1, &ap_ip);
-
-    struct sdk_softap_config ap_config;
-    ap_config.ssid_hidden = 0;
-    ap_config.authmode = AUTH_WPA_WPA2_PSK;
-    ap_config.max_connection = 1;
-    strcpy((char*)(ap_config.password), AP_PSK);
-    strcpy((char*)(ap_config.ssid), get_uid());
-    sdk_wifi_softap_set_config(&ap_config);
-
-    ip_addr_t first_client_ip;
-    IP4_ADDR(&first_client_ip, 192, 168, 0, 2);
-    dhcpserver_start(&first_client_ip, 4);
 }
 
 void save_uid(char * data)

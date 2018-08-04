@@ -6,6 +6,8 @@
 #include <string.h>
 
 #include <ssid_config.h>
+// #include "espnow.h"
+
 
 #include "config.h"
 #include "wifi.h"
@@ -14,6 +16,7 @@
 #include "version.h"
 #include "rf.h"
 #include "relay.h"
+#include "led.h"
 #include "timer.h"
 #include "controller.h"
 
@@ -33,6 +36,9 @@
 #endif
 
 #include "ota.h"
+
+// OTA need to comment sdk_spi_flash_erase_sector in
+// esp-open-rtos/extras/http_client_ota/http_client_ota.c
 
 
 
@@ -58,22 +64,20 @@
 // esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm qio -ff 40m 0x0 ../esp-open-rtos/bootloader/firmware_prebuilt/rboot.bin 0x1000 ../esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin 0x2000 ./firmware/firmware.bin 
 // esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm qio -ff 40m 0x0 ../esp-open-rtos/bootloader/firmware_prebuilt/rboot.bin 0x1000 ../esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin 0x82000 ./firmware/firmware.bin 
 
-
-// #include "espnow.h"
-
 // sonoff last sector at 1047280 so its: make flash FLASH_SIZE=8 FLASH_MODE=dout
+// sonoff 
+// make flash FLASH_SIZE=8 FLASH_MODE=dout RBOOT_BIN=../aboot/firmware/aboot.bin && cu -l /dev/ttyUSB0 -s 115200
 
 static void  main_task(void *pvParameters)
 {
     wifi_wait_connection();
 
-    // esp_now_set_self_role();
-
-// let s try to download OTA here... after connection
     printf("> try ota\n");
     ota((char *)"192.168.0.179", OTA_PORT, (char *)"/firmware285.bin");
     printf("ota finished.\n");
 
+
+    EEPROM.begin(EEPROM_SIZE);
 
     // >> table switch
     // ZZVUVIJZ-0 left
@@ -117,7 +121,9 @@ static void  main_task(void *pvParameters)
     mqtt_start();
 
     while(1) { // keep task running else program crash, we could also use xSemaphore
-        vTaskDelay(1000);
+        task_led_blink(2, 10, 20);
+        taskYIELD();
+        vTaskDelay(200);
         taskYIELD();
     }
 }
@@ -129,78 +135,14 @@ extern "C" void user_init(void)
     printf("SDK version: %s\n", sdk_system_get_sdk_version());
     printf("MyHomeBridge sonoff compile version: %s\n", VERSION);
 
+    // find something if sonoff hang
     ota_prepare();
-
-    EEPROM.begin(EEPROM_SIZE);
 
     wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
     // wifi_init(); // default
 
-// // Relay1.relay_toggle();
-//     Button button = Button(wifi_toggle, [](){ Relay1.relay_toggle(); });
-//     button.init();
+    Button button = Button(sdk_system_restart, [](){ Relay1.relay_toggle(); });
+    button.init();
 
     xTaskCreate(&main_task, "main_task", 1024, NULL, 1, NULL);
 }
-
-
-
-
-
-
-    // #define xt_rsil(level) (__extension__({uint32_t state; __asm__ __volatile__("rsil %0," __STRINGIFY(level) : "=a" (state)); state;}))
-    // #define interrupts() xt_rsil(0)
-    // #define noInterrupts() xt_rsil(15)
-
-    // // erase sector to be able to write
-    // uint32_t sector = rboot_config.roms[1] / SECTOR_SIZE; // rboot_config.roms[rboot_config.current_rom+1%rboot_config.count]
-    // uint32_t sector_end = sector + 80; // 327680 bytes
-    // for(; sector < sector_end; sector++) {
-    //     printf("sdk_spi_flash_erase_sector %d\n", sector);
-    //     noInterrupts();
-    //     if (sdk_spi_flash_erase_sector(sector) == SPI_FLASH_RESULT_OK) {
-    //         printf("Could not erase sector %d!\n", sector);
-    //     }
-    //     interrupts();
-    //     printf("sdk_spi_flash_erase_sector done %d\n", sector);
-    // } // doesnt seem to work
-
-
-    // for(int test = 310000; test < 0x2000000; test += SPI_FLASH_SEC_SIZE) {
-    //     // noInterrupts();
-    //     if(sdk_spi_flash_erase_sector(test/SPI_FLASH_SEC_SIZE) == SPI_FLASH_RESULT_OK) {
-    //         printf("%d(%d),", test, test/SPI_FLASH_SEC_SIZE);
-    //     } else {
-    //         printf("\n\nstop at %d\n\n", test);
-    //         break;
-    //     }
-    //     // interrupts();
-    // }
-    // uint32_t yo[2];
-    // yo[0] = 'A';
-    // yo[1] = 'P';
-    // for(int test = 310000; test < 0x2000000; test += SPI_FLASH_SEC_SIZE) {
-    //     if(sdk_spi_flash_write(test, yo, sizeof(yo)) == SPI_FLASH_RESULT_OK) {
-    //         printf("%d,", test);
-    //     } else {
-    //         printf("\n\nstop at %d\n\n", test);
-    //         break;
-    //     }
-    // }
-
-    // const char * data = "Alex super star";
-
-    //     if(EEPROM.save(1, (uint8_t *)data, strlen(data))) {
-    //         printf("%d,", 1);
-    //     } else {
-    //         printf("\n\nstop at %d\n\n", 1);
-    //     }
-
-    // for(int test = 1; test < 0x2000000; test += strlen(data)) {
-    //     if(EEPROM.save(test, (uint8_t *)data, strlen(data))) {
-    //         printf("%d,", test);
-    //     } else {
-    //         printf("\n\nstop at %d\n\n", test);
-    //         break;
-    //     }
-    // }
