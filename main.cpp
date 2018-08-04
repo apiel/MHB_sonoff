@@ -73,7 +73,9 @@ static void  main_task(void *pvParameters)
     wifi_wait_connection();
 
     printf("> try ota\n");
-    ota((char *)"192.168.0.179", OTA_PORT, (char *)"/firmware285.bin");
+    char path[128];
+    sprintf(path, "/firmware.bin?version=%s&macuid=%s", VERSION, (char *)get_mac_uid());
+    ota((char *)"192.168.0.179", OTA_PORT, path);
     printf("ota finished.\n");
 
 

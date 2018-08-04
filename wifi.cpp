@@ -52,6 +52,8 @@ const char * get_mac_uid()
 
     int8_t i;
     uint8_t x;
+    if (!sdk_wifi_get_macaddr(STATION_IF, (uint8_t *) mac))
+        return NULL;
     for (i = 5; i >= 0; --i)
     {
         x = mac[i] & 0x0F;
