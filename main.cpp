@@ -87,16 +87,15 @@ static void  main_task(void *pvParameters)
     // rf_save_store((char *)"b00ZZVUVIJZ-0#c00ZZVUVIZJ-0#"); // sofa light
 
     // >> room switch
-    // YZEFJIIZ-0 left
-    // YZEFJIYJ-0 middle
-    // YZEFJIYV-0 right
+    // Ee:;]\<E-0 left (YZEFJIIZ-0) ?
+    // Ee:;]\D=-0 middle (YZEFJIYJ-0) ?
+    // Ee:;]\DC-0 right (YZEFJIYV-0) ?
 
     // rf_save_store((char *)"c00YZEFJIYV-0#"); // room small light
 
     // save_uid((char *)"MHB_SMALL#");
 
     #ifdef PIN_RF433_RECEIVER
-    rf.init();
     // rf.test();
     xTaskCreate(&rf_task, "rf_task", 1024, NULL, 4, NULL);
     #endif
@@ -127,7 +126,7 @@ static void  main_task(void *pvParameters)
         taskYIELD();
         vTaskDelay(200);
         taskYIELD();
-        // here we could check for wifi connection and reboot if disconnect
+        wifi_wait_connection(); // here we could check for wifi connection and reboot if disconnect
     }
 }
 
@@ -138,11 +137,10 @@ extern "C" void user_init(void)
     printf("SDK version: %s\n", sdk_system_get_sdk_version());
     printf("MyHomeBridge sonoff compile version: %s\n", VERSION);
 
-    // find something if sonoff hang
     ota_prepare();
 
-    // wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
-    wifi_init(); // default
+    wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
+    // wifi_init(); // default
 
     Button button = Button(sdk_system_restart, [](){ Relay1.relay_toggle(); });
     button.init();

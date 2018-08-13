@@ -19,6 +19,7 @@ void wifi_wait_connection(void)
         if (sdk_wifi_station_get_connect_status() == STATION_GOT_IP) {
             break;
         }
+        task_led_blink(2, 5);
         printf(".\n"); // we could show the status
         taskYIELD();
         vTaskDelay(100);
@@ -26,7 +27,7 @@ void wifi_wait_connection(void)
     if (sdk_wifi_station_get_connect_status() != STATION_GOT_IP) {
         sdk_system_restart();
     }
-    printf("\nConnected to wifi\n");
+    // printf("\nConnected to wifi\n");
 }
 
 void wifi_init(void)
@@ -77,13 +78,14 @@ const char * get_uid(void)
 #ifdef EEPROM_UID_START
         for(int pos = 0; pos < EEPROM_UID_SIZE; pos++) {
             int bit = EEPROM.read(EEPROM_UID_START + pos);
-            if (bit == '#') break;
+            if (bit == '#') { uid_done = true; break; }
             uid[pos] = bit;
         }
         printf("UID from EEPROM %s (%d)\n", uid, strlen(uid));
 #endif
 
-        if (strlen(uid) == 0) {
+        if (!uid_done || strlen(uid) == 0) {
+            uid_done = false;
             memset(uid, 0, sizeof(uid));
             strcpy(uid, DEVICE_ID);
 #ifdef DEVICE_NAME

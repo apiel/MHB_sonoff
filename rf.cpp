@@ -18,6 +18,7 @@ Rf rf = Rf();
 void rf_task(void *pvParameters)
 {
     char code[RF_CODE_SIZE];
+    rf.init();
     while(1){
         while(xQueueReceive(rf.rf_queue, &code, 0) == pdTRUE){
             // printf("Got code from queue: %s\n", code);

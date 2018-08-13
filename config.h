@@ -4,9 +4,9 @@
 
 #define USE_ABOOT
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "SMALL"
+#define DEVICE_NAME "WEMOS"
 
-#define RELAY_NAME "Small light"
+#define RELAY_NAME "Wemos light"
 #define RELAY_2_NAME "Wemos2 light"
 
 #define MHB_USER "alex" // this is not used
@@ -44,7 +44,7 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-#define SONOFF 1
+// #define SONOFF 1
 #ifdef SONOFF
     // #define EEPROM_START 0xFD8F0 // 8mb 0x100000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
@@ -65,7 +65,7 @@
     #define PIN_RELAY_4 15
 #endif
 
-// #define WEMOS 1
+#define WEMOS 1
 #ifdef WEMOS
     // #define EEPROM_START 0x1FD8F0 // 16mb 0x200000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
