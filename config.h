@@ -4,22 +4,15 @@
 
 #define USE_ABOOT
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "WEMOS"
+#define DEVICE_NAME "TEST"
 
-#define RELAY_NAME "Wemos light"
+#define RELAY_NAME "Test light"
 #define RELAY_2_NAME "Wemos2 light"
-
-#define MHB_USER "alex" // this is not used
-#define MHB_ZONE "garage" // not used
-
-#define AP_PSK "myhomebridge" // between 8 and 63 ASCII-encoded characters
 
 #define MQTT_HOST ("vps.alexparadise.com")
 #define MQTT_PORT 1883
 #define MQTT_USER NULL
 #define MQTT_PASS NULL
-
-#define TFTP_PORT 69
 
 #define EEPROM_START 0xBC000 // 0x55000 + 0x55000 + 0x2000 + 0x10000 = 0xBC000
 // 0x55000: rom size and we have 2 rom, 0x2000: first rom address, 0x10000: let's keep some extra space in case
@@ -34,8 +27,6 @@
 #define EEPROM_UID_START EEPROM_RF_STORE_SIZE + EEPROM_RF_STORE_START + 1 // byte where uid storage start
 #define EEPROM_UID_SIZE 20
 
-#define WS_CLIENT_PORT 3080
-
 #define OTA_HOST "vps.alexparadise.com"
 #define OTA_PORT "8080"
 #define OTA_PATH "/firmware.bin"
@@ -44,9 +35,8 @@
 #define LOG_INFO
 #define LOG_DEBUG
 
-// #define SONOFF 1
+#define SONOFF 1
 #ifdef SONOFF
-    // #define EEPROM_START 0xFD8F0 // 8mb 0x100000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
     #define PIN_RF433_RECEIVER 14 // D5
@@ -55,7 +45,6 @@
 
 // #define SONOFF4CH 1
 #ifdef SONOFF4CH
-    // #define EEPROM_START 0xFD8F0 // 8mb? 0x100000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0
     #define PIN_LED 13
     #define PIN_RF433_RECEIVER 2
@@ -65,16 +54,13 @@
     #define PIN_RELAY_4 15
 #endif
 
-#define WEMOS 1
+// #define WEMOS 1
 #ifdef WEMOS
-    // #define EEPROM_START 0x1FD8F0 // 16mb 0x200000-10000 so there 10000 bytes space
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2
     #define PIN_RF433_RECEIVER 14 // D5
     #define PIN_RELAY 5 // D1
     // #define PIN_RELAY_2 5
-    // #define PIN_DHT 12 // D6
-    // #define PIN_DS18B20 12 // D6
 #endif
 
 #define RELAY_ON 1

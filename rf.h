@@ -2,7 +2,6 @@
 #ifndef __RF_H__
 #define __RF_H__
 
-#include <RCSwitch.h>
 #include <espressif/esp_common.h>
 #include <queue.h>
 

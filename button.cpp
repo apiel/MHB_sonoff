@@ -4,7 +4,6 @@
 #include <esp8266.h>
 
 #include "button.h"
-#include "log.h"
 
 void (*bt_callback)(void);
 void (*bt_callback_short)(void);
@@ -28,7 +27,7 @@ void handleButton(unsigned char pin) {
 }
 
 void Button::init() {
-    // logInfo("Init button...\n");
+    // printf("Init button...\n");
     gpio_enable(PIN_BUTTON, GPIO_INPUT);
     gpio_set_interrupt(PIN_BUTTON, GPIO_INTTYPE_EDGE_ANY, handleButton);
 }

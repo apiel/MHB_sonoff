@@ -12,28 +12,16 @@
 #include "config.h"
 #include "wifi.h"
 #include "button.h"
-#include "EEPROM.h"
 #include "version.h"
 #include "rf.h"
 #include "relay.h"
 #include "led.h"
 #include "timer.h"
-#include "controller.h"
+// #include "controller.h"
 
 #include "lwipopts.h"
 #include "httpd.h"
 #include "upnp.h"
-#include "mqtt.h"
-
-#ifdef PIN_DHT
-    #include "thermostat.h"
-    #include "dht.h"
-#endif
-
-#ifdef PIN_DS18B20
-    #include "thermostat.h"
-    #include "ds18b20.h"
-#endif
 
 #include "ota.h"
 
@@ -76,8 +64,6 @@ static void  main_task(void *pvParameters)
     ota((char *)"192.168.0.179", OTA_PORT, path);
     printf("ota finished.\n");
 
-    EEPROM.begin(EEPROM_SIZE);
-
     // >> table switch
     // ZZVUVIJZ-0 left
     // ZZVUVIZJ-0 midlle
@@ -118,8 +104,6 @@ static void  main_task(void *pvParameters)
 
     xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
     xTaskCreate(&upnp_task, "upnp_task", 1024, NULL, 5, NULL);
-
-    mqtt_start();
 
     while(1) { // keep task running else program crash, we could also use xSemaphore
         task_led_blink(2, 10, 20);

@@ -9,7 +9,6 @@ extern "C" {
     #include <http_client_ota.h>
 }
 
-#include "mqtt.h"
 #include "config.h"
 
 #define vTaskDelayMs(ms) vTaskDelay((ms) / portTICK_PERIOD_MS)
@@ -62,9 +61,6 @@ static inline void ota_error_handling(OTA_err err) {
 
 void sleep()
 {
-    // for(int s = 50; s > 0; s--) {
-    //     sdk_os_delay_us(0XFFFF);
-    // }
     taskYIELD();
     vTaskDelay(100);
 }
@@ -90,7 +86,7 @@ void ota(char * server, char * port, char * path)
         printf("ota success, reboot...\n");
         sdk_system_restart();
     } else {
-        mqtt_send("log", "ota failed");
+        printf("ota failed\n");
     }
 }
 

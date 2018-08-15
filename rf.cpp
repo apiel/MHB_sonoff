@@ -1,16 +1,13 @@
 #include <FreeRTOS.h>
 #include <queue.h>
+#include <string.h>
 #include <task.hpp>
 
 #include "rf.h"
 #include "config.h"
-#include "log.h"
-#include "EEPROM.h"
-// #include "store.h"
 #include "relay.h"
 #include "timer.h"
 #include "action.h"
-#include "mqtt.h"
 #include "rf_receiver.h"
 
 Rf rf = Rf();
@@ -38,10 +35,12 @@ void Rf::onReceived(char * result) {
 
 void Rf::consumer(char * result) {
     // printf("Consume queue: %s\n", result);
-    if (sdk_system_get_time() - last_sent > 1000000 && strcmp(last_code, result) == 0) { // 1sec
-        mqtt_send("rf/recv", (const char *)result);
-        last_sent = sdk_system_get_time();
-    }
+    // here we could send the rf msg received
+    // we could send udp multicast messages
+    // if (sdk_system_get_time() - last_sent > 1000000 && strcmp(last_code, result) == 0) { // 1sec
+    //     mqtt_send("rf/recv", (const char *)result);
+    //     last_sent = sdk_system_get_time();
+    // }
     trigger(result);
     strcpy(last_code, result);
 }
@@ -50,16 +49,16 @@ void Rf::init()
 {
     rf_queue = xQueueCreate(3, RF_CODE_SIZE);
     init_store();
-    logInfo("Start rf receiver\n");
+    printf("Start rf receiver\n");
     rfReceiver.start(PIN_RF433_RECEIVER, [](char * result){
         rf.onReceived(result);
     });
 }
 
-void rf_save_store(char * data)
-{
-    EEPROM.save(EEPROM_RF_STORE_START, (uint8_t *)data, strlen(data));
-}
+// void rf_save_store(char * data)
+// {
+//     EEPROM.save(EEPROM_RF_STORE_START, (uint8_t *)data, strlen(data));
+// }
 
 // a00ZZVUVIJZ-0#e3aZZVUVIZJ-0#
 //
@@ -76,25 +75,26 @@ void rf_save_store(char * data)
 
 void Rf::init_store()
 {
-    int storeItem = -1;
-    for(int pos = EEPROM_RF_STORE_START; pos < EEPROM_RF_STORE_SIZE; pos++) {
-        int bit = EEPROM.read(pos);
-        if (bit < 'a' || bit > 'l') {
-            break; // unknown action
-        } else {
-            storeItem++;
-            store[storeItem].action = bit;
-            store[storeItem].timer = EEPROM.read(++pos) - '0'; // let's start at '0'
-            store[storeItem].timer_id = EEPROM.read(++pos) - '0'; // 0 is no id, let's start at '0'
-            for(int codePos = 0; pos < EEPROM_RF_STORE_SIZE && codePos < RF_RESULT_SIZE+2; codePos++) {
-                bit = EEPROM.read(++pos);
-                if (bit == '#') {
-                    break; // separator
-                }
-                store[storeItem].code[codePos] = bit;
-            }
-        }
-    }
+    // to fix
+    // int storeItem = -1;
+    // for(int pos = EEPROM_RF_STORE_START; pos < EEPROM_RF_STORE_SIZE; pos++) {
+    //     int bit = EEPROM.read(pos);
+    //     if (bit < 'a' || bit > 'l') {
+    //         break; // unknown action
+    //     } else {
+    //         storeItem++;
+    //         store[storeItem].action = bit;
+    //         store[storeItem].timer = EEPROM.read(++pos) - '0'; // let's start at '0'
+    //         store[storeItem].timer_id = EEPROM.read(++pos) - '0'; // 0 is no id, let's start at '0'
+    //         for(int codePos = 0; pos < EEPROM_RF_STORE_SIZE && codePos < RF_RESULT_SIZE+2; codePos++) {
+    //             bit = EEPROM.read(++pos);
+    //             if (bit == '#') {
+    //                 break; // separator
+    //             }
+    //             store[storeItem].code[codePos] = bit;
+    //         }
+    //     }
+    // }
 }
 
 void Rf::trigger_action_timer(Action * object, int action, int timer, int timer_id) {

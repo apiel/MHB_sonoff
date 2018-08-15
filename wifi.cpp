@@ -10,8 +10,6 @@
 #include "wifi.h"
 #include "wifiSTA.h"
 #include "led.h"
-#include "log.h"
-#include "EEPROM.h"
 
 void wifi_wait_connection(void)
 {
@@ -40,13 +38,6 @@ void wifi_new_connection(char * ssid, char * password)
     wifi_sta_new_connection(ssid, password);
 }
 
-void save_uid(char * data)
-{
-#ifdef EEPROM_UID_START
-    EEPROM.save(EEPROM_UID_START, (uint8_t *)data, strlen(data));
-#endif
-}
-
 const char * get_mac_uid()
 {
     static char mac[13];
@@ -71,29 +62,16 @@ const char * get_mac_uid()
 // this could go in utils
 const char * get_uid(void)
 {
-    // Use MAC address for Station as unique ID
-    static char uid[EEPROM_UID_SIZE];
+    static char uid[20];
     static bool uid_done = false;
     if (!uid_done) {
-#ifdef EEPROM_UID_START
-        for(int pos = 0; pos < EEPROM_UID_SIZE; pos++) {
-            int bit = EEPROM.read(EEPROM_UID_START + pos);
-            if (bit == '#') { uid_done = true; break; }
-            uid[pos] = bit;
-        }
-        printf("UID from EEPROM %s (%d)\n", uid, strlen(uid));
-#endif
-
-        if (!uid_done || strlen(uid) == 0) {
-            uid_done = false;
-            memset(uid, 0, sizeof(uid));
-            strcpy(uid, DEVICE_ID);
+        memset(uid, 0, sizeof(uid));
+        strcpy(uid, DEVICE_ID);
 #ifdef DEVICE_NAME
-            strcat(uid, DEVICE_NAME);
+        strcat(uid, DEVICE_NAME);
 #else
-            strcat(uid, get_mac_uid());
+        strcat(uid, get_mac_uid());
 #endif
-        }
         uid_done = true;
         printf("-> Device unique id: %s\n", uid);
     }

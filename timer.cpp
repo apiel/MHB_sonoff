@@ -8,7 +8,6 @@
 #include <string.h>
 
 #include "action.h"
-#include "log.h"
 
 #define TIMER_SIZE 10
 
@@ -67,7 +66,7 @@ int add_timer(Action * object, int action, int seconds, int id)
         timer[pos].action = action;
     }
     printf("timer added at pos %d with id %d in %d sec\n", pos, id, seconds);
-    // logInfo("add timer\n");
+    // printf("add timer\n");
     return pos;
 }
 

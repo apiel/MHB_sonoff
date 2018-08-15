@@ -2,9 +2,7 @@
 #include <esp8266.h>
 
 #include "config.h"
-#include "log.h"
 #include "relay.h"
-#include "controller.h"
 
 Relay::Relay(int pin, const char * id)
 {
@@ -31,22 +29,20 @@ bool Relay::_can_update()
 void Relay::relay_on()
 {
     if (_status != RELAY_ON && _can_update()) {
-        logInfo("relay on\n");
+        printf("relay on\n");
         gpio_enable(_pin, GPIO_OUTPUT);
         gpio_write(_pin, RELAY_ON);
-        _status = RELAY_ON;
-        controller_relay_send_status(this);
+        _status = RELAY_ON; // here we should use a setState
     }
 }
 
 void Relay::relay_off()
 {
     if (_status != RELAY_OFF && _can_update()) {
-        logInfo("relay off\n");
+        printf("relay off\n");
         gpio_enable(_pin, GPIO_OUTPUT);
         gpio_write(_pin, RELAY_OFF);
-        _status = RELAY_OFF;
-        controller_relay_send_status(this);
+        _status = RELAY_OFF; // here we should use a setState
     }
 }
 
