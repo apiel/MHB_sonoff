@@ -12,6 +12,10 @@
 
 Rf rf = Rf();
 
+enum {
+   numStore = sizeof(store) / sizeof(store[0])
+};
+
 void rf_task(void *pvParameters)
 {
     char code[RF_CODE_SIZE];
@@ -48,57 +52,15 @@ void Rf::consumer(char * result) {
 void Rf::init()
 {
     rf_queue = xQueueCreate(3, RF_CODE_SIZE);
-    init_store();
     printf("Start rf receiver\n");
     rfReceiver.start(PIN_RF433_RECEIVER, [](char * result){
         rf.onReceived(result);
     });
 }
 
-// void rf_save_store(char * data)
-// {
-//     EEPROM.save(EEPROM_RF_STORE_START, (uint8_t *)data, strlen(data));
-// }
-
-// a00ZZVUVIJZ-0#e3aZZVUVIZJ-0#
-//
-// a -> on (action)
-// 0 -> 0 second
-// 0 -> 0 no timer id so we would have do '0' - val
-// ZZVUVIJZ-0 -> code
-// # separator
-// e -> on relay 2 protocol
-// 3 -> 3*3 = 9 seconds
-// a -> 3 timer id
-// ZZVUVIZJ-0 -> code
-// # separator end
-
-void Rf::init_store()
-{
-    // to fix
-    // int storeItem = -1;
-    // for(int pos = EEPROM_RF_STORE_START; pos < EEPROM_RF_STORE_SIZE; pos++) {
-    //     int bit = EEPROM.read(pos);
-    //     if (bit < 'a' || bit > 'l') {
-    //         break; // unknown action
-    //     } else {
-    //         storeItem++;
-    //         store[storeItem].action = bit;
-    //         store[storeItem].timer = EEPROM.read(++pos) - '0'; // let's start at '0'
-    //         store[storeItem].timer_id = EEPROM.read(++pos) - '0'; // 0 is no id, let's start at '0'
-    //         for(int codePos = 0; pos < EEPROM_RF_STORE_SIZE && codePos < RF_RESULT_SIZE+2; codePos++) {
-    //             bit = EEPROM.read(++pos);
-    //             if (bit == '#') {
-    //                 break; // separator
-    //             }
-    //             store[storeItem].code[codePos] = bit;
-    //         }
-    //     }
-    // }
-}
-
 void Rf::trigger_action_timer(Action * object, int action, int timer, int timer_id) {
     if (timer > 0) {
+        // should we use xTimerCreate?
         add_timer(object, action, timer * timer, timer_id);
     } else {
         (* object)(action);
@@ -148,7 +110,7 @@ void Rf::trigger_action(int action, int timer, int timer_id)
 
 void Rf::trigger(char * code)
 {
-    for(int item = 0; item < RF_STORE_SIZE; item++) {
+    for(int item = 0; item < numStore; item++) {
         if (strcmp(store[item].code, code) == 0) {
             trigger_action(store[item].action, store[item].timer, store[item].timer_id);
             // break; // dont stop to get multiple event
@@ -158,7 +120,7 @@ void Rf::trigger(char * code)
 
 void Rf::test()
 {
-    for(int yo=0;yo<RF_STORE_SIZE; yo++) {
+    for(int yo=0;yo<numStore; yo++) {
         printf("trigger: %c t: %c tid: %c code: %s\n",
             store[yo].action,
             store[yo].timer + '0', // let s make it more readable

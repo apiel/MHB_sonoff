@@ -1,13 +1,10 @@
 #include "task.hpp"
 #include "espressif/esp_common.h"
 #include "esp/uart.h"
-#include "ota-tftp.h"
 
 #include <string.h>
 
 #include <ssid_config.h>
-// #include "espnow.h"
-
 
 #include "config.h"
 #include "wifi.h"
@@ -17,7 +14,6 @@
 #include "relay.h"
 #include "led.h"
 #include "timer.h"
-// #include "controller.h"
 
 #include "lwipopts.h"
 #include "httpd.h"
@@ -51,7 +47,7 @@
 // esptool.py -p /dev/ttyUSB0 --baud 115200 write_flash -fs 16m -fm qio -ff 40m 0x0 ../esp-open-rtos/bootloader/firmware_prebuilt/rboot.bin 0x1000 ../esp-open-rtos/bootloader/firmware_prebuilt/blank_config.bin 0x82000 ./firmware/firmware.bin 
 
 // sonoff last sector at 1047280 so its: make flash FLASH_SIZE=8 FLASH_MODE=dout
-// sonoff 
+// sonoff
 // make flash FLASH_SIZE=8 FLASH_MODE=dout RBOOT_BIN=../aboot/firmware/aboot.bin && cu -l /dev/ttyUSB0 -s 115200
 
 static void  main_task(void *pvParameters)
@@ -86,22 +82,7 @@ static void  main_task(void *pvParameters)
     xTaskCreate(&rf_task, "rf_task", 1024, NULL, 4, NULL);
     #endif
 
-    #ifdef TFTP_PORT
-    ota_tftp_init_server(TFTP_PORT); // not very stable because of TFTP protocol
-    #endif
-
     xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
-
-    #ifdef PIN_DHT
-    thermostat_init();
-    xTaskCreate(dhtTask, "dhtTask", 256, NULL, 2, NULL);
-    #endif
-
-    #ifdef PIN_DS18B20
-    thermostat_init();
-    xTaskCreate(ds18b20Task, "ds18b20Task", 256, NULL, 2, NULL);
-    #endif
-
     xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
     xTaskCreate(&upnp_task, "upnp_task", 1024, NULL, 5, NULL);
 

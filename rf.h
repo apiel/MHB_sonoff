@@ -5,6 +5,7 @@
 #include <espressif/esp_common.h>
 #include <queue.h>
 
+#include "config.h"
 #include "action.h"
 #include "rf_receiver.h"
 
@@ -13,20 +14,20 @@
 
 void rf_task(void *pvParameters);
 
+struct Store {
+    int action;
+    int timer;
+    int timer_id;
+    char code[RF_CODE_SIZE];
+};
+static const Store store[] = RF_STORE;
+
 class Rf //: public esp_open_rtos::thread::task_t
 {
     private:
         char cmd[1024];
-        struct Store {
-            // int protocol;
-            int action;
-            int timer;
-            int timer_id;
-            char code[RF_CODE_SIZE];
-        };
         char last_code[RF_CODE_SIZE];
         unsigned int last_sent;
-        Store store[RF_STORE_SIZE];
         void trigger_action(int action, int timer, int timer_id);
         void trigger_action_timer(Action * object, int action, int timer, int timer_id);
         void trigger(char * code);

@@ -31,9 +31,7 @@
 #define OTA_PORT "8080"
 #define OTA_PATH "/firmware.bin"
 
-#define LOG_ERROR
-#define LOG_INFO
-#define LOG_DEBUG
+#define RF_STORE {{'c', 0, 0, "Ee:;]\\DC-0"}, {'c', 0, 0, "YZEFJIYV-0"}}
 
 #define SONOFF 1
 #ifdef SONOFF
