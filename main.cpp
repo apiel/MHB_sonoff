@@ -10,7 +10,9 @@
 #include "wifi.h"
 #include "button.h"
 #include "version.h"
-#include "rf.h"
+#ifdef PIN_RF433_RECEIVER
+    #include "rf.h"
+#endif
 #include "relay.h"
 #include "led.h"
 #include "timer.h"

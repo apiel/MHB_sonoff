@@ -12,9 +12,11 @@
 
 Rf rf = Rf();
 
+#ifdef RF_STORE
 enum {
    numStore = sizeof(store) / sizeof(store[0])
 };
+#endif
 
 void rf_task(void *pvParameters)
 {
@@ -45,8 +47,10 @@ void Rf::consumer(char * result) {
     //     mqtt_send("rf/recv", (const char *)result);
     //     last_sent = sdk_system_get_time();
     // }
+    // strcpy(last_code, result);
+#ifdef RF_STORE
     trigger(result);
-    strcpy(last_code, result);
+#endif
 }
 
 void Rf::init()
@@ -58,6 +62,7 @@ void Rf::init()
     });
 }
 
+#ifdef RF_STORE
 void Rf::trigger_action_timer(Action * object, int action, int timer, int timer_id) {
     if (timer > 0) {
         // should we use xTimerCreate?
@@ -117,6 +122,7 @@ void Rf::trigger(char * code)
         }
     }
 }
+#endif
 
 void Rf::test()
 {
