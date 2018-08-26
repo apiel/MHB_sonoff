@@ -56,10 +56,12 @@ void Rf::consumer(char * result) {
 void Rf::init()
 {
     rf_queue = xQueueCreate(3, RF_CODE_SIZE);
+    #ifdef PIN_RF433_RECEIVER
     printf("Start rf receiver\n");
     rfReceiver.start(PIN_RF433_RECEIVER, [](char * result){
         rf.onReceived(result);
     });
+    #endif
 }
 
 #ifdef RF_STORE

@@ -4,10 +4,6 @@
 
 #define USE_ABOOT
 #define DEVICE_ID "MHB_"
-#define DEVICE_NAME "TEST"
-
-#define RELAY_NAME "Test light"
-#define RELAY_2_NAME "Wemos2 light"
 
 #define MQTT_HOST ("vps.alexparadise.com")
 #define MQTT_PORT 1883
@@ -33,16 +29,21 @@
 
 #define RF_STORE {{'c', 0, 0, "Ee:;]\\DC-0"}, {'c', 0, 0, "YZEFJIYV-0"}}
 
-#define SONOFF 1
+// #define SONOFF 1
 #ifdef SONOFF
+    #define DEVICE_NAME "SMALL"
+    #define RELAY_NAME "Small light"
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
-    #define PIN_RF433_RECEIVER 14 // D5
+    // #define PIN_RF433_RECEIVER 14 // D5
     #define PIN_RELAY 12
 #endif
 
 // #define SONOFF4CH 1
 #ifdef SONOFF4CH
+    #define DEVICE_NAME "ENTRANCE"
+    #define RELAY_NAME "Entrance light"
+    #define RELAY_2_NAME "Bathroom light"
     #define PIN_BUTTON 0
     #define PIN_LED 13
     #define PIN_RF433_RECEIVER 2
@@ -52,8 +53,9 @@
     #define PIN_RELAY_4 15
 #endif
 
-// #define WEMOS 1
+#define WEMOS 1
 #ifdef WEMOS
+    #define DEVICE_NAME "WEMOS"
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2
     #define PIN_RF433_RECEIVER 14 // D5
