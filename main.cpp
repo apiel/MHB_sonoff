@@ -21,7 +21,9 @@
 #include "httpd.h"
 #include "upnp.h"
 
+#ifdef OTA_ENABLE
 #include "ota.h"
+#endif
 
 // OTA need to comment sdk_spi_flash_erase_sector in
 // esp-open-rtos/extras/http_client_ota/http_client_ota.c
@@ -56,11 +58,13 @@ static void  main_task(void *pvParameters)
 {
     wifi_wait_connection();
 
+    #ifdef OTA_ENABLE
     printf("> try ota\n");
     char path[128];
     sprintf(path, "/firmware.bin?version=%s&macuid=%s", VERSION, (char *)get_mac_uid());
     ota((char *)"192.168.0.179", OTA_PORT, path);
     printf("ota finished.\n");
+    #endif
 
     // >> table switch
     // ZZVUVIJZ-0 left
@@ -104,7 +108,9 @@ extern "C" void user_init(void)
     printf("SDK version: %s\n", sdk_system_get_sdk_version());
     printf("MyHomeBridge sonoff compile version: %s\n", VERSION);
 
+    #ifdef OTA_ENABLE
     ota_prepare();
+    #endif
 
     wifi_new_connection((char *)WIFI_SSID, (char *)WIFI_PASS); // dev mode
     // wifi_init(); // default

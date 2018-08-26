@@ -23,6 +23,7 @@
 #define EEPROM_UID_START EEPROM_RF_STORE_SIZE + EEPROM_RF_STORE_START + 1 // byte where uid storage start
 #define EEPROM_UID_SIZE 20
 
+#define OTA_ENABLE 1
 #define OTA_HOST "vps.alexparadise.com"
 #define OTA_PORT "8080"
 #define OTA_PATH "/firmware.bin"

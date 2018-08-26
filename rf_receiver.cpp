@@ -92,6 +92,7 @@ void RfReceiver::_logTiming(unsigned int duration) {
             // printf("(%d) %d %d %d [%c]\n", RF_BIN_SPLIT, _timingsPos, _timingsPos/RF_BIN_SPLIT, pow(2, _timingsPos - (pos * RF_BIN_SPLIT)), _result[_timingsPos/RF_BIN_SPLIT]);
             _timingsPos++;
         } else {
+            // printf("false duration %d\n", duration);
             _falseTimingCount++;
             if (_falseTimingCount > RF_MAX_FALSE) {
                 _currentProtocole = -1;
