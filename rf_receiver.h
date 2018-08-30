@@ -30,6 +30,8 @@ static const RfProtocol protocoles[] = {
     // {"cercle", { 10000, 15000 }, { 0, 0 }, { 200, 400 }, { 500, 700 }},
 };
 
+#define RF_MIN_DURATION 180 // we could take it from protocoles
+
 void rf_receiver_task(void *pvParameters);
 
 class RfReceiver

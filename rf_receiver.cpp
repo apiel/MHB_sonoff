@@ -85,8 +85,8 @@ void RfReceiver::onInterrupt() {
     long time = sdk_system_get_time();
     unsigned int duration = time - _lastTime;
     // processDuration(duration);
-    if (time_queue && xQueueSend(time_queue, &duration, 0) == pdFALSE) {
-        printf("Time queue overflow (no more place in queue).\r\n");
+    if (time_queue && duration > RF_MIN_DURATION && xQueueSend(time_queue, &duration, 0) == pdFALSE) {
+        // printf("Time queue overflow (no more place in queue).\r\n");
     }
     _lastTime = time;
 }
