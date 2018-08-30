@@ -2,6 +2,10 @@
 #include <espressif/esp_common.h>
 #include <esp8266.h>
 
+// #include <FreeRTOS.h>
+// #include <queue.h>
+#include <task.hpp>
+
 #include "rf_receiver.h"
 // #include <math.h> // pow not working :-/
 
@@ -25,6 +29,19 @@ RfReceiver rfReceiver = RfReceiver();
 void handleInterrupt(unsigned char pin)
 {
     rfReceiver.onInterrupt();
+}
+
+void rf_receiver_task(void *pvParameters)
+{
+    unsigned int duration;
+    rfReceiver.time_queue = xQueueCreate(100, sizeof(unsigned int));
+    while(1){
+        while(xQueueReceive(rfReceiver.time_queue, &duration, 0) == pdTRUE){
+            rfReceiver.processDuration(duration);
+        }
+        taskYIELD();
+        vTaskDelay(1);
+    }
 }
 
 void RfReceiver::start(int pin, void (*callback)(char * result)) {
@@ -53,9 +70,7 @@ void RfReceiver::_setMainLatch() { // we could easily write unit test there
     printf("RF: Main latch between %d and %d\n", _mainLatch.min, _mainLatch.max);
 }
 
-void RfReceiver::onInterrupt() {
-    long time = sdk_system_get_time();
-    unsigned int duration = time - _lastTime;
+void RfReceiver::processDuration(unsigned int duration) {
     // printf(",%d", duration);
     if (duration > _mainLatch.min && duration < _mainLatch.max) {
         _checkForResult(duration);
@@ -64,6 +79,15 @@ void RfReceiver::onInterrupt() {
     }
     // if (_currentProtocole > 0) printf(",%d", duration);
     _logTiming(duration);
+}
+
+void RfReceiver::onInterrupt() {
+    long time = sdk_system_get_time();
+    unsigned int duration = time - _lastTime;
+    // processDuration(duration);
+    if (time_queue && xQueueSend(time_queue, &duration, 0) == pdFALSE) {
+        printf("Time queue overflow (no more place in queue).\r\n");
+    }
     _lastTime = time;
 }
 

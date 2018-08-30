@@ -2,6 +2,8 @@
 #ifndef __RF_RECEIVER_H__
 #define __RF_RECEIVER_H__
 
+#include <FreeRTOS.h>
+#include <queue.h>
 
 #define RF_BIN_SPLIT 6
 #define RF_RESULT_SIZE 44
@@ -28,12 +30,16 @@ static const RfProtocol protocoles[] = {
     // {"cercle", { 10000, 15000 }, { 0, 0 }, { 200, 400 }, { 500, 700 }},
 };
 
+void rf_receiver_task(void *pvParameters);
+
 class RfReceiver
 {
     public:
         // RfReceiver(RfProtocol protocoles);
         void start(int pin, void (*callback)(char * result));
         void onInterrupt();
+        void processDuration(unsigned int duration);
+        QueueHandle_t time_queue;
 
     protected:
         void (*_callback)(char * result);

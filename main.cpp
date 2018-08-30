@@ -12,6 +12,7 @@
 #include "version.h"
 #ifdef PIN_RF433_RECEIVER
     #include "rf.h"
+    #include "rf_receiver.h"
 #endif
 #include "relay.h"
 #include "led.h"
@@ -86,6 +87,7 @@ static void  main_task(void *pvParameters)
     #ifdef PIN_RF433_RECEIVER
     // rf.test();
     xTaskCreate(&rf_task, "rf_task", 1024, NULL, 4, NULL);
+    xTaskCreate(&rf_receiver_task, "rf_receiver_task", 1024, NULL, 3, NULL);
     #endif
 
     xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
