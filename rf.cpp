@@ -22,10 +22,11 @@ void rf_task(void *pvParameters)
 {
     char code[RF_CODE_SIZE];
     int pos = 0;
-    rf.init();
     while(1) {
-        int c = getchar();
+        int c = uart_getc_nowait(0);
         if (c == '\n') {
+            code[pos] = '\0';
+            printf("RF Code from attiny %s\r\n", code);
             rf.consumer(code);
             pos = 0;
         } else {
@@ -37,22 +38,10 @@ void rf_task(void *pvParameters)
     }
 }
 
-void Rf::onReceived(char * result) {
-    printf("Result::: %s\n", result);
-    if (rf_queue && xQueueSend(rf_queue, result, 0) == pdFALSE) {
-        printf("Rf queue overflow (no more place in queue).\r\n");
-    }
-}
-
 void Rf::consumer(char * result) {
 #ifdef RF_STORE
     trigger(result);
 #endif
-}
-
-void Rf::init()
-{
-    rf_queue = xQueueCreate(3, RF_CODE_SIZE);
 }
 
 #ifdef RF_STORE
@@ -95,11 +84,13 @@ Action * Rf::get_relay(int relay)
 void Rf::trigger(char * code)
 {
     for(int item = 0; item < numStore; item++) {
+        printf("Compare code %s=%s ?\n", store[item].code, code);
         if (strcmp(store[item].code, code) == 0) {
+            printf("yes\n");
             Action * object = get_relay(store[item].relay);
             trigger_action_timer(object, store[item].action, store[item].timer, store[item].timer_id);
             // break; // dont stop to get multiple event
-        }
+        } else printf("no\n");
     }
 }
 #endif

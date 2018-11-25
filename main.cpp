@@ -36,10 +36,9 @@ static void  main_task(void *pvParameters)
 {
     wifi_wait_connection();
 
-    xTaskCreate(&rf_task, "rf_task", 1024, NULL, 4, NULL);
-    xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
-    xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
-    xTaskCreate(&upnp_task, "upnp_task", 1024, NULL, 5, NULL);
+    // xTaskCreate(&timer_task, "timer_task", 1024, NULL, 4, NULL);
+    // xTaskCreate(&httpd_task, "http_server", 1024, NULL, 2, NULL);
+    // xTaskCreate(&upnp_task, "upnp_task", 1024, NULL, 5, NULL);
 
     while(1) { // keep task running else program crash, we could also use xSemaphore
         task_led_blink(2, 10, 20);
@@ -64,4 +63,5 @@ extern "C" void user_init(void)
     button.init();
 
     xTaskCreate(&main_task, "main_task", 1024, NULL, 9, NULL);
+    xTaskCreate(&rf_task, "rf_task", 1024, NULL, 4, NULL);
 }

@@ -38,8 +38,6 @@ class Rf //: public esp_open_rtos::thread::task_t
 
     public:
         QueueHandle_t rf_queue;
-        void init();
-        void onReceived(char * result);
         void consumer(char * code);
 };
 

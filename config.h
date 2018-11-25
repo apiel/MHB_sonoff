@@ -15,7 +15,7 @@
 #define RELAY_1_NAME "Test light"
 #define RELAY_2_NAME "Wemos2 light"
 
-#define SONOFF 1
+// #define SONOFF 1
 #ifdef SONOFF
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 13
@@ -32,7 +32,7 @@
     #define PIN_RELAY_4 15
 #endif
 
-// #define WEMOS 1
+#define WEMOS 1
 #ifdef WEMOS
     #define PIN_BUTTON 0 // D3
     #define PIN_LED 2
@@ -40,7 +40,7 @@
     // #define PIN_RELAY_2 5
 #endif
 
-#define RF_STORE {{ACTION_RELAY_ON, PIN_RELAY_1, 0, 0, "Ee:;]\\DC-0"}}
+#define RF_STORE {{ACTION_RELAY_TOGGLE, PIN_RELAY_1, 0, 0, "cD;]d<]DEc<ECEEEE=[Zd-1"}}
 
 // https://community.blynk.cc/uploads/default/original/2X/4/4f9e2245bf4f6698e10530b9060595c893bf49a2.png
 // D0 > GPIO 16
