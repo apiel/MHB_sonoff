@@ -67,11 +67,7 @@ const char * get_uid(void)
     if (!uid_done) {
         memset(uid, 0, sizeof(uid));
         strcpy(uid, DEVICE_ID);
-#ifdef DEVICE_NAME
-        strcat(uid, DEVICE_NAME);
-#else
         strcat(uid, get_mac_uid());
-#endif
         uid_done = true;
         printf("-> Device unique id: %s\n", uid);
     }

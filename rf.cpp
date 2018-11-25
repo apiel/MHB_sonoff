@@ -8,7 +8,6 @@
 #include "relay.h"
 #include "timer.h"
 #include "action.h"
-#include "rf_receiver.h"
 
 Rf rf = Rf();
 
@@ -20,13 +19,13 @@ enum {
 
 void rf_task(void *pvParameters)
 {
-    char code[RF_CODE_SIZE];
-    rf.init();
+    // char code[RF_CODE_SIZE];
+    // rf.init();
     while(1){
-        while(xQueueReceive(rf.rf_queue, &code, 0) == pdTRUE){
-            // printf("Got code from queue: %s\n", code);
-            rf.consumer(code);
-        }
+        // while(xQueueReceive(rf.rf_queue, &code, 0) == pdTRUE){
+        //     // printf("Got code from queue: %s\n", code);
+        //     rf.consumer(code);
+        // }
         taskYIELD();
         vTaskDelay(10);
     }
@@ -40,14 +39,6 @@ void Rf::onReceived(char * result) {
 }
 
 void Rf::consumer(char * result) {
-    // printf("Consume queue: %s\n", result);
-    // here we could send the rf msg received
-    // we could send udp multicast messages
-    // if (sdk_system_get_time() - last_sent > 1000000 && strcmp(last_code, result) == 0) { // 1sec
-    //     mqtt_send("rf/recv", (const char *)result);
-    //     last_sent = sdk_system_get_time();
-    // }
-    // strcpy(last_code, result);
 #ifdef RF_STORE
     trigger(result);
 #endif
@@ -56,10 +47,6 @@ void Rf::consumer(char * result) {
 void Rf::init()
 {
     rf_queue = xQueueCreate(3, RF_CODE_SIZE);
-    printf("Start rf receiver\n");
-    rfReceiver.start(PIN_RF433_RECEIVER, [](char * result){
-        rf.onReceived(result);
-    });
 }
 
 #ifdef RF_STORE
@@ -123,14 +110,3 @@ void Rf::trigger(char * code)
     }
 }
 #endif
-
-void Rf::test()
-{
-    for(int yo=0;yo<numStore; yo++) {
-        printf("trigger: %c t: %c tid: %c code: %s\n",
-            store[yo].action,
-            store[yo].timer + '0', // let s make it more readable
-            store[yo].timer_id + '0',
-            store[yo].code);
-    }
-}

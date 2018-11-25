@@ -7,10 +7,9 @@
 
 #include "config.h"
 #include "action.h"
-#include "rf_receiver.h"
 
 #define RF_STORE_SIZE 5
-#define RF_CODE_SIZE RF_RESULT_SIZE+2 // -0 where o is protocol
+#define RF_CODE_SIZE 69 // -0 where o is protocol
 
 void rf_task(void *pvParameters);
 
@@ -40,7 +39,6 @@ class Rf //: public esp_open_rtos::thread::task_t
     public:
         QueueHandle_t rf_queue;
         void init();
-        void test();
         void onReceived(char * result);
         void consumer(char * code);
 };
