@@ -9,12 +9,13 @@
 #include "action.h"
 
 #define RF_STORE_SIZE 5
-#define RF_CODE_SIZE 69 // -0 where o is protocol
+#define RF_CODE_SIZE 256
 
 void rf_task(void *pvParameters);
 
 #ifdef RF_STORE
 struct Store {
+    int relay;
     int action;
     int timer;
     int timer_id;
@@ -30,7 +31,6 @@ class Rf //: public esp_open_rtos::thread::task_t
         char last_code[RF_CODE_SIZE];
         unsigned int last_sent;
         #ifdef RF_STORE
-        void trigger_action(int action, int timer, int timer_id);
         void trigger_action_timer(Action * object, int action, int timer, int timer_id);
         void trigger(char * code);
         Action * get_relay(int action);

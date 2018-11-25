@@ -31,7 +31,7 @@ struct HUEitems
 
 struct HUEitems hueItems[] = {
 #if defined(RELAY_NAME) && defined(PIN_RELAY)
-    { RELAY_NAME, &Relay1},
+    { RELAY_1_NAME, &Relay1},
 #endif
 #if defined(RELAY_2_NAME) && defined(PIN_RELAY_2)
     { RELAY_2_NAME, &Relay2},

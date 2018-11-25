@@ -74,8 +74,8 @@ void Relay::operator() (int key)
 
 // need task for timeout
 
-#ifdef PIN_RELAY
-Relay Relay1 = Relay(PIN_RELAY, "relay/1");
+#ifdef PIN_RELAY_1
+Relay Relay1 = Relay(PIN_RELAY_1, "relay/1");
 #endif
 
 #ifdef PIN_RELAY_2

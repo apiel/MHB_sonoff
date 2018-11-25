@@ -5,10 +5,6 @@
 #include "config.h"
 #include "action.h"
 
-#define ACTION_RELAY_ON 1
-#define ACTION_RELAY_OFF 2
-#define ACTION_RELAY_TOGGLE 3
-
 class Relay: public Action {
     public:
         Relay(int pin, const char * id);
@@ -27,7 +23,7 @@ class Relay: public Action {
         bool _can_update();
 };
 
-#ifdef PIN_RELAY
+#ifdef PIN_RELAY_1
 extern Relay Relay1;
 #endif
 

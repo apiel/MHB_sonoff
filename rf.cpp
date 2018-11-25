@@ -2,6 +2,7 @@
 #include <queue.h>
 #include <string.h>
 #include <task.hpp>
+#include <esp/uart.h>
 
 #include "rf.h"
 #include "config.h"
@@ -19,13 +20,18 @@ enum {
 
 void rf_task(void *pvParameters)
 {
-    // char code[RF_CODE_SIZE];
-    // rf.init();
-    while(1){
-        // while(xQueueReceive(rf.rf_queue, &code, 0) == pdTRUE){
-        //     // printf("Got code from queue: %s\n", code);
-        //     rf.consumer(code);
-        // }
+    char code[RF_CODE_SIZE];
+    int pos = 0;
+    rf.init();
+    while(1) {
+        int c = getchar();
+        if (c == '\n') {
+            rf.consumer(code);
+            pos = 0;
+        } else {
+            code[pos] = c;
+            pos++;
+        }
         taskYIELD();
         vTaskDelay(10);
     }
@@ -59,26 +65,25 @@ void Rf::trigger_action_timer(Action * object, int action, int timer, int timer_
     }
 }
 
-Action * Rf::get_relay(int action)
+Action * Rf::get_relay(int relay)
 {
-    int relay = (action - 'a') * 0.25;
     Action * object;
-    if (relay == 0) { // abc
+    if (relay == PIN_RELAY_1) {
         object = &Relay1;
     }
-#ifdef PIN_RELAY_2 // def
-    else if (relay == 1) {
-        object = &Relay1;
-    }
-#endif
-#ifdef PIN_RELAY_3 // ghi
-    else if (relay == 2) {
-        object = &Relay1;
+#ifdef PIN_RELAY_2
+    else if (relay == PIN_RELAY_2) {
+        object = &Relay2;
     }
 #endif
-#ifdef PIN_RELAY_4 // jkl
-    else if (relay == 3) {
-        object = &Relay1;
+#ifdef PIN_RELAY_3
+    else if (relay == PIN_RELAY_3) {
+        object = &Relay3;
+    }
+#endif
+#ifdef PIN_RELAY_4
+    else if (relay == PIN_RELAY_4) {
+        object = &Relay4;
     }
 #endif
     else {
@@ -87,24 +92,12 @@ Action * Rf::get_relay(int action)
     return object;
 }
 
-void Rf::trigger_action(int action, int timer, int timer_id)
-{
-    int state = (action - 'a') % 3;
-    Action * object = get_relay(action);
-    if (state == 0) {
-        trigger_action_timer(object, ACTION_RELAY_ON, timer, timer_id);
-    } else if (state == 1) {
-        trigger_action_timer(object, ACTION_RELAY_OFF, timer, timer_id);
-    } else if (state == 2) {
-        trigger_action_timer(object, ACTION_RELAY_TOGGLE, timer, timer_id);
-    }
-}
-
 void Rf::trigger(char * code)
 {
     for(int item = 0; item < numStore; item++) {
         if (strcmp(store[item].code, code) == 0) {
-            trigger_action(store[item].action, store[item].timer, store[item].timer_id);
+            Action * object = get_relay(store[item].relay);
+            trigger_action_timer(object, store[item].action, store[item].timer, store[item].timer_id);
             // break; // dont stop to get multiple event
         }
     }
